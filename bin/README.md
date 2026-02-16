@@ -19,7 +19,7 @@ computer, such as a path to Java.  Local installations of things like nvm and py
 can be set up here too. 
 
 # Also included
-Some of the script content is for inrospecting installation specifics like 
+Some of the script content is for introspecting installation specifics like 
 home brew to reduce the amount of text in .env.local
 
 Some utilities that may help developers and sys admins are also included, but may be pushed to 

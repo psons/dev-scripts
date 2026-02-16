@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import argparse
+import os
 
 def main():
     parser = argparse.ArgumentParser(
@@ -10,19 +11,35 @@ def main():
     
     parser.add_argument('-f', '--file', dest='filename', help='filename to read from')
     parser.add_argument('-d', '--delimiter', dest='delimiter', default=' ', help='delimiter for list items on a single line (default: space)')
+    parser.add_argument('--save', dest='save_name', metavar='LIST_NAME', help='save the output to a named fileset in ~/.filesets/')
+    parser.add_argument('--load', dest='load_name', metavar='LIST_NAME', help='load a named fileset from ~/.filesets/')
     parser.add_argument('command', choices=['flat', 'tall'], help='flat: convert newlines to delimiter; tall: convert delimiter to newlines')
     
     args = parser.parse_args()
     
+    # Determine filesets directory
+    filesets_dir = os.path.expanduser('~/.filesets')
+    
     # Read input
     if args.filename:
+        # -f option takes precedence over --load
         try:
             with open(args.filename, 'r') as f:
                 content = f.read()
         except FileNotFoundError:
             print(f"Error: File '{args.filename}' not found", file=sys.stderr)
             sys.exit(1)
+    elif args.load_name:
+        # Load from fileset
+        fileset_path = os.path.join(filesets_dir, args.load_name)
+        try:
+            with open(fileset_path, 'r') as f:
+                content = f.read()
+        except FileNotFoundError:
+            print(f"Error: Fileset '{args.load_name}' not found at {fileset_path}", file=sys.stderr)
+            sys.exit(1)
     else:
+        # Read from stdin
         content = sys.stdin.read()
     
     # Process based on command
@@ -33,7 +50,7 @@ def main():
         # Filter out empty lines and join with delimiter
         items = [line.strip() for line in lines if line.strip()]
         result = args.delimiter.join(items)
-        print(result)
+        output = result
     
     elif args.command == 'tall':
         # Replace delimiter with newlines
@@ -41,8 +58,24 @@ def main():
         items = content.strip().split(args.delimiter)
         # Filter out empty items and print each on a new line
         items = [item.strip() for item in items if item.strip()]
-        for item in items:
-            print(item)
+        output = '\n'.join(items)
+    
+    # Print output
+    print(output)
+    
+    # Save to fileset if requested
+    if args.save_name:
+        # Create filesets directory if it doesn't exist
+        os.makedirs(filesets_dir, exist_ok=True)
+        fileset_path = os.path.join(filesets_dir, args.save_name)
+        try:
+            with open(fileset_path, 'w') as f:
+                f.write(output)
+                if not output.endswith('\n'):
+                    f.write('\n')
+        except Exception as e:
+            print(f"Error: Failed to save fileset '{args.save_name}': {e}", file=sys.stderr)
+            sys.exit(1)
 
 if __name__ == '__main__':
     main()

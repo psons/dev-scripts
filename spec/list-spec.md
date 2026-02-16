@@ -1,7 +1,7 @@
 list is a python script that manipulates string lists that are either delimited values on a single line or newline separated lines.
 
 ```
-Usage: list [options]  <command> [data]
+Usage: list [options]  <command> [data...]
 
 where options include:
     -f <filename>
@@ -15,6 +15,7 @@ where options include:
 
     tall    reads stdin by default and replaces the delimiter with newlines
             Output is a set of lines with each line containing a list item
+
 
 Example:
 
