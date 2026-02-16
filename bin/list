@@ -11,15 +11,15 @@ def main():
     
     parser.add_argument('-f', '--file', dest='filename', help='filename to read from')
     parser.add_argument('-d', '--delimiter', dest='delimiter', default=' ', help='delimiter for list items on a single line (default: space)')
-    parser.add_argument('--save', dest='save_name', metavar='LIST_NAME', help='save the output to a named fileset in ~/.filesets/')
-    parser.add_argument('--load', dest='load_name', metavar='LIST_NAME', help='load a named fileset from ~/.filesets/')
+    parser.add_argument('--save', dest='save_name', metavar='LIST_NAME', help='save the output to a named list in ~/.lists/')
+    parser.add_argument('--load', dest='load_name', metavar='LIST_NAME', help='load a named list from ~/.lists/')
     parser.add_argument('command', choices=['flat', 'tall'], help='flat: convert newlines to delimiter; tall: convert delimiter to newlines')
     parser.add_argument('args', nargs='*', help='list items as command line arguments (when provided, stdin is ignored)')
     
     args = parser.parse_args()
     
-    # Determine filesets directory
-    filesets_dir = os.path.expanduser('~/.filesets')
+    # Determine lists directory
+    lists_dir = os.path.expanduser('~/.lists')
     
     # Read input
     if args.args:
@@ -35,13 +35,13 @@ def main():
             print(f"Error: File '{args.filename}' not found", file=sys.stderr)
             sys.exit(1)
     elif args.load_name:
-        # Load from fileset
-        fileset_path = os.path.join(filesets_dir, args.load_name)
+        # Load from list
+        list_path = os.path.join(lists_dir, args.load_name)
         try:
-            with open(fileset_path, 'r') as f:
+            with open(list_path, 'r') as f:
                 content = f.read()
         except FileNotFoundError:
-            print(f"Error: Fileset '{args.load_name}' not found at {fileset_path}", file=sys.stderr)
+            print(f"Error: List '{args.load_name}' not found at {list_path}", file=sys.stderr)
             sys.exit(1)
     else:
         # Read from stdin
@@ -68,18 +68,18 @@ def main():
     # Print output
     print(output)
     
-    # Save to fileset if requested
+    # Save to list if requested
     if args.save_name:
-        # Create filesets directory if it doesn't exist
-        os.makedirs(filesets_dir, exist_ok=True)
-        fileset_path = os.path.join(filesets_dir, args.save_name)
+        # Create lists directory if it doesn't exist
+        os.makedirs(lists_dir, exist_ok=True)
+        list_path = os.path.join(lists_dir, args.save_name)
         try:
-            with open(fileset_path, 'w') as f:
+            with open(list_path, 'w') as f:
                 f.write(output)
                 if not output.endswith('\n'):
                     f.write('\n')
         except Exception as e:
-            print(f"Error: Failed to save fileset '{args.save_name}': {e}", file=sys.stderr)
+            print(f"Error: Failed to save list '{args.save_name}': {e}", file=sys.stderr)
             sys.exit(1)
 
 if __name__ == '__main__':

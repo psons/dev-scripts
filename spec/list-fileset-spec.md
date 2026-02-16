@@ -1,8 +1,8 @@
-# save named filesets
+# save named lists
 
 enhance the bin/list python utility with options to save and load named lists.  Lists will often be named set of files as they would be used on a shell command line such as they would be used arguments to the tar command, and may contain wild card globs, which should not be expanded by the list command, but might be expanded by the calling shell as normal, unless quoted. 
 
-When a fileset is saved or loaded, the default behavior will be to save or load the fileset from ~/.filesets in a file with the same name as the file set.  
+When a list is saved or loaded, the default behavior will be to save or load the lists from ~/.lists in a file with the same name as the list.  
 
 If arguments are provided after <command>, then stdin is ignored and the command line arguments are used as the list.
 

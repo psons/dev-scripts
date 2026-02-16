@@ -14,8 +14,7 @@ where options include:
             Output is a single line with the list values separated by the delimiter.
 
     tall    reads stdin by default and replaces the delimiter with newlines
-            Output is a set of lines with each line containing a list item
-
+            Output is a set of lines with each line containing a list item.
 
 Example:
 
