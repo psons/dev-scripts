@@ -4,18 +4,24 @@
 
 # Get the directory where this script is located
 if [ -n "${BASH_SOURCE[0]}" ]; then
-    # Get the absolute path of the directory containing this script
-    DEV_SCRIPTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # Get the absolute path of the bin subdirectory
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    DEV_SCRIPTS="$SCRIPT_DIR/bin"
     export DEV_SCRIPTS
     
-    # Add DEV_SCRIPTS/bin to PATH if it exists and is not already in PATH
-    if [ -d "$DEV_SCRIPTS/bin" ]; then
-        if [[ ":$PATH:" != *":$DEV_SCRIPTS/bin:"* ]]; then
-            export PATH="$DEV_SCRIPTS/bin:$PATH"
+    # Add DEV_SCRIPTS to PATH if it exists and is not already in PATH
+    if [ -d "$DEV_SCRIPTS" ]; then
+        if [[ ":$PATH:" != *":$DEV_SCRIPTS:"* ]]; then
+            export PATH="$DEV_SCRIPTS:$PATH"
         fi
     fi
 else
     echo "Warning: Unable to determine script location. Please source this script in bash." >&2
 fi
 
-echo $DEV_SCRIPTS
+# snippet suggested for .vscode to load .env.local variables in a project directory.
+if [ -f "$PWD/.env.local" ]; then
+  set -a
+  . "$PWD/.env.local"
+  set +a
+fi

@@ -29,7 +29,4 @@ a different repo at some time. (like the list script)
 This project has the opinion that the specification of softwares belongs in the source tree, but that the hooks for any specific AI platform like Copilot or Gemini are more like IDEs, and should be in separate source control.
 
 ## Reasoning
-Spec info is strictly required, and must be always true for the project.  AI tools by contrast are non-deterministic, and will not produce the same project given the same spec because they use training
-that changes over time.
-
-This source code up should be outside of the source repository of the project so that humans and AI do not need to spend energy looking at it when understanding a project.
+See spec/what-is-where.md
