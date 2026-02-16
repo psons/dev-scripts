@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""
+Bounce Firebase Emulators Script
+
+Reads firebase.json to find emulator ports, kills existing processes on those ports,
+and starts the Firebase emulators fresh.
+"""
+
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+def find_firebase_json():
+    """Find firebase.json in the current directory or parent directories."""
+    current = Path.cwd()
+    while current != current.parent:
+        firebase_json = current / "firebase.json"
+        if firebase_json.exists():
+            return firebase_json
+        current = current.parent
+    
+    # Also check if firebase.json exists in the script's parent directory
+    script_dir = Path(__file__).parent.parent
+    firebase_json = script_dir / "firebase.json"
+    if firebase_json.exists():
+        return firebase_json
+    
+    raise FileNotFoundError("Could not find firebase.json")
+
+
+def extract_ports(firebase_config):
+    """Extract all emulator ports from firebase.json config."""
+    ports = []
+    emulators = firebase_config.get("emulators", {})
+    
+    for emulator_name, emulator_config in emulators.items():
+        if isinstance(emulator_config, dict) and "port" in emulator_config:
+            ports.append(emulator_config["port"])
+    
+    return ports
+
+
+def kill_process_on_port(port):
+    """Kill the process running on the specified port."""
+    try:
+        # Use lsof to find the process ID on the port
+        result = subprocess.run(
+            ["lsof", "-i", f":{port}", "-t"],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        
+        if result.returncode == 0 and result.stdout.strip():
+            pids = result.stdout.strip().split("\n")
+            for pid in pids:
+                try:
+                    subprocess.run(["kill", "-9", pid], check=True)
+                    print(f"✓ Killed process {pid} on port {port}")
+                except subprocess.CalledProcessError as e:
+                    print(f"⚠ Failed to kill process {pid}: {e}", file=sys.stderr)
+        else:
+            print(f"ℹ No process found on port {port}")
+    except Exception as e:
+        print(f"⚠ Error checking port {port}: {e}", file=sys.stderr)
+
+
+def main():
+    try:
+        # Find and read firebase.json
+        firebase_json_path = find_firebase_json()
+        print(f"Found firebase.json: {firebase_json_path}")
+        
+        with open(firebase_json_path, "r") as f:
+            firebase_config = json.load(f)
+        
+        # Extract ports
+        ports = extract_ports(firebase_config)
+        if not ports:
+            print("⚠ No emulator ports found in firebase.json")
+        else:
+            print(f"Found emulator ports: {ports}")
+        
+        # Kill processes on those ports
+        print("\nKilling existing processes...")
+        for port in ports:
+            kill_process_on_port(port)
+        
+        # Start emulators
+        print("\nStarting Firebase emulators...")
+        subprocess.run(["firebase", "emulators:start"], check=True)
+    
+    except FileNotFoundError as e:
+        print(f"✗ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"✗ Error parsing firebase.json: {e}", file=sys.stderr)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\nInterrupted by user")
+        sys.exit(0)
+    except Exception as e:
+        print(f"✗ Unexpected error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+import sys
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog='list',
+        description='Manipulate string lists that are either delimited values on a single line or newline separated lines'
+    )
+    
+    parser.add_argument('-f', '--file', dest='filename', help='filename to read from')
+    parser.add_argument('-d', '--delimiter', dest='delimiter', default=' ', help='delimiter for list items on a single line (default: space)')
+    parser.add_argument('command', choices=['flat', 'tall'], help='flat: convert newlines to delimiter; tall: convert delimiter to newlines')
+    
+    args = parser.parse_args()
+    
+    # Read input
+    if args.filename:
+        try:
+            with open(args.filename, 'r') as f:
+                content = f.read()
+        except FileNotFoundError:
+            print(f"Error: File '{args.filename}' not found", file=sys.stderr)
+            sys.exit(1)
+    else:
+        content = sys.stdin.read()
+    
+    # Process based on command
+    if args.command == 'flat':
+        # Replace newlines with delimiter
+        # Strip leading/trailing whitespace and split by lines
+        lines = content.strip().split('\n')
+        # Filter out empty lines and join with delimiter
+        items = [line.strip() for line in lines if line.strip()]
+        result = args.delimiter.join(items)
+        print(result)
+    
+    elif args.command == 'tall':
+        # Replace delimiter with newlines
+        # Strip and split by delimiter
+        items = content.strip().split(args.delimiter)
+        # Filter out empty items and print each on a new line
+        items = [item.strip() for item in items if item.strip()]
+        for item in items:
+            print(item)
+
+if __name__ == '__main__':
+    main()
