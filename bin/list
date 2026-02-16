@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--save', dest='save_name', metavar='LIST_NAME', help='save the output to a named fileset in ~/.filesets/')
     parser.add_argument('--load', dest='load_name', metavar='LIST_NAME', help='load a named fileset from ~/.filesets/')
     parser.add_argument('command', choices=['flat', 'tall'], help='flat: convert newlines to delimiter; tall: convert delimiter to newlines')
+    parser.add_argument('args', nargs='*', help='list items as command line arguments (when provided, stdin is ignored)')
     
     args = parser.parse_args()
     
@@ -21,7 +22,11 @@ def main():
     filesets_dir = os.path.expanduser('~/.filesets')
     
     # Read input
-    if args.filename:
+    if args.args:
+        # If command line arguments are provided, use them instead of stdin
+        # Join with newlines for processing - they'll be treated as separate list items
+        content = '\n'.join(args.args)
+    elif args.filename:
         # -f option takes precedence over --load
         try:
             with open(args.filename, 'r') as f:

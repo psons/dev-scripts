@@ -4,6 +4,8 @@ enhance the bin/list python utility with options to save and load named lists.  
 
 When a fileset is saved or loaded, the default behavior will be to save or load the fileset from ~/.filesets in a file with the same name as the file set.  
 
+If arguments are provided after <command>, then stdin is ignored and the command line arguments are used as the list.
+
     --save <list-name>
         list-name is the name of a list to save.
 
