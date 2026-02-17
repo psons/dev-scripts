@@ -25,3 +25,32 @@ if [ -f "$PWD/.env.local" ]; then
   . "$PWD/.env.local"
   set +a
 fi
+
+# Function to copy .env.local template to current directory
+getenvlocal() {
+    local source_file="$DEV_SCRIPTS/../.env.local"
+    local dest_file="$PWD/.env.local"
+    
+    if [ -z "$DEV_SCRIPTS" ]; then
+        echo "Error: DEV_SCRIPTS is not set. Please source enable_env_local.sh first." >&2
+        return 1
+    fi
+    
+    if [ ! -f "$source_file" ]; then
+        echo "Error: Source file $source_file not found." >&2
+        return 1
+    fi
+    
+    if [ -f "$dest_file" ]; then
+        echo "Error: $dest_file already exists in current directory." >&2
+        return 1
+    fi
+    
+    cp "$source_file" "$dest_file"
+    if [ $? -eq 0 ]; then
+        echo "Copied .env.local to $PWD"
+    else
+        echo "Error: Failed to copy .env.local" >&2
+        return 1
+    fi
+}
