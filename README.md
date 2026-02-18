@@ -4,8 +4,7 @@ Tools for managing .env.local and project tools that are not part of the project
 
 ## Overview
 
-These script tools are biased toward developing on MACOS where Homebrew is present,
-but canb tweaked for any bash like shell environment.
+These script tools are biased toward developing on MACOS where Homebrew is present, but can be tweaked for any bash like shell environment.
 
 This repository provides utilities for:
 - Managing `.env.local` files for project-specific environment variables
