@@ -2,7 +2,16 @@
 
 ## Philosophy
 
-Specification of software is strictly required and things it descxribes must always be true for the project. AI tools by contrast are non-deterministic and will not produce the same project given the same spec because they use training that changes over time. Therefore, spec information should be in the source repository of a project, and AI prompts that are not specifications should not. AI prompts should be simple requests to read the spec. Proprietary AI platform hook files should be simple guidance to efficiently find the AI tool-agnostic specs.
+AI prompts should be requests to read specifications saved in the source tree.
+
+Prompts themselves should be standard simple requests to implemet specifications.
+
+Proprietary AI platform hook files should be simple guidance to efficiently find the AI tool-agnostic specs.
+
+Some common use knowledge should be in a location shared by all projects.
+The shared knowledge location should be set according to $KNOWLEDGE_HOME in .env.local
+
+.env.local should export the $DEV_SCRIPTS variable to set te location of it's bin directory
 
 ## Script Environment Location
 

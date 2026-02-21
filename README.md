@@ -1,6 +1,6 @@
 # dev-scripts
 
-Tools for managing .env.local and project tools that are not part of the project.
+Tools for managing projects and their connections with the host environment and shared host resources.
 
 ## Overview
 

@@ -21,9 +21,7 @@ fi
 
 # snippet suggested for .vscode to load .env.local variables in a project directory.
 if [ -f "$PWD/.env.local" ]; then
-  set -a
   . "$PWD/.env.local"
-  set +a
 fi
 
 # Function to copy .env.local template to current directory
