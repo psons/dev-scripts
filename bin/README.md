@@ -37,6 +37,13 @@ list [options] <command> [args...]
 
 See [../spec/list-spec.md](../spec/list-spec.md) and [../spec/list-fileset-spec.md](../spec/list-fileset-spec.md) for full documentation.
 
+### clean_node_modules
+- (See [../spec/clean-node-modules-spec.md](../docs/dev/spec/clean-node-modules-spec.md)
+Run with no args to show the help message.
+Used to make sure there is a package-lock.json file and delete the node_modules directory to save space.
+As long as there is a package-lock.json, then the npm install command cand re-download the node_modules.
+
+
 ## Additional Content
 
 Some of the script content is for introspecting installation specifics like Homebrew to reduce the amount of text in `.env.local`.
