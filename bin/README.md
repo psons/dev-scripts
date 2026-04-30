@@ -49,6 +49,7 @@ A Python utility for managing git branches and commit messages for the current t
 
 **Features:**
 - Initializes a `do.md` file capturing the current commit hash, branch, and intended/actual commit messages
+- do.md is intended to capture the instrctions for the task being worked on.
 - Creates and checks out a work branch via `git checkout -b`
 - Enforces a clean working tree before init, with `--dirty` and `--newdo` escape hatches
 - Commits all changes using the `actualCommitMessage` from `do.md`
