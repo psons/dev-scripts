@@ -1,0 +1,343 @@
+#!/usr/bin/env python3
+"""dtask - manage git branch and commit messages for the current task using docs/dev/work/do.md"""
+
+import sys
+import os
+import subprocess
+import argparse
+
+try:
+    import yaml
+except ImportError:
+    print("Error: PyYAML is required. Install with: pip install pyyaml", file=sys.stderr)
+    sys.exit(1)
+
+DO_MD_RELATIVE = os.path.join("docs", "dev", "work", "do.md")
+
+DO_MD_DESCRIPTION = (
+    "A list of small, focused tasks guiding the current commit with detailed microsected activities."
+)
+
+DO_MD_BODY = """
+# do.md - A list of a few small tasks that guide the current commit.
+
+## Microsected task activities
+"""
+
+
+def find_repo_root():
+    """Return the root directory of the current git repo."""
+    result = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print("Error: not inside a git repository.", file=sys.stderr)
+        sys.exit(1)
+    return result.stdout.strip()
+
+
+def get_do_md_path(repo_root):
+    return os.path.join(repo_root, DO_MD_RELATIVE)
+
+
+def get_current_commit(repo_root):
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True, text=True, cwd=repo_root
+    )
+    if result.returncode != 0:
+        return ""
+    return result.stdout.strip()
+
+
+def is_working_tree_dirty(repo_root):
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        capture_output=True, text=True, cwd=repo_root
+    )
+    return bool(result.stdout.strip())
+
+
+def is_file_modified(repo_root, path):
+    """Return True if path has been modified (staged or unstaged) since the last commit."""
+    result = subprocess.run(
+        ["git", "status", "--porcelain", path],
+        capture_output=True, text=True, cwd=repo_root
+    )
+    return bool(result.stdout.strip())
+
+
+def read_do_md(path):
+    """Read and parse do.md, returning (frontmatter_dict, body_str)."""
+    with open(path, "r") as f:
+        content = f.read()
+
+    if content.startswith("---"):
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            fm = yaml.safe_load(parts[1]) or {}
+            body = parts[2]
+            return fm, body
+
+    return {}, content
+
+
+def write_do_md(path, frontmatter, body):
+    """Write do.md with YAML frontmatter and body."""
+    fm_str = yaml.dump(frontmatter, default_flow_style=False, allow_unicode=True).strip()
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        f.write(f"---\n{fm_str}\n---\n{body}")
+
+
+def git_add_and_commit(repo_root, paths, message):
+    """Stage given paths and commit with message."""
+    add_result = subprocess.run(
+        ["git", "add"] + paths,
+        cwd=repo_root
+    )
+    if add_result.returncode != 0:
+        print("Error: git add failed.", file=sys.stderr)
+        sys.exit(1)
+    commit_result = subprocess.run(
+        ["git", "commit", "-m", message],
+        cwd=repo_root
+    )
+    if commit_result.returncode != 0:
+        print("Error: git commit failed.", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_help(_args):
+    print("""dtask - manage git branch and commit messages for the current task
+
+Subcommands:
+  help    Print this help message.
+
+  init    Initialize a new docs/dev/work/do.md file for the current task.
+          Sets priorCommit to the current HEAD commit hash.
+
+          Options:
+            --workbranch, -b <branch>   Create and check out a new git branch.
+            --intended,   -i <message>  Set the intendedCommitMessage.
+            --actual,     -a <message>  Set the actualCommitMessage.
+            --dirty                     Allow init even if the working tree is not
+                                        clean. If do.md exists and is dirty, exits
+                                        with an error unless --newdo is also given.
+            --newdo                     Used with --dirty. Asserts a fresh do.md
+                                        should be created. If do.md has been
+                                        modified since the last commit it is
+                                        committed first ('do.md when <cmd>') and
+                                        that commit becomes priorCommit. If do.md
+                                        is already committed, it is simply replaced
+                                        with no extra commit.
+
+  commit  Commit all staged and unstaged changes on workBranch using the
+          actualCommitMessage from do.md.
+
+          Options:
+            --actual, -a [message]  Update actualCommitMessage before committing.
+                                    If given with no argument, copies
+                                    intendedCommitMessage to actualCommitMessage
+                                    (signals task proceeded as expected).
+            --final                 Signal task complete. Performs two commits:
+                                    1) stage all changes and commit with
+                                       actualCommitMessage; 2) remove do.md and
+                                       commit with message 'remove do.md'.
+""")
+
+
+def cmd_init(args):
+    repo_root = find_repo_root()
+    do_md_path = get_do_md_path(repo_root)
+    do_md_exists = os.path.isfile(do_md_path)
+    dirty = is_working_tree_dirty(repo_root)
+    do_md_dirty = do_md_exists and is_file_modified(repo_root, do_md_path)
+
+    if not args.dirty:
+        errors = []
+        if dirty:
+            errors.append("working tree is dirty")
+        if do_md_exists:
+            errors.append(f"{DO_MD_RELATIVE} already exists")
+        if errors:
+            print(f"Error: {' and '.join(errors)}. Use --dirty to override.", file=sys.stderr)
+            sys.exit(1)
+    else:
+        # --dirty without --newdo: error if do.md is dirty
+        if do_md_dirty and not args.newdo:
+            print(
+                f"Error: {DO_MD_RELATIVE} has uncommitted changes. "
+                "Use --newdo to commit and replace it.",
+                file=sys.stderr
+            )
+            sys.exit(1)
+        # --dirty --newdo: commit dirty do.md before replacing
+        if do_md_dirty and args.newdo:
+            cmd_str = "dtask init " + " ".join(sys.argv[2:])
+            commit_msg = f"do.md when {cmd_str}"
+            print(f"Committing existing do.md: {commit_msg}")
+            git_add_and_commit(repo_root, [do_md_path], commit_msg)
+        # --dirty --newdo with clean do.md: fall through, just overwrite
+        if not args.newdo and do_md_exists:
+            print(
+                f"Error: {DO_MD_RELATIVE} already exists. Use --newdo to replace it.",
+                file=sys.stderr
+            )
+            sys.exit(1)
+
+    # Create workBranch if requested
+    if args.workbranch:
+        result = subprocess.run(
+            ["git", "checkout", "-b", args.workbranch],
+            cwd=repo_root
+        )
+        if result.returncode != 0:
+            print(f"Error: git checkout -b {args.workbranch} failed.", file=sys.stderr)
+            sys.exit(1)
+        print(f"Created and checked out branch: {args.workbranch}")
+
+    prior_commit = get_current_commit(repo_root)
+
+    # Determine current branch for frontmatter
+    branch_result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True, text=True, cwd=repo_root
+    )
+    current_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else ""
+
+    frontmatter = {
+        "description": DO_MD_DESCRIPTION,
+        "workBranch": args.workbranch if args.workbranch else current_branch,
+        "priorCommit": prior_commit,
+        "intendedCommitMessage": args.intended if args.intended else "",
+        "actualCommitMessage": args.actual if args.actual else "",
+    }
+
+    write_do_md(do_md_path, frontmatter, DO_MD_BODY)
+    print(f"Initialized {DO_MD_RELATIVE} (priorCommit: {prior_commit})")
+
+
+def cmd_commit(args):
+    repo_root = find_repo_root()
+    do_md_path = get_do_md_path(repo_root)
+
+    if not os.path.isfile(do_md_path):
+        print(f"Error: {DO_MD_RELATIVE} not found. Run 'dtask init' first.", file=sys.stderr)
+        sys.exit(1)
+
+    frontmatter, body = read_do_md(do_md_path)
+
+    # Update actualCommitMessage if --actual provided
+    _COPY_INTENDED = '__COPY_INTENDED__'
+    if args.actual == _COPY_INTENDED:
+        # --actual with no argument: copy intendedCommitMessage
+        intended = frontmatter.get("intendedCommitMessage", "").strip()
+        if not intended:
+            print(
+                "Error: intendedCommitMessage is empty; cannot copy to actualCommitMessage.",
+                file=sys.stderr
+            )
+            sys.exit(1)
+        frontmatter["actualCommitMessage"] = intended
+        write_do_md(do_md_path, frontmatter, body)
+    elif args.actual is not None:
+        frontmatter["actualCommitMessage"] = args.actual
+        write_do_md(do_md_path, frontmatter, body)
+
+    commit_message = frontmatter.get("actualCommitMessage", "").strip()
+    if not commit_message:
+        print(
+            "Error: actualCommitMessage is empty. Set it in do.md or use --actual [<message>].",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
+    work_branch = frontmatter.get("workBranch", "").strip()
+
+    # Verify we are on the correct workBranch
+    branch_result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True, text=True, cwd=repo_root
+    )
+    current_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else ""
+
+    if work_branch and current_branch != work_branch:
+        print(
+            f"Error: current branch '{current_branch}' does not match workBranch '{work_branch}'.",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
+    # Stage all changes and commit
+    add_all = subprocess.run(["git", "add", "-A"], cwd=repo_root)
+    if add_all.returncode != 0:
+        print("Error: git add -A failed.", file=sys.stderr)
+        sys.exit(1)
+
+    commit_result = subprocess.run(
+        ["git", "commit", "-m", commit_message],
+        cwd=repo_root
+    )
+    if commit_result.returncode != 0:
+        print("Error: git commit failed.", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Committed on '{current_branch}': {commit_message}")
+
+    if args.final:
+        # Remove do.md and make a second commit
+        os.remove(do_md_path)
+        rm_result = subprocess.run(
+            ["git", "add", do_md_path],
+            cwd=repo_root
+        )
+        if rm_result.returncode != 0:
+            print("Error: git add (removal of do.md) failed.", file=sys.stderr)
+            sys.exit(1)
+        final_commit = subprocess.run(
+            ["git", "commit", "-m", "remove do.md"],
+            cwd=repo_root
+        )
+        if final_commit.returncode != 0:
+            print("Error: git commit (remove do.md) failed.", file=sys.stderr)
+            sys.exit(1)
+        print(f"Removed {DO_MD_RELATIVE} and committed on '{current_branch}': remove do.md")
+
+
+def main():
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
+        cmd_help(None)
+        sys.exit(0)
+
+    subcommand = sys.argv[1]
+
+    if subcommand == "help":
+        cmd_help(None)
+
+    elif subcommand == "init":
+        parser = argparse.ArgumentParser(prog="dtask init", add_help=True)
+        parser.add_argument("--workbranch", "-b", dest="workbranch", metavar="BRANCH", default=None)
+        parser.add_argument("--intended", "-i", dest="intended", metavar="MESSAGE", default=None)
+        parser.add_argument("--actual", "-a", dest="actual", metavar="MESSAGE", default=None)
+        parser.add_argument("--dirty", action="store_true", default=False)
+        parser.add_argument("--newdo", action="store_true", default=False)
+        args = parser.parse_args(sys.argv[2:])
+        cmd_init(args)
+
+    elif subcommand == "commit":
+        parser = argparse.ArgumentParser(prog="dtask commit", add_help=True)
+        parser.add_argument("--actual", "-a", dest="actual", metavar="MESSAGE",
+                            nargs="?", const="__COPY_INTENDED__", default=None)
+        parser.add_argument("--final", action="store_true", default=False)
+        args = parser.parse_args(sys.argv[2:])
+        cmd_commit(args)
+
+    else:
+        print(f"Error: unknown subcommand '{subcommand}'. Run 'dtask help' for usage.", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

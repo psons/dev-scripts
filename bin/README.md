@@ -43,6 +43,29 @@ Run with no args to show the help message.
 Used to make sure there is a package-lock.json file and delete the node_modules directory to save space.
 As long as there is a package-lock.json, then the npm install command cand re-download the node_modules.
 
+### dtask
+
+A Python utility for managing git branches and commit messages for the current task using a `docs/dev/work/do.md` file with YAML frontmatter.
+
+**Features:**
+- Initializes a `do.md` file capturing the current commit hash, branch, and intended/actual commit messages
+- Creates and checks out a work branch via `git checkout -b`
+- Enforces a clean working tree before init, with `--dirty` and `--newdo` escape hatches
+- Commits all changes using the `actualCommitMessage` from `do.md`
+- `--actual` with no argument copies `intendedCommitMessage` to `actualCommitMessage` to signal the task proceeded as expected
+- `--final` closes the task cycle: commits all changes then removes `do.md` in a second commit, leaving the tree ready for the next `dtask init`
+
+**Usage:**
+```bash
+dtask <subcommand> [options]
+
+dtask help
+dtask init [-b <branch>] [-i <intended>] [-a <actual>] [--dirty] [--newdo]
+dtask commit [-a [message]] [--final]
+```
+
+See [../spec/dtask-spec.md](../docs/dev/spec/dtask-spec.md) for full documentation.
+
 
 ## Additional Content
 
