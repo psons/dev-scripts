@@ -14,7 +14,7 @@ This repository provides utilities for:
 ## Contents
 
 - [bin/](bin/README.md) - Executable scripts and utilities
-- [spec/](spec/) - Specifications and documentation for the tools
+- [docs/dev/spec/](docs/dev/spec/) - Specifications and documentation for the tools
 - [enable_env_local.sh](enable_env_local.sh) - Shell script to enable .env.local support
 
 ## Quick Start
