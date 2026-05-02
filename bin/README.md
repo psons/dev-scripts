@@ -35,20 +35,23 @@ A Python utility for manipulating string lists that are either delimited values 
 list [options] <command> [args...]
 ```
 
-See [../spec/list-spec.md](../spec/list-spec.md) and [../spec/list-fileset-spec.md](../spec/list-fileset-spec.md) for full documentation.
+See [../docs/spec/list-spec.md](../spec/list-spec.md) and [../spec/list-fileset-spec.md](../spec/list-fileset-spec.md) for full documentation.
 
 ### clean_node_modules
-- (See [../spec/clean-node-modules-spec.md](../docs/dev/spec/clean-node-modules-spec.md)
+- (See [../docs/spec/clean-node-modules-spec.md](../docs/dev/spec/clean-node-modules-spec.md)
 Run with no args to show the help message.
 Used to make sure there is a package-lock.json file and delete the node_modules directory to save space.
 As long as there is a package-lock.json, then the npm install command cand re-download the node_modules.
 
 ### dtask
 
-A Python utility for managing git branches and commit messages for the current task using a `docs/dev/work/do.md` file with YAML frontmatter.
+A Python utility for managing git branches and commit messages for the current task using a `docs/dev/work/do.md` file with YAML frontmatter.  
+
+The dtask script supports a work flow where a top task is popped off of a TODO.md into the do.md file.  Engineers add elaboration about the task that may for example suffice an AI prompt.  When complete, the do.md for the task cets committed into git history and the removed to make way for the next task.
+
 
 **Features:**
-- Initializes a `do.md` file capturing the current commit hash, branch, and intended/actual commit messages
+- `dtask init` Initializes a `do.md` file capturing the current commit hash, branch, and intended/actual commit messages
 - do.md is intended to capture the instrctions for the task being worked on.
 - Creates and checks out a work branch via `git checkout -b`
 - Enforces a clean working tree before init, with `--dirty` and `--newdo` escape hatches
@@ -65,7 +68,7 @@ dtask init [-b <branch>] [-i <intended>] [-a <actual>] [--dirty] [--newdo]
 dtask commit [-a [message]] [--final]
 ```
 
-See [../spec/dtask-spec.md](../docs/dev/spec/dtask-spec.md) for full documentation.
+See [../docs/dev/spec/dtask-spec.md](../docs/dev/spec/dtask-spec.md) and [../docs/dev/work/do.md](../docs/dev/spec/dtask-spec.md) for full documentation.
 
 
 ## Additional Content
@@ -80,4 +83,4 @@ This project has the opinion that the specification of software belongs in the s
 
 ### Reasoning
 
-See [../spec/what-is-where.md](../spec/what-is-where.md)
+See [../docs/spec/what-is-where.md](../docs/spec/what-is-where.md)

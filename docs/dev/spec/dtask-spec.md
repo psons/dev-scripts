@@ -34,7 +34,7 @@ The dtask command supports the following subcommands:
 
 help - prints a list of the sub commands and a description of each.
 
-init - if the git working tree is clean, and there is no do.md file, the init subcommand initializes a new do.md from a base template and sets the priorCommit set, and any other optionally provided infomation according to the following options:
+init - if the git working tree is clean, and there is no do.md file, the init subcommand initializes a new do.md from a base template and sets the priorCommit set, and any other optionally provided information according to the following options:
 
     --workbranch <name_of_a_branch_to_commit_work_on> a git checkout -b will be performed to create and check out the workBranch  
 
