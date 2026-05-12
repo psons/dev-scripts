@@ -1,4 +1,4 @@
-Improve the bin/index-knowledge script, making suure it still conforms to docs/dev/spec/index-knowledge-spec.md
+Improve the bin/index-knowledge script, making sure it still conforms to docs/dev/spec/index-knowledge-spec.md
  
 Add an option --copilot 
 which will create a .github/copilot-instructions.md file with the following content:

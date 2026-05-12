@@ -47,12 +47,12 @@ As long as there is a package-lock.json, then the npm install command cand re-do
 
 A Python utility for managing git branches and commit messages for the current task using a `docs/dev/work/do.md` file with YAML frontmatter.  
 
-The dtask script supports a work flow where a top task is popped off of a TODO.md into the do.md file.  Engineers add elaboration about the task that may for example suffice an AI prompt.  When complete, the do.md for the task cets committed into git history and the removed to make way for the next task.
+The dtask script supports a work flow where a top task is popped off of a TODO.md into the do.md file.  Engineers add elaboration about the task that may for example suffice an AI prompt.  When complete, the do.md for the task gets committed into git history and then removed to make way for the next task.
 
 
 **Features:**
 - `dtask init` Initializes a `do.md` file capturing the current commit hash, branch, and intended/actual commit messages
-- do.md is intended to capture the instrctions for the task being worked on.
+- do.md is intended to capture the instructions for the task being worked on.
 - Creates and checks out a work branch via `git checkout -b`
 - Enforces a clean working tree before init, with `--dirty` and `--newdo` escape hatches
 - Commits all changes using the `actualCommitMessage` from `do.md`

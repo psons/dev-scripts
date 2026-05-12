@@ -4,7 +4,7 @@
 
 AI prompts should be requests to read specifications saved in the source tree.
 
-Prompts themselves should be standard simple requests to implemet specifications.
+Prompts themselves should be standard simple requests to implement specifications.
 
 Proprietary AI platform hook files should be simple guidance to efficiently find the AI tool-agnostic specs.
 

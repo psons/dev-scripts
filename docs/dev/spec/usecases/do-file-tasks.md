@@ -6,7 +6,7 @@ support task analysis and documentation work flow using a do.md file describing 
  - microsect the task if necessary and do commits for each microsected task.
  - optionally squash the commits down to a single commit
 
-microsecting a task means to break it down into small sub-steps for implementation that are more detailed and granular than what an engineer would be inclined to collaborate on with a team. The microsected pieces of a task should, that be written into the do.md and should not have dependencies outside of the code repo unless they are already part of the task (and other externally communicated work accounts for the integration).
+microsecting a task means to break it down into small sub-steps for implementation that are more detailed and granular than what an engineer would be inclined to collaborate on with a team. The microsected pieces of a task should be written into the do.md and should not have dependencies outside of the code repo unless those dependencies are already part of the task (and other externally communicated work accounts for the integration).
 
 ## flow
 ### init, commit, ..., commit --final
