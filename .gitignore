@@ -1,3 +1,5 @@
 *DS_Store
 .github
 AGENTS.md
+docs/dev/work/backlog/
+bin/__pycache__/

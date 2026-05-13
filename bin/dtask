@@ -24,6 +24,8 @@ DO_MD_BODY = """
 ## Microsected task activities
 """
 
+FINAL_DO_MD_REMOVAL_COMMIT_MESSAGE = "removed do.md for finalized tasks"
+
 
 def find_repo_root():
     """Return the root directory of the current git repo."""
@@ -66,6 +68,15 @@ def is_file_modified(repo_root, path):
         capture_output=True, text=True, cwd=repo_root
     )
     return bool(result.stdout.strip())
+
+
+def has_staged_changes(repo_root):
+    """Return True if there are staged changes ready to commit."""
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
+        cwd=repo_root
+    )
+    return result.returncode == 1
 
 
 def read_do_md(path):
@@ -133,18 +144,22 @@ Subcommands:
                                         is already committed, it is simply replaced
                                         with no extra commit.
 
-  commit  Commit all staged and unstaged changes on workBranch using the
-          actualCommitMessage from do.md.
+  commit  Commit staged changes on workBranch using the
+             actualCommitMessage from do.md. Unstaged changes are only
+             included when --all is used.
 
-          Options:
-            --actual, -a [message]  Update actualCommitMessage before committing.
-                                    If given with no argument, copies
-                                    intendedCommitMessage to actualCommitMessage
-                                    (signals task proceeded as expected).
-            --final                 Signal task complete. Performs two commits:
-                                    1) stage all changes and commit with
-                                       actualCommitMessage; 2) remove do.md and
-                                       commit with message 'remove do.md'.
+             Options:
+                --actual, -a [message]  Update actualCommitMessage before committing.
+                                                If given with no argument, copies
+                                                intendedCommitMessage to actualCommitMessage
+                                                (signals task proceeded as expected).
+                --all                   Stage and include unstaged changes too
+                                                (equivalent to running git add -A first).
+                --final                 Signal task complete. Performs two commits:
+                                                1) commit do.md with staged changes (or all changes if
+                                                    --all is used) with actualCommitMessage;
+                                                2) remove do.md and commit with message
+                                                    'removed do.md for finalized tasks'.
 """)
 
 
@@ -270,21 +285,42 @@ def cmd_commit(args):
         )
         sys.exit(1)
 
-    # Stage all changes and commit
-    add_all = subprocess.run(["git", "add", "-A"], cwd=repo_root)
-    if add_all.returncode != 0:
-        print("Error: git add -A failed.", file=sys.stderr)
+    # By default, only already-staged changes are committed.
+    # --all opts into staging unstaged changes before commit.
+    if args.all:
+        add_all = subprocess.run(["git", "add", "-A"], cwd=repo_root)
+        if add_all.returncode != 0:
+            print("Error: git add -A failed.", file=sys.stderr)
+            sys.exit(1)
+
+    # When finalizing without --all, ensure do.md changes are not lost by
+    # staging do.md into the first commit before it gets removed.
+    do_md_dirty = is_file_modified(repo_root, do_md_path)
+    if args.final and not args.all and do_md_dirty:
+        add_do_md = subprocess.run(["git", "add", do_md_path], cwd=repo_root)
+        if add_do_md.returncode != 0:
+            print("Error: git add do.md failed.", file=sys.stderr)
+            sys.exit(1)
+
+    has_staged = has_staged_changes(repo_root)
+    if not has_staged and not args.final:
+        print(
+            "Error: no staged changes to commit. Stage files first or use --all.",
+            file=sys.stderr
+        )
         sys.exit(1)
 
-    commit_result = subprocess.run(
-        ["git", "commit", "-m", commit_message],
-        cwd=repo_root
-    )
-    if commit_result.returncode != 0:
-        print("Error: git commit failed.", file=sys.stderr)
-        sys.exit(1)
+    # For --final with no staged changes, skip the first commit and only remove do.md.
+    if has_staged:
+        commit_result = subprocess.run(
+            ["git", "commit", "-m", commit_message],
+            cwd=repo_root
+        )
+        if commit_result.returncode != 0:
+            print("Error: git commit failed.", file=sys.stderr)
+            sys.exit(1)
 
-    print(f"Committed on '{current_branch}': {commit_message}")
+        print(f"Committed on '{current_branch}': {commit_message}")
 
     if args.final:
         # Remove do.md and make a second commit
@@ -297,13 +333,16 @@ def cmd_commit(args):
             print("Error: git add (removal of do.md) failed.", file=sys.stderr)
             sys.exit(1)
         final_commit = subprocess.run(
-            ["git", "commit", "-m", "remove do.md"],
+            ["git", "commit", "-m", FINAL_DO_MD_REMOVAL_COMMIT_MESSAGE],
             cwd=repo_root
         )
         if final_commit.returncode != 0:
             print("Error: git commit (remove do.md) failed.", file=sys.stderr)
             sys.exit(1)
-        print(f"Removed {DO_MD_RELATIVE} and committed on '{current_branch}': remove do.md")
+        print(
+            f"Removed {DO_MD_RELATIVE} and committed on '{current_branch}': "
+            f"{FINAL_DO_MD_REMOVAL_COMMIT_MESSAGE}"
+        )
 
 
 def main():
@@ -330,6 +369,7 @@ def main():
         parser = argparse.ArgumentParser(prog="dtask commit", add_help=True)
         parser.add_argument("--actual", "-a", dest="actual", metavar="MESSAGE",
                             nargs="?", const="__COPY_INTENDED__", default=None)
+        parser.add_argument("--all", action="store_true", default=False)
         parser.add_argument("--final", action="store_true", default=False)
         args = parser.parse_args(sys.argv[2:])
         cmd_commit(args)

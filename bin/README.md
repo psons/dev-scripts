@@ -55,9 +55,10 @@ The dtask script supports a work flow where a top task is popped off of a TODO.m
 - do.md is intended to capture the instructions for the task being worked on.
 - Creates and checks out a work branch via `git checkout -b`
 - Enforces a clean working tree before init, with `--dirty` and `--newdo` escape hatches
-- Commits all changes using the `actualCommitMessage` from `do.md`
+- Commits staged changes using the `actualCommitMessage` from `do.md`
+- `--all` stages and commits both staged and unstaged changes
 - `--actual` with no argument copies `intendedCommitMessage` to `actualCommitMessage` to signal the task proceeded as expected
-- `--final` closes the task cycle: commits all changes then removes `do.md` in a second commit, leaving the tree ready for the next `dtask init`
+- `--final` closes the task cycle: commits `do.md` with staged changes (or all changes with `--all`), then removes `do.md` in a second commit with the message `removed do.md for finalized tasks`. Works even with no staged changes, leaving the tree ready for the next `dtask init`
 
 **Usage:**
 ```bash
@@ -65,10 +66,10 @@ dtask <subcommand> [options]
 
 dtask help
 dtask init [-b <branch>] [-i <intended>] [-a <actual>] [--dirty] [--newdo]
-dtask commit [-a [message]] [--final]
+dtask commit [-a [message]] [--all] [--final]
 ```
 
-See [../docs/dev/spec/dtask-spec.md](../docs/dev/spec/dtask-spec.md) and [../docs/dev/work/do.md](../docs/dev/spec/dtask-spec.md) for full documentation.
+See [../docs/dev/spec/dtask-spec.md](../docs/dev/spec/dtask-spec.md) for full documentation.
 
 
 ## Additional Content

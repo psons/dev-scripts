@@ -1,10 +1,18 @@
 ---
 description: Prioritized development tasks and improvements pending implementation for the TaskForm application.
 ---
+# possible bug from previous work o
+d - fix dtask commit --final bug:
+    - this may have been dealt with based on previous tasks.
+ the commit after removing do.md failed with errors:
+    fatal: pathspec 'dev-scripts/docs/dev/work/do.md' did not match any files
+    Error: git add (removal of do.md) failed.
+
+
 # dtask commit enhancements story.
 
-
 d - implement [docs/dev/spec/worksum-module-spec.md](../spec/worksum-module-spec.md) 
+message - Gemini command line and python api integration. First prototype of worksum command and summary-message variant
 
 d - implement dtask enhancements to work with worksum module
 
@@ -18,6 +26,7 @@ d - improve the headings in do.md:
 d - implement [docs/dev/spec/worksum-module-spec.md](../spec/worksum-module-spec.md) 
 
 d - implement dtask enhancements to work with worksum module
+
 
 # branch strategy enhancements story.
 d - make branch a required option for dtask init

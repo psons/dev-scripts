@@ -1,11 +1,14 @@
 ---
-actualCommitMessage: 'Gemini command line and python api integration. First prototype of worksum command and summary-message variant'
+actualCommitMessage: dtask commit behavior updates with --all/--final improvements
+  and documentation cleanup
 description: A list of small, focused tasks guiding the current commit with detailed
   microsected activities.
-intendedCommitMessage: ''
+intendedCommitMessage: dtask commit behavior updates with --all/--final improvements
+  and documentation cleanup
 priorCommit: cf3dcd7a6dd90884af329f548f57af5cc66e2bdb
 workBranch: dtask-commit
 ---
+
 
 # do.md - A list of a few small tasks that guide the current commit.
 
@@ -25,26 +28,26 @@ context: docs/dev/spec/dtask-spec.md
 prompt: Implement the spec in the section # improve the --final help text and commit message.
 ---
 
-
-d - Better dtask testing.
-    - corner cases to manage commit and the do.md are tricky.  There are tests proposed by gemini at the bottom of the dtask spec.
----
-context: docs/dev/spec/dtask-spec.md
-prompt: 
----
-
-
-d - fix dtask commit --final bug:
-    - this may have been dealt with based on previous tasks.
- the commit after removing do.md faild with errors:
-    fatal: pathspec '/Users/paulsons/dev/dev-scripts/docs/dev/work/do.md' did not match any files
-    Error: git add (removal of do.md) failed.
-
-d - improve tests for dtask corner cases. per the spec updates.
-
-d - improve the dtask help text for the --final switch per the spec updates.
-
 # work summary
+## 2025-05-13 15:27
+
+---
+workHeadline: dtask commit behavior updates with --all/--final improvements and documentation cleanup
+---
+
+This Git diff primarily focuses on enhancing the `dtask commit` command and updating its documentation.
+
+*   **Enhanced `dtask commit` functionality:**
+    *   Introduced a new `--all` option to stage and commit both staged and unstaged changes.
+    *   Modified the default behavior to commit only staged changes, making `--all` explicit for staging unstaged modifications.
+    *   Improved the `--final` flag's behavior to ensure `do.md`'s content is included in the final commit before its removal, even when no other changes are staged.
+    *   Standardized the commit message for removing `do.md` when `--final` is used.
+
+*   **Documentation and `.gitignore` updates:**
+    *   Updated `bin/README.md` to reflect the new `--all` option and refined explanations for the `--final` flag's behavior.
+    *   Added new entries to `.gitignore` to exclude cache directories (`bin/__pycache__/`) and development backlog documentation.
+    *   Removed a redundant link to `docs/dev/work/do.md` in `bin/README.md` as it was a duplicate reference.
+    *   The `docs/dev/work/do.md` file itself was updated to document these changes to the `dtask commit` command.
 
 ## 2026-05-11 19:14
 
