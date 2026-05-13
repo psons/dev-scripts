@@ -56,11 +56,82 @@ commit - add a commit on workBranch using the do.md actualCommitMessage.  If the
 
     --final signals that the task is complete.  dtask commit --final performs two commits: first, all unstaged files are staged and committed using the actualCommitMessage; second, the do.md file is removed and an additional commit is made with a commit message of 'remove do.md'.  This leaves the working tree ready for a new task cycle starting with dtask init.
 
-# Change 
+# Change to implement --newdo
 implement --newdo as specified and the script as specified so that the init command will only replace the do.md file if the --newdo flag is provided. 
 
 # not in scope.
 at this time, do not implement the features in docs/dev/spec/dtask-un-spec.md
 
+# dtask commit enhancements story.
+In this story, the leader `d - ` represents a task to do.
+
+d - change `dtask commit` behavior to by default only commit staged files and only include unstaged files if a --all switch is provided.
+
+# do.md dirty with --final but without --all
+if do.md has been modified since the last commit, and the --final option has been specified, then the do.md final must be added to the staged files to be part of the commit.
+As previously specified, the do.md file must be removed if the --final option is given, and an additional commit made with the message ''removed do.md for finalized tasks''
+
+# commit --final remove do.md with working tree clean and no staged changes
+dtask commit --final should remove the do.md file and then commit even if the working tree is clean and there are no staged changes.
+
+# improve the --final help text and commit message.
+I rejected the proposed text in a prior change, but some update is needed.
+helptext for the --final option should be as follows:
+ 
+```
+--final                 Signal task complete. Performs two commits:
+                                                1) commit do.md with staged changes (or all changes if
+                                                    --all is used) with actualCommitMessage;
+                                                2) remove do.md and commit with message
+                                                    'removed do.md for finalized tasks'.
+```
+The commit message with the removal of the do.md commit should match the help text for te second commit
+
+
+# scenario based test plan for --final edge cases
+
+## scenario 1: do.md dirty, --final, no --all
+goal: confirm dirty do.md is included in the first commit, then do.md is removed in the second commit.
+
+setup:
+- create or update docs/dev/work/do.md so the file is dirty.
+- stage at least one non-do.md file (or keep only do.md dirty).
+- ensure actualCommitMessage in do.md is non-empty.
+
+command:
+- run `dtask commit --final`
+
+expected results:
+- command exits successfully.
+- two commits are created.
+- commit 1 uses actualCommitMessage from do.md and includes do.md content updates.
+- commit 2 message is `remove do.md` and deletes docs/dev/work/do.md.
+- final working tree no longer has docs/dev/work/do.md.
+
+verification checks:
+- `git log --oneline -n 2`
+- `git show --name-status HEAD`
+- `git show --name-status HEAD~1`
+
+## scenario 2: clean working tree, no staged changes, --final
+goal: confirm dtask can finalize by removing do.md even when there is nothing else to commit.
+
+setup:
+- ensure docs/dev/work/do.md exists and is committed (not dirty).
+- ensure there are no staged or unstaged changes.
+
+command:
+- run `dtask commit --final`
+
+expected results:
+- command exits successfully.
+- exactly one new commit is created.
+- commit message is `remove do.md`.
+- commit deletes docs/dev/work/do.md.
+
+verification checks:
+- `git log --oneline -n 1`
+- `git show --name-status HEAD`
+- `git status --short`
 
 
