@@ -89,6 +89,7 @@ The commit message with the removal of the do.md commit should match the help te
 
 
 # scenario based test plan for --final edge cases
+Scenarip based tests are deferred at this time so as to avoid creating a scheme to avoid polluting the git index.
 
 ## scenario 1: do.md dirty, --final, no --all
 goal: confirm dirty do.md is included in the first commit, then do.md is removed in the second commit.
