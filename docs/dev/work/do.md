@@ -1,5 +1,6 @@
 ---
-actualCommitMessage: The new wsum-module-spec.
+actualCommitMessage: Introduces two new scripts, `bin/summary-message` and `bin/worksum`,
+  alongside a refactored `bin/wsum`
 description: A list of small, focused tasks guiding the current commit with detailed
   microsected activities.
 intendedCommitMessage: implement wksum python module
@@ -10,11 +11,13 @@ workBranch: worksum-module
 
 
 
+
 # do.md - A list of a few small tasks that guide the current commit.
 
 ## Microsected task activities
 x - write spec for behaviors - dtask: use Worksum for commit
-/ - iterate on AI review of the docs/dev/spec/worksum-module-spec.md to improve the design.
+x - iterate on AI review of the docs/dev/spec/worksum-module-spec.md to improve the design.
+/ - iterate to test and refine wsum.py
 
 # workflow notes:
 
@@ -50,3 +53,11 @@ workHeadline: The new wsum-module-spec.
 ---
 
 The new `wsum-module-spec.md` details the redesign of the `worksum` command into a reusable Python module and `bin/wsum.py` command. This re-work introduces a typed `WorkSummaryResult` object for module output, enhancing reusability and integration with other tools like `dtask`. A flexible dual-source input model for diff generation is established, allowing summaries from either internally generated git diffs (with options for staged-only or full changes) or directly provided diff text. The specification also outlines consistent output formatting and parameter alignment with `dtask` for a cohesive developer workflow, along with an improved API shape and clear testability requirements.
+
+## 2026-05-14 15:26
+
+---
+workHeadline: This update introduces two new scripts, `bin/summary-message` and `bin/worksum`, alongside a refactored `bin/wsum`
+---
+
+This update introduces two new scripts, `bin/summary-message` and `bin/worksum`, alongside a refactored `bin/wsum.py` module, all designed to summarize git changes using the Gemini API or CLI. The `summary-message` script provides a direct Python-based summarization of `git diff HEAD`, while `worksum` integrates with the Gemini CLI to append summaries to `docs/dev/work/do.md`, managing the markdown structure. The more robust `wsum.py` module unifies and expands these capabilities, offering a structured `WorkSummaryResult`, flexible diff collection, and a command-line interface with enhanced argument validation. Additionally, the `docs/dev/work/do.md` file now includes entries documenting updates to `dtask` workflow documentation and the detailed specification for the new `wsum` module.
