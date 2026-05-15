@@ -1,6 +1,5 @@
 ---
-actualCommitMessage: Refactor wsum.py to use Gemini CLI for terse, information-dense git commit headlines, update wsum-module-spec.md
-  which file changes (staged, unstaged, or untracked) are included.
+actualCommitMessage: tweak the --final usage with --all and --update
 description: A list of small, focused tasks guiding the current commit with detailed
   microsected activities.
 intendedCommitMessage: implement wksum python module
@@ -28,11 +27,12 @@ x - make --all aligned changes to spec make '### wsum option alignment with dtas
 x - update the docs/dev/spec/wsum-module-spec.md for an enhancement to the wsum.py 'workHeadline:' attribute to be terse and information packed for a git commit message.
 it should still be easily under 130 characters.  
 
+x - add dtask commit flag --update , -u
+    x - document a use case refining a current story or task for implementation, a new spec or story is created
+    x - build a spec from the use case
+    x - implement the spec. 
 
-/ - add dtask commit flag --update , -u
-    / - document a use case refining a current story or task for implementation, a new spec or story is created
-    d - build a spec from the use case
-
+x - tweak the --final usage with --all and --update
 
 # workflow notes:
 

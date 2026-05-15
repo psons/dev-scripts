@@ -28,3 +28,8 @@ If the do.md file is already committed, then --newdo has no affect. There is no 
 ## dtask init with --dirty but not --newdo and do.md is dirty
 The user has not used --newdo to indicate that the existing do.md file is to be overwritten, so dtask should exit with an error.   In this case, if the do.md is top be preserved, then a dtask commit makes more sense
 
+## dtask commit flag --update
+Frequently in refining a current story or task for implementation, a new spec or story is created.   
+That new spec or story should remain un tracked while the current work is being implemented.  The --update option to `git add` will avoid pulling tracked files into the staged changes, and will match the wsum file scope with the --update flag. 
+
+

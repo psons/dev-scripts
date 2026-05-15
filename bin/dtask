@@ -158,8 +158,8 @@ Subcommands:
                 --update, -u            Stage tracked unstaged changes only
                                                 (equivalent to running git add --update).
                 --final                 Signal task complete. Performs two commits:
-                                                1) commit do.md with staged changes (or all changes if
-                                                    --all/--update is used) with actualCommitMessage;
+                                                1) commit do.md with staged changes (or additional changes 
+                                                    included when --all or --update is used) with actualCommitMessage;
                                                 2) remove do.md and commit with message
                                                     'removed do.md for finalized tasks'.
 """)
