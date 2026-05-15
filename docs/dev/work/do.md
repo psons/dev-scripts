@@ -1,16 +1,12 @@
 ---
-actualCommitMessage: Introduces two new scripts, `bin/summary-message` and `bin/worksum`,
-  alongside a refactored `bin/wsum`
+actualCommitMessage: Refactor wsum.py to use Gemini CLI for terse, information-dense git commit headlines, update wsum-module-spec.md
+  which file changes (staged, unstaged, or untracked) are included.
 description: A list of small, focused tasks guiding the current commit with detailed
   microsected activities.
 intendedCommitMessage: implement wksum python module
 priorCommit: b92bdb388cb4bc7e83770617cf3e7a07c4a16a08
 workBranch: worksum-module
 ---
-
-
-
-
 
 # do.md - A list of a few small tasks that guide the current commit.
 
@@ -28,7 +24,11 @@ x - decide if wsum --all should include untracked files.
 x - make --all aligned changes to spec make '### wsum option alignment with dtask'
      x - wsum --all include untracked files.
      d - dtask support --update, -u. (See separate task in TODO.md)
-       
+
+/ - update the docs/dev/spec/wsum-module-spec.md for an enhancement to the wsum.py 'workHeadline:' attribute to be terse and information packed for a git commit message.
+it should still be easily under 130 characters.  
+
+
 d - add dtask commit flag --update , -u
     d - document a 
     use case:  
@@ -88,3 +88,11 @@ workHeadline: This update significantly enhances the `wsum` command by introduci
 ---
 
 This update significantly enhances the `wsum` command by introducing new `--all` and `--update` flags, allowing users to precisely control which file changes (staged, unstaged, or untracked) are included in the work summary. The `bin/wsum.py` script was refactored to support these new options, including logic to collect diffs for untracked files. Comprehensive documentation for `wsum`'s features and usage has been added to `bin/README.md` and `docs/dev/spec/wsum-module-spec.md`, ensuring alignment with `dtask`'s commit semantics. Minor documentation corrections and future task items related to `dtask` integration were also updated.
+
+## 2026-05-15 10:03
+
+---
+workHeadline: Refactor wsum.py to use Gemini CLI for terse, information-dense git commit headlines, update wsum-module-spec.md
+---
+
+The `headline_from_summary` function in `bin/wsum.py` has been refactored to leverage the Gemini CLI for generating terse, information-dense headlines suitable for git commit messages, replacing the previous string manipulation logic. This enhancement now directly calls the `gemini` command-line tool, allowing for more intelligent and contextually relevant headline generation based on a given work summary, and includes error handling for cases where the Gemini CLI is not found or fails. Additionally, the `wsum-module-spec.md` documentation has been updated to reflect this change, specifically noting that the `headline` should be terse, information-dense, and suitable for git commit messages, with a length not exceeding 130 characters. This revision improves the quality and conciseness of automatically generated headlines for work summaries.

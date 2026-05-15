@@ -10,7 +10,7 @@ A function in the module should return a typed result object rather than a posit
 
 Required result fields:
     1 - timestamp: a timestamp as shown in the markdown example below.
-    2 - headline: a one-line work headline used in workHeadline front-matter.
+    2 - headline: a one-line work headline used in workHeadline front-matter. This must be terse, information-dense, and suitable for use as a git commit message. It should not be much longer than 130 characters. (revised 2026-05-15 - 09:46)
     3 - summary: a 3 to 6 sentence summary of git diff results.
     4 - markdown: formatted markdown text matching command output.
 
@@ -149,6 +149,9 @@ Action completed in this spec: a core function contract and CLI-wrapper pattern 
 Split implementation into pure functions for formatting and prompt assembly, plus adapter functions for git and Gemini execution. Then add tests for: staged-only default behavior, base ref comparisons, stdin-fed diffs, empty diff handling, and markdown output format compatibility with `do.md`.
 Action completed in this spec: testability architecture and required test coverage are now specified.
 
+# Past revisions
+Update the wsum command as described in bullet items and sections marked (revised 2026-05-15) and make updates to the help-text also.
 
 # Revision prompt
-Update the wsum command as described in bulle titems and sections marked (revised 2026-05-15) and make updates to the help-text also.
+Refactor and implement the headline_from_summary function to use gemini again to generate a shorter summary as described in bullet items and sections marked (revised 2026-05-15 - 09:46).
+

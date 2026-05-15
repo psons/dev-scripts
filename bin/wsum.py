@@ -68,28 +68,47 @@ def build_summary_prompt(max_sentences: int = 6) -> str:
     return SUMMARY_PROMPT_TEMPLATE.replace("3-6", f"3-{max_sentences}")
 
 
-def headline_from_summary(summary: str, max_len: int = 120) -> str:
-    """Create a one-line headline from summary text."""
-    flat = " ".join(summary.strip().split())
-    if not flat:
-        return "No material changes detected"
+def headline_from_summary(summary: str, max_len: int = 130, model: str | None = None) -> str:
+    """Use Gemini to generate a terse, information-dense headline suitable for a git commit message."""
+    prompt = (
+        "You are an expert developer. Write a single-line, information-dense summary suitable as a git commit message, "
+        f"no more than {max_len} characters, for the following work summary. Do not use quotes or trailing punctuation. "
+        "Be specific and concise.\n\nSUMMARY:\n" + summary.strip()
+    )
+    cmd = ["gemini", "-p", prompt]
+    if model:
+        cmd.extend(["-m", model])
 
-    sentence_end = re.search(r"[.!?]", flat)
-    if sentence_end:
-        candidate = flat[: sentence_end.start()].strip()
-    else:
-        candidate = flat
+    env = os.environ.copy()
+    if not env.get("GEMINI_API_KEY") and env.get("GOOGLE_API_KEY"):
+        env["GEMINI_API_KEY"] = env["GOOGLE_API_KEY"]
 
-    if not candidate:
-        candidate = flat
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+    except FileNotFoundError as exc:
+        raise WsumError(
+            "Error: gemini CLI not found in PATH. Install Gemini CLI first."
+        ) from exc
 
-    if len(candidate) <= max_len:
-        return candidate
+    if result.returncode != 0:
+        stderr = result.stderr.strip()
+        if stderr:
+            raise WsumError(f"Error: gemini CLI failed: {stderr}")
+        raise WsumError("Error: gemini CLI failed to generate headline.")
 
-    truncated = candidate[: max_len - 1].rstrip()
-    if " " in truncated:
-        truncated = truncated.rsplit(" ", 1)[0]
-    return f"{truncated}."
+    headline = result.stdout.strip().replace('\n', ' ')
+    # Remove quotes and trailing punctuation, enforce max_len
+    headline = re.sub(r'^"|"$', '', headline).strip()
+    if len(headline) > max_len:
+        headline = headline[:max_len].rstrip()
+        if " " in headline:
+            headline = headline.rsplit(" ", 1)[0]
+    return headline
 
 
 def render_markdown(timestamp: str, headline: str, summary: str) -> str:
@@ -278,7 +297,7 @@ def summarize_work(
 
     summary = run_gemini(diff_text, model=model, max_sentences=max_sentences)
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    headline = headline_from_summary(summary)
+    headline = headline_from_summary(summary, model=model)
     markdown = render_markdown(timestamp, headline, summary)
 
     return WorkSummaryResult(
