@@ -2,7 +2,7 @@
 description: Prioritized development tasks and improvements pending implementation for the TaskForm application.
 ---
 # possible bug from previous work o
-d - fix dtask commit --final bug:
+a - fix dtask commit --final bug:
     - this may have been dealt with based on previous tasks.
  the commit after removing do.md failed with errors:
     fatal: pathspec 'dev-scripts/docs/dev/work/do.md' did not match any files
@@ -21,6 +21,7 @@ d - improve the headings in do.md:
 d - implement [docs/dev/spec/wsum-module-spec.md](../spec/worksum-module-spec.md) 
 
 d - implement dtask enhancements to work with wsum module
+ - if wsum errors, try to communicate the wsum error, and suggest the user provide a manual summary ad commit message 
 
 d - dtask should always save and commit do.md
     use case:  

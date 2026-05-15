@@ -10,23 +10,19 @@ A basic do.md file has text similar to:
 
 ```markdown
 ---
+title: do.md
 description: A list of small, focused tasks guiding the current commit with detailed microsected activities.
 workBranch: <name_of_a_branch_to_commit_work_on>
 priorCommit: <latest_git_commit_hash_>
 intendedCommitMessage: <description_of_planned_work>
 actualCommitMessage: <description_of_completed_work>
 ---
-
-
-# do.md - A list of a few small tasks that guide the current commit.
-
-## Microsected task activities
 <task_text>
 ```
 
 The 'description:' is constant to for do.md to help AO understand what is in the do.md file, and may be linked from other project mark down files to help agents discover it.
 
-The 'intendedCommitMessage:' is a message that the engineer belives when starting work, will be a sensible message when committing the work.   
+The 'intendedCommitMessage:' is a message that the engineer believes when starting work, will be a sensible message when committing the work.   
 
 The 'actualCommitMessage:' is the commit message to be used when the work is finally committed.  Since definition and understanding of a task often changes during work, the actualCommitMessages is likely to be different than the intendedCommitMessage.   The difference between the two can represent learning worth mention in the sprint retrospective.
 
@@ -107,8 +103,8 @@ helptext for the --final option should be as follows:
  
 ```
 --final                 Signal task complete. Performs two commits:
-                                                1) commit do.md with staged changes (or all changes if
-                                                    --all is used) with actualCommitMessage;
+                                                1) commit do.md with staged changes (or all/tracked changes with
+                                                    --all/--update respectively) with actualCommitMessage;
                                                 2) remove do.md and commit with message
                                                     'removed do.md for finalized tasks'.
 ```

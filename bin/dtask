@@ -17,11 +17,10 @@ DO_MD_RELATIVE = os.path.join("docs", "dev", "work", "do.md")
 DO_MD_DESCRIPTION = (
     "A list of small, focused tasks guiding the current commit with detailed microsected activities."
 )
+DO_MD_TITLE = ("do.md")
 
 DO_MD_BODY = """
-# do.md - A list of a few small tasks that guide the current commit.
 
-## Microsected task activities
 """
 
 FINAL_DO_MD_REMOVAL_COMMIT_MESSAGE = "removed do.md for finalized tasks"
@@ -225,6 +224,7 @@ def cmd_init(args):
     current_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else ""
 
     frontmatter = {
+        "title": DO_MD_TITLE,
         "description": DO_MD_DESCRIPTION,
         "workBranch": args.workbranch if args.workbranch else current_branch,
         "priorCommit": prior_commit,
@@ -300,7 +300,7 @@ def cmd_commit(args):
             print("Error: git add --update failed.", file=sys.stderr)
             sys.exit(1)
 
-    # When finalizing without --all, ensure do.md changes are not lost by
+    # When finalizing without --all or --update, ensure do.md changes are not lost by
     # staging do.md into the first commit before it gets removed.
     do_md_dirty = is_file_modified(repo_root, do_md_path)
     if args.final and not args.all and do_md_dirty:
