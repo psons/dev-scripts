@@ -95,7 +95,7 @@ def headline_from_summary(summary: str, max_len: int = 120) -> str:
 def render_markdown(timestamp: str, headline: str, summary: str) -> str:
     """Render a do.md-compatible work summary markdown block."""
     return (
-        "# work summary\n\n"
+        "\n"
         f"## {timestamp}\n\n"
         "---\n"
         f"workHeadline: {headline}\n"
@@ -139,6 +139,7 @@ def collect_diff(
     staged_only: bool = True,
     base_ref: str = "HEAD",
     include_unstaged: bool = False,
+    include_untracked: bool = False,
     file_paths: list[str] | None = None,
     extra_diff_args: list[str] | None = None,
 ) -> str:
@@ -163,7 +164,52 @@ def collect_diff(
     if result.returncode != 0:
         stderr = result.stderr.strip() or "unknown git diff error"
         raise WsumError(f"Error running git diff: {stderr}")
-    return result.stdout.strip()
+
+    tracked_diff = result.stdout.strip()
+
+    if not include_untracked:
+        return tracked_diff
+
+    untracked_files_cmd = ["git", "ls-files", "--others", "--exclude-standard"]
+    if file_paths:
+        untracked_files_cmd.extend(["--", *file_paths])
+
+    untracked_result = subprocess.run(
+        untracked_files_cmd,
+        capture_output=True,
+        text=True,
+        cwd=repo_root,
+    )
+    if untracked_result.returncode != 0:
+        stderr = untracked_result.stderr.strip() or "unknown git ls-files error"
+        raise WsumError(f"Error listing untracked files: {stderr}")
+
+    untracked_files = [line.strip() for line in untracked_result.stdout.splitlines() if line.strip()]
+    if not untracked_files:
+        return tracked_diff
+
+    untracked_diffs: list[str] = []
+    for rel_path in untracked_files:
+        file_diff_cmd = ["git", "diff", "--no-index", "--", "/dev/null", rel_path]
+        file_diff_result = subprocess.run(
+            file_diff_cmd,
+            capture_output=True,
+            text=True,
+            cwd=repo_root,
+        )
+        # For --no-index diff, return code 1 indicates differences and is expected.
+        if file_diff_result.returncode not in (0, 1):
+            stderr = file_diff_result.stderr.strip() or "unknown no-index diff error"
+            raise WsumError(f"Error diffing untracked file '{rel_path}': {stderr}")
+        if file_diff_result.stdout.strip():
+            untracked_diffs.append(file_diff_result.stdout.strip())
+
+    if not untracked_diffs:
+        return tracked_diff
+
+    if tracked_diff:
+        return f"{tracked_diff}\n\n" + "\n\n".join(untracked_diffs)
+    return "\n\n".join(untracked_diffs)
 
 
 def run_gemini(diff_text: str, *, model: str | None = None, max_sentences: int = 6) -> str:
@@ -208,6 +254,7 @@ def summarize_work(
     staged_only: bool = True,
     base_ref: str = "HEAD",
     include_unstaged: bool = False,
+    include_untracked: bool = False,
     file_paths: list[str] | None = None,
     extra_diff_args: list[str] | None = None,
     model: str | None = None,
@@ -221,6 +268,7 @@ def summarize_work(
             staged_only=staged_only,
             base_ref=base_ref,
             include_unstaged=include_unstaged,
+            include_untracked=include_untracked,
             file_paths=file_paths,
             extra_diff_args=extra_diff_args,
         )
@@ -256,10 +304,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         prog="wsum",
         description="Summarize git diff changes into work-summary markdown",
     )
-    parser.add_argument(
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument(
         "--all",
+        "-a",
         action="store_true",
-        help="Include staged and unstaged changes (dtask --all semantics)",
+        help=(
+            "Include staged, tracked unstaged, and untracked changes "
+            "(dtask --all semantics)"
+        ),
+    )
+    mode_group.add_argument(
+        "--update",
+        "-u",
+        action="store_true",
+        help="Include staged and tracked unstaged changes (matches git add -u semantics)",
     )
     parser.add_argument(
         "--base",
@@ -304,11 +363,14 @@ def main(argv: list[str] | None = None) -> int:
 
     stdin_diff = _read_stdin_if_available(force_stdin=args.stdin)
     try:
+        include_unstaged = args.all or args.update
+        include_untracked = args.all
         result = summarize_work(
             diff_text=stdin_diff,
-            staged_only=not args.all,
+            staged_only=not include_unstaged,
             base_ref=args.base,
-            include_unstaged=args.all,
+            include_unstaged=include_unstaged,
+            include_untracked=include_untracked,
             file_paths=args.file_paths,
             extra_diff_args=args.extra_diff_arg,
             model=args.model,

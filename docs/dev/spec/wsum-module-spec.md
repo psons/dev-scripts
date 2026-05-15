@@ -1,4 +1,3 @@
-
 Re work the worksum command as a python module and command as bin/wsum.py
 The worksum program was originally implemented from docs/dev/spec/worksum-spec.md.
 
@@ -44,15 +43,30 @@ Output markdown formatted like the following example.  The data is the first 3 e
 
 Command behavior requirements:
 - Default invocation summarizes staged changes versus HEAD.
-- A command option aligned with dtask --all must include unstaged changes.
+- A command option aligned with dtask --all must include unstaged changes to tracked files and untracked files. (revised 2026-05-15)
 - An optional base ref argument may be provided to compare against a branch, tag, or commit.
 - Command should support stdin diff input; when stdin is provided, stdin takes precedence over internal git diff generation.
 - Support explicit git diff options; do not implement unrestricted pass-through of arbitrary git diff arguments.
 - If an escape hatch is provided, validate and document allowed values for extra_diff_args.
 
-'''markdown
-# work summary
+### wsum option alignment with dtask (revised 2026-05-15)
+#### --all, -a
+- The file inclusion of --all should be the same for dtask init is for git add.  
+- wsum  --all should also align with git add and dtask init to allow user inference of how wsum works to be easy based on how dtask works.
+- specifically, --all includes 
+    - staged, 
+    - tracked with unstaged changes.
+    - untracked
 
+#### --update, -u
+- wsum should support a --update (or -u) option. The same option will be added to dtask. 
+- --update matches the same option on git add.
+- specifically, --all includes 
+    - staged
+    - tracked with unstaged changes.
+
+
+'''markdown
 ## 2026-05-11 19:14
 
 ---
@@ -136,4 +150,5 @@ Split implementation into pure functions for formatting and prompt assembly, plu
 Action completed in this spec: testability architecture and required test coverage are now specified.
 
 
-
+# Revision prompt
+Update the wsum command as described in bulle titems and sections marked (revised 2026-05-15) and make updates to the help-text also.

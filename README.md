@@ -14,6 +14,7 @@ This repository provides utilities for:
 ## Contents
 
 - [bin/](bin/README.md) - Executable scripts and utilities
+- Wsum docs: see [bin/README.md](bin/README.md#wsum) and [docs/dev/spec/wsum-module-spec.md](docs/dev/spec/wsum-module-spec.md)
 - [docs/dev/spec/](docs/dev/spec/) - Specifications and documentation for the tools
 - [enable_env_local.sh](enable_env_local.sh) - Shell script to enable .env.local support
 

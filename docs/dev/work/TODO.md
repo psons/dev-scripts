@@ -11,21 +11,20 @@ d - fix dtask commit --final bug:
 
 # dtask commit enhancements story.
 
-d - implement [docs/dev/spec/worksum-module-spec.md](../spec/worksum-module-spec.md) 
-message - Gemini command line and python api integration. First prototype of worksum command and summary-message variant
-
-d - implement dtask enhancements to work with worksum module
-
 d - improve the headings in do.md: 
  - eliminate the '## Microsected task activities' heading.
  - eliminate the heading: '# do.md - A list of a few small tasks that guide the current commit.'
- - add a frontmatter attribute line: 'title: do.md'
+ - add a front-matter attribute line: 'title: do.md'
 
 
 # dtask commit summary enhancements story.
-d - implement [docs/dev/spec/worksum-module-spec.md](../spec/worksum-module-spec.md) 
+d - implement [docs/dev/spec/wsum-module-spec.md](../spec/worksum-module-spec.md) 
 
-d - implement dtask enhancements to work with worksum module
+d - implement dtask enhancements to work with wsum module
+
+d - dtask should always save and commit do.md
+    use case:  
+    The do.md file now grows with the work summary for intermediate commits on a feature.  If te new summary is part of a later commit, the summary from the change to do.md pollutes what actually changed in the subsequent commit.  It is better to includes the do.md work summary updates in te same commit they describe.
 
 
 # branch strategy enhancements story.

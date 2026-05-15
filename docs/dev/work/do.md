@@ -15,9 +15,28 @@ workBranch: worksum-module
 # do.md - A list of a few small tasks that guide the current commit.
 
 ## Microsected task activities
-x - write spec for behaviors - dtask: use Worksum for commit
-x - iterate on AI review of the docs/dev/spec/worksum-module-spec.md to improve the design.
-/ - iterate to test and refine wsum.py
+x - write spec for behaviors - dtask: use wsum for commit
+x - iterate on AI review of the docs/dev/spec/wsum-module-spec.md to improve the design.
+x - iterate to test and refine wsum.py
+
+x - decide if wsum --all should include untracked files.
+    - see the web gemini chat: Git Diff Staged and Unstaged Changes
+    - see https://docs.google.com/document/d/12fycNpgNPzQccxz0oSENiXInK0gmWltH960fjp2jprQ/edit?usp=sharing 
+    - A warning that  there are untracked files present is not enough.
+    x - update section '# wsum option alignment with dtask ' in the wsum spec.
+
+x - make --all aligned changes to spec make '### wsum option alignment with dtask'
+     x - wsum --all include untracked files.
+     d - dtask support --update, -u. (See separate task in TODO.md)
+       
+d - add dtask commit flag --update , -u
+    d - document a 
+    use case:  
+        # dtask commit flag --update
+        Frequently in refining a current story or task for implementation, a new spec or story is created.   
+        That new spec or story should remain un tracked while the current work is being implemented.  The --update option to `git add` will avoid pulling tracked files into the staged changes, and will match the wsum file scope without the --all flag. 
+    d - build a spec from the use case
+
 
 # workflow notes:
 
@@ -61,3 +80,11 @@ workHeadline: This update introduces two new scripts, `bin/summary-message` and 
 ---
 
 This update introduces two new scripts, `bin/summary-message` and `bin/worksum`, alongside a refactored `bin/wsum.py` module, all designed to summarize git changes using the Gemini API or CLI. The `summary-message` script provides a direct Python-based summarization of `git diff HEAD`, while `worksum` integrates with the Gemini CLI to append summaries to `docs/dev/work/do.md`, managing the markdown structure. The more robust `wsum.py` module unifies and expands these capabilities, offering a structured `WorkSummaryResult`, flexible diff collection, and a command-line interface with enhanced argument validation. Additionally, the `docs/dev/work/do.md` file now includes entries documenting updates to `dtask` workflow documentation and the detailed specification for the new `wsum` module.
+
+## 2026-05-15 09:11
+
+---
+workHeadline: This update significantly enhances the `wsum` command by introducing new `--all` and `--update` flags, allowing users.
+---
+
+This update significantly enhances the `wsum` command by introducing new `--all` and `--update` flags, allowing users to precisely control which file changes (staged, unstaged, or untracked) are included in the work summary. The `bin/wsum.py` script was refactored to support these new options, including logic to collect diffs for untracked files. Comprehensive documentation for `wsum`'s features and usage has been added to `bin/README.md` and `docs/dev/spec/wsum-module-spec.md`, ensuring alignment with `dtask`'s commit semantics. Minor documentation corrections and future task items related to `dtask` integration were also updated.

@@ -71,6 +71,37 @@ dtask commit [-a [message]] [--all] [--final]
 
 See [../docs/dev/spec/dtask-spec.md](../docs/dev/spec/dtask-spec.md) for full documentation.
 
+### wsum
+
+A Python module and command for summarizing git diffs into markdown work-summary output.
+
+**Features:**
+- Defaults to staged-only diff against `HEAD`
+- `--all, -a` includes staged, tracked unstaged, and untracked files
+- `--update, -u` includes staged and tracked unstaged files (aligned with `git add -u` semantics)
+- Supports `--base <ref>` to compare against a branch, tag, or commit
+- Supports stdin diff input (stdin takes precedence over internal diff generation)
+- Produces markdown compatible with the `# work summary` section format in `docs/dev/work/do.md`
+
+**Usage:**
+```bash
+wsum [--all | --update] [--base <ref>] [--model <model>] [--max-sentences <n>]
+
+# default: staged-only vs HEAD
+wsum
+
+# include staged + tracked unstaged + untracked
+wsum --all
+
+# include staged + tracked unstaged only
+wsum --update
+
+# summarize a custom diff from stdin
+git diff main...HEAD | wsum
+```
+
+See [../docs/dev/spec/wsum-module-spec.md](../docs/dev/spec/wsum-module-spec.md) for full documentation.
+
 
 ## Additional Content
 
