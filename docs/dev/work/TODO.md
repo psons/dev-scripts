@@ -37,3 +37,6 @@ d - build out tool specs to support ../spec/usecases/dtask-branch-enhancements-1
  - [proposed-branching-strategy.md](../spec/usecases/proposed-branching-strategy.md)
  - based on docs/dev/spec/usecases/branch-strategy-request.md
  
+# Archive worksum story
+d - remove the summary-message command and the worksum command, and their specs.
+ - use dtask and a do.md file to explicitly mention them in a commit message for the last commit to include them.

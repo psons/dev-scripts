@@ -146,7 +146,7 @@ Subcommands:
 
   commit  Commit staged changes on workBranch using the
              actualCommitMessage from do.md. Unstaged changes are only
-             included when --all is used.
+             included when --all or --update is used.
 
              Options:
                 --actual, -a [message]  Update actualCommitMessage before committing.
@@ -155,9 +155,11 @@ Subcommands:
                                                 (signals task proceeded as expected).
                 --all                   Stage and include unstaged changes too
                                                 (equivalent to running git add -A first).
+                --update, -u            Stage tracked unstaged changes only
+                                                (equivalent to running git add --update).
                 --final                 Signal task complete. Performs two commits:
                                                 1) commit do.md with staged changes (or all changes if
-                                                    --all is used) with actualCommitMessage;
+                                                    --all/--update is used) with actualCommitMessage;
                                                 2) remove do.md and commit with message
                                                     'removed do.md for finalized tasks'.
 """)
@@ -286,11 +288,16 @@ def cmd_commit(args):
         sys.exit(1)
 
     # By default, only already-staged changes are committed.
-    # --all opts into staging unstaged changes before commit.
+    # --all stages tracked+untracked changes; --update stages tracked changes only.
     if args.all:
         add_all = subprocess.run(["git", "add", "-A"], cwd=repo_root)
         if add_all.returncode != 0:
             print("Error: git add -A failed.", file=sys.stderr)
+            sys.exit(1)
+    elif args.update:
+        add_update = subprocess.run(["git", "add", "--update"], cwd=repo_root)
+        if add_update.returncode != 0:
+            print("Error: git add --update failed.", file=sys.stderr)
             sys.exit(1)
 
     # When finalizing without --all, ensure do.md changes are not lost by
@@ -305,7 +312,7 @@ def cmd_commit(args):
     has_staged = has_staged_changes(repo_root)
     if not has_staged and not args.final:
         print(
-            "Error: no staged changes to commit. Stage files first or use --all.",
+            "Error: no staged changes to commit. Stage files first or use --all/--update.",
             file=sys.stderr
         )
         sys.exit(1)
@@ -369,7 +376,9 @@ def main():
         parser = argparse.ArgumentParser(prog="dtask commit", add_help=True)
         parser.add_argument("--actual", "-a", dest="actual", metavar="MESSAGE",
                             nargs="?", const="__COPY_INTENDED__", default=None)
-        parser.add_argument("--all", action="store_true", default=False)
+        mode_group = parser.add_mutually_exclusive_group()
+        mode_group.add_argument("--all", action="store_true", default=False)
+        mode_group.add_argument("--update", "-u", action="store_true", default=False)
         parser.add_argument("--final", action="store_true", default=False)
         args = parser.parse_args(sys.argv[2:])
         cmd_commit(args)

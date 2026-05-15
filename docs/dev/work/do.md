@@ -25,16 +25,12 @@ x - make --all aligned changes to spec make '### wsum option alignment with dtas
      x - wsum --all include untracked files.
      d - dtask support --update, -u. (See separate task in TODO.md)
 
-/ - update the docs/dev/spec/wsum-module-spec.md for an enhancement to the wsum.py 'workHeadline:' attribute to be terse and information packed for a git commit message.
+x - update the docs/dev/spec/wsum-module-spec.md for an enhancement to the wsum.py 'workHeadline:' attribute to be terse and information packed for a git commit message.
 it should still be easily under 130 characters.  
 
 
-d - add dtask commit flag --update , -u
-    d - document a 
-    use case:  
-        # dtask commit flag --update
-        Frequently in refining a current story or task for implementation, a new spec or story is created.   
-        That new spec or story should remain un tracked while the current work is being implemented.  The --update option to `git add` will avoid pulling tracked files into the staged changes, and will match the wsum file scope without the --all flag. 
+/ - add dtask commit flag --update , -u
+    / - document a use case refining a current story or task for implementation, a new spec or story is created
     d - build a spec from the use case
 
 
@@ -96,3 +92,11 @@ workHeadline: Refactor wsum.py to use Gemini CLI for terse, information-dense gi
 ---
 
 The `headline_from_summary` function in `bin/wsum.py` has been refactored to leverage the Gemini CLI for generating terse, information-dense headlines suitable for git commit messages, replacing the previous string manipulation logic. This enhancement now directly calls the `gemini` command-line tool, allowing for more intelligent and contextually relevant headline generation based on a given work summary, and includes error handling for cases where the Gemini CLI is not found or fails. Additionally, the `wsum-module-spec.md` documentation has been updated to reflect this change, specifically noting that the `headline` should be terse, information-dense, and suitable for git commit messages, with a length not exceeding 130 characters. This revision improves the quality and conciseness of automatically generated headlines for work summaries.
+
+## 2026-05-15 10:59
+
+---
+workHeadline: dtask commit: Add `--update` option for staging only tracked files; refactor `wsum` to symlink & update docs
+---
+
+The `dtask commit` command now includes a new `--update` option, allowing users to stage only tracked files and their modifications before committing, aligning with `git add --update` behavior. This enhancement prevents untracked files from being inadvertently included in commits, improving workflow for task refinement. The `bin/dtask` script has been updated to implement this functionality, making the `--all` and `--update` options mutually exclusive. Additionally, the `bin/wsum` script has been changed to a symlink pointing to `wsum.py`, and a new task has been added to `docs/dev/work/TODO.md` to archive the `summary-message` and `worksum` commands. The documentation for `dtask-spec.md` has been expanded to detail the `--update` option's purpose, behavior, and interactions.

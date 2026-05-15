@@ -67,6 +67,33 @@ In this story, the leader `d - ` represents a task to do.
 
 d - change `dtask commit` behavior to by default only commit staged files and only include unstaged files if a --all switch is provided.
 
+# dtask commit flag --update
+Add a `--update` option to `dtask commit` to support committing tracked work while intentionally leaving untracked files out of scope.
+
+## purpose
+When refining a task, engineers often create new notes/spec files that should remain untracked until a later commit. `dtask commit --update` should support this workflow by staging only tracked file updates.
+
+## behavior
+- `dtask commit --update` must run the equivalent of `git add --update` before commit.
+- The resulting commit scope includes:
+    - already staged files
+    - tracked files with unstaged modifications
+    - tracked files deleted from the working tree
+- The resulting commit scope excludes:
+    - untracked files
+- Commit message behavior remains unchanged: use `actualCommitMessage` from `docs/dev/work/do.md`, with existing `--actual` behavior preserved.
+
+## option interactions
+- `--update` and `--all` are mutually exclusive.
+- `dtask commit` with neither `--all` nor `--update` keeps current default behavior (commit staged files only).
+- `dtask commit --final --update` should behave like `--final` but with first-commit staging scope equal to `--update` semantics, except for the existing rule that dirty `do.md` must be included in the first commit.
+
+## alignment requirement
+- `dtask commit --update` file-inclusion scope must align with `wsum --update` summarization scope.
+
+## help text update
+Commit command usage/help should include `--update, -u` and describe it as: stage tracked updates only (same scope as `git add --update`, excluding untracked files).
+
 # do.md dirty with --final but without --all
 if do.md has been modified since the last commit, and the --final option has been specified, then the do.md final must be added to the staged files to be part of the commit.
 As previously specified, the do.md file must be removed if the --final option is given, and an additional commit made with the message ''removed do.md for finalized tasks''
