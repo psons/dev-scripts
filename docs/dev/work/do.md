@@ -1,5 +1,5 @@
 ---
-actualCommitMessage: tweak the --final usage with --all and --update
+actualCommitMessage: create wsum.py to genarate change summaries and commit messages; harmonize options with dtask.
 description: A list of small, focused tasks guiding the current commit with detailed
   microsected activities.
 intendedCommitMessage: implement wksum python module
@@ -100,3 +100,11 @@ workHeadline: dtask commit: Add `--update` option for staging only tracked files
 ---
 
 The `dtask commit` command now includes a new `--update` option, allowing users to stage only tracked files and their modifications before committing, aligning with `git add --update` behavior. This enhancement prevents untracked files from being inadvertently included in commits, improving workflow for task refinement. The `bin/dtask` script has been updated to implement this functionality, making the `--all` and `--update` options mutually exclusive. Additionally, the `bin/wsum` script has been changed to a symlink pointing to `wsum.py`, and a new task has been added to `docs/dev/work/TODO.md` to archive the `summary-message` and `worksum` commands. The documentation for `dtask-spec.md` has been expanded to detail the `--update` option's purpose, behavior, and interactions.
+
+## 2026-05-15 11:26
+
+---
+workHeadline: tweak the --final usage with --all and --update; update `do.md` to mark related tasks complete
+---
+tweak the --final usage with --all and --update
+The `dtask` script's help message has been refined to clarify how the `--final` command interacts with `--all` and `--update` flags when committing `do.md`, ensuring a more precise description of which changes are included. Concurrently, the `do.md` task list has been updated, marking the implementation of the `dtask --update` flag and the related refinement of `--final` usage as complete. This update improves the documentation and reflects the completion of tasks focused on enhancing commit flag functionality.
