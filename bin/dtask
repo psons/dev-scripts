@@ -129,7 +129,8 @@ Subcommands:
           Sets priorCommit to the current HEAD commit hash.
 
           Options:
-            --workbranch, -b <branch>   Create and check out a new git branch.
+                        --workbranch, -b <branch>   Required. Create and check out a new
+                                                                                git branch.
             --intended,   -i <message>  Set the intendedCommitMessage.
             --actual,     -a <message>  Set the actualCommitMessage.
             --dirty                     Allow init even if the working tree is not
@@ -165,6 +166,10 @@ Subcommands:
 
 
 def cmd_init(args):
+    if not args.workbranch:
+        print("Error: init requires a branch. Use --workbranch/-b.", file=sys.stderr)
+        sys.exit(1)
+
     repo_root = find_repo_root()
     do_md_path = get_do_md_path(repo_root)
     do_md_exists = os.path.isfile(do_md_path)

@@ -32,4 +32,7 @@ The user has not used --newdo to indicate that the existing do.md file is to be 
 Frequently in refining a current story or task for implementation, a new spec or story is created.   
 That new spec or story should remain un tracked while the current work is being implemented.  The --update option to `git add` will avoid pulling tracked files into the staged changes, and will match the wsum file scope with the --update flag. 
 
+## dtask init without --branch (or -b) is an error.
+A mission oriented purpose of dtask is to help the user with good branch management.   
+
 
