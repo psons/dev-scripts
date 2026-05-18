@@ -50,11 +50,22 @@ d - implement dtask enhancements to integrate with the work with wsum module.
         - if not successful in 45 seconds, it should be killed and considered in error.
  / - implement the updated specification section to docs/dev/spec/dtask-spec.md called 'dtask using the wsum.py module'
 
-d - dtask should always save and commit do.md
+x - dtask should always save and commit do.md
     use case:  
     The do.md file now grows with the work summary for intermediate commits on a feature.  If te new summary is part of a later commit, the summary from the change to do.md pollutes what actually changed in the subsequent commit.  It is better to includes the do.md work summary updates in te same commit they describe.
 
 # Work Summary
+
+## 2026-05-18 13:58
+
+---
+workHeadline: dtask: Add --wsum for auto work summary in do.md, refine commit message logic, and auto-stage do.md changes
+---
+
+This update to the `dtask` script introduces a new `--wsum` option for the `commit` subcommand, enabling automatic generation and insertion of work summaries into `do.md` using the `wsum` module, complete with a 45-second timeout. The commit message logic has been refined to prioritize `workHeadline` for standard commits and `actualCommitMessage` for `--final` commits. Critically, `dtask` now ensures that any modifications it makes to `do.md`, such as adding work summaries or updating commit messages, are automatically staged for inclusion in the current commit, resolving potential issues with unstaged `do.md` changes.
+
+
+
 ## 2026-05-18 13:10
 
 ---
@@ -81,19 +92,25 @@ workHeadline: Enforce dtask work branch in init, mandate do.md commits for histo
 ---
 
 The `dtask` utility now enforces the requirement of a work branch during the `init` command, with updates to both the script and its documentation to ensure better branch management. In `docs/dev/work/do.md`, the task list was significantly updated to include planned enhancements for `do.md` headings and its integration with the `wsum` module for automated work summaries. The update also adds a requirement for `dtask` to consistently commit the `do.md` file to preserve the history of work summaries across intermediate commits. Finally, minor corrections were made to the `do.md` front-matter to fix typos and reset the current commit state.
+
 ## New Summary
 
 ---
 workHeadline: dtask: Add --wsum for auto work summary in do.md, refine commit message logic, and auto-stage do.md changes
 ---
-
-
-## 2026-05-18 13:58
+## New Summary
 
 ---
-workHeadline: dtask: Add --wsum for auto work summary in do.md, refine commit message logic, and auto-stage do.md changes
+workHeadline: `dtask`: Enhance commit with `--wsum` for auto do.md summary generation, refine commit msg, and auto-stage do.md
 ---
 
-This update to the `dtask` script introduces a new `--wsum` option for the `commit` subcommand, enabling automatic generation and insertion of work summaries into `do.md` using the `wsum` module, complete with a 45-second timeout. The commit message logic has been refined to prioritize `workHeadline` for standard commits and `actualCommitMessage` for `--final` commits. Critically, `dtask` now ensures that any modifications it makes to `do.md`, such as adding work summaries or updating commit messages, are automatically staged for inclusion in the current commit, resolving potential issues with unstaged `do.md` changes.
+
+## 2026-05-18 17:10
+
+---
+workHeadline: `dtask`: Enhance commit with `--wsum` for auto do.md summary generation, refine commit msg, and auto-stage do.md
+---
+
+The `docs/dev/work/do.md` file has been updated to reflect the completion of a task concerning `dtask`'s `do.md` commit behavior. A new work summary for May 18, 2026, has been added, detailing enhancements to the `dtask` script. These improvements introduce a `--wsum` option for the `commit` subcommand, automating work summary generation in `do.md` via the `wsum` module with a 45-second timeout. The script's commit message logic has also been refined, and `dtask` now automatically stages `do.md` modifications to ensure they are consistently included in the current commit.
 
 
