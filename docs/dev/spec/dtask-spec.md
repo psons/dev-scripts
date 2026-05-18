@@ -1,7 +1,7 @@
 # Overview
 create a python script to support the work flow / use cases in docs/dev/spec/usecases/do-file-tasks.md
 
-The dtask command manages the curent git branch and commit messages for the curent task using yaml front mater in a docs/dev/work/do.md file. 
+The dtask command manages the current git branch and commit messages for the current task using yaml front mater in a docs/dev/work/do.md file. 
 
 # do.md template
 
@@ -90,7 +90,7 @@ When refining a task, engineers often create new notes/spec files that should re
 ## help text update
 Commit command usage/help should include `--update, -u` and describe it as: stage tracked updates only (same scope as `git add --update`, excluding untracked files).
 
-# do.md dirty with --final but without --all
+## do.md dirty with --final but without --all
 if do.md has been modified since the last commit, and the --final option has been specified, then the do.md final must be added to the staged files to be part of the commit.
 As previously specified, the do.md file must be removed if the --final option is given, and an additional commit made with the message ''removed do.md for finalized tasks''
 
@@ -110,9 +110,45 @@ helptext for the --final option should be as follows:
 ```
 The commit message with the removal of the do.md commit should match the help text for te second commit
 
+# init requires a branch
+## Use Case
+A mission oriented purpose of dtask is to help the user with good branch management.  If a user has not specified a branch, the command should fail with a message that init requires a branch.
+
+## behavior
+if a branch is not specified with --workbranch (or -b) the command should fail with a message that init requires a branch.
+
+## not required
+there is no requirement that the specified branch is different than the current branch.  dtask will have no knowledge of branching strategy, but a future utility that will may use dtask
+
+
+# dtask using the wsum.py module
+Add integration between `dtask commit` and `bin/wsum.py` so work summaries and commit headlines can be generated into `docs/dev/work/do.md`.
+
+## new option
+- Add `--wsum` to `dtask commit`.
+- When `--wsum` is provided, `dtask` must call the wsum python module function summarize_work and add the the WorkSummaryResult.markdown to `docs/dev/work/do.md`.
+- The appended markdown must include frontmatter key `workHeadline:` and the generated work summary content in the body.
+
+## do.md summary insertion rules
+- If this is the first generated summary being added to `docs/dev/work/do.md`, `dtask` must add a markdown header `# Work Summary` before adding the summary text.
+- If `# Work Summary` already exists, append/update summary content under that section without duplicating the header.
+
+## commit message behavior
+- For `dtask commit` runs without `--final`, default commit message behavior changes to use the first, or newest `workHeadline` from `docs/dev/work/do.md`.
+- `--final` keeps the existing commit message behavior that uses `actualCommitMessage`.
+- Existing `--actual` / `-a` behavior remains unchanged and applies as already implemented for `actualCommitMessage`.
+
+## wsum execution and timeout
+- `dtask --wsum` must allow `wsum.summarize_work` at most 45 seconds to complete.
+- If `wsum` does not complete within 45 seconds, `dtask` must terminate the `wsum.summarize_work` call, treat this as an error, and stop the `--wsum` update flow.
+ 
+## wsum error handling
+- If `wsum` returns an error (including timeout termination), `dtask` should surface the `wsum` error details as clearly as possible.
+- Error guidance should recommend manual fallback by asking the user to provide a manual work summary and set `actualCommitMessage:` in `docs/dev/work/do.md`.
+
 
 # scenario based test plan for --final edge cases
-Scenarip based tests are deferred at this time so as to avoid creating a scheme to avoid polluting the git index.
+Scenario based tests are deferred at this time so as to avoid creating a scheme to avoid polluting the git index.
 
 ## scenario 1: do.md dirty, --final, no --all
 goal: confirm dirty do.md is included in the first commit, then do.md is removed in the second commit.
