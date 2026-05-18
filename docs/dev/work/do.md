@@ -1,11 +1,12 @@
 ---
-actualCommitMessage: test message
+actualCommitMessage: dtask adds do.md to the commit it changes.
 description: A list of small, focused tasks guiding the current commit with detailed
   microsected activities.
 intendedCommitMessage: dtask use wsum for AI generated work summary and commit message
 priorCommit: 18416e5fc35b12fb91d3f84b76032340c7f3ff69
 workBranch: dtask-wsum
 ---
+
 
 
 
