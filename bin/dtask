@@ -5,6 +5,8 @@ import sys
 import os
 import subprocess
 import argparse
+import signal
+import threading
 
 try:
     import yaml
@@ -119,6 +121,90 @@ def git_add_and_commit(repo_root, paths, message):
         sys.exit(1)
 
 
+def call_wsum_with_timeout(repo_root, timeout_sec=45):
+    """
+    Call wsum.summarize_work() with timeout.
+    Returns WorkSummaryResult on success, or None on error.
+    """
+    try:
+        # Dynamic import of wsum module
+        bin_dir = os.path.dirname(os.path.abspath(__file__))
+        sys.path.insert(0, bin_dir)
+        import wsum
+        
+        # Create a result holder to capture output from threaded call
+        result_holder = {"result": None, "exception": None}
+        
+        def run_wsum():
+            try:
+                # Call with all current work (staged + unstaged) so user gets full summary
+                # Actual commit will still only include staged files (unless --all/--update used)
+                result_holder["result"] = wsum.summarize_work(
+                    diff_text=None,
+                    staged_only=False,
+                    base_ref="HEAD",
+                    include_unstaged=True,
+                    include_untracked=False,
+                    file_paths=None,
+                    extra_diff_args=None,
+                    model=None,
+                    max_sentences=6
+                )
+            except Exception as e:
+                result_holder["exception"] = e
+        
+        thread = threading.Thread(target=run_wsum)
+        thread.daemon = True
+        thread.start()
+        thread.join(timeout=timeout_sec)
+        
+        if thread.is_alive():
+            # Timeout occurred
+            print(
+                f"Error: wsum.summarize_work() did not complete within {timeout_sec} seconds.",
+                file=sys.stderr
+            )
+            return None
+        
+        if result_holder["exception"]:
+            print(f"Error: wsum.summarize_work() failed: {result_holder['exception']}", file=sys.stderr)
+            return None
+        
+        return result_holder["result"]
+    except ImportError:
+        print("Error: wsum module could not be imported from bin/", file=sys.stderr)
+        return None
+    except Exception as e:
+        print(f"Error: unexpected error calling wsum: {e}", file=sys.stderr)
+        return None
+
+
+def insert_work_summary_into_do_md(do_md_path, work_headline, summary_markdown):
+    """
+    Insert work summary into do.md.
+    - If no '# Work Summary' header exists, add one before the summary.
+    - Append the new summary with its workHeadline as frontmatter.
+    """
+    with open(do_md_path, "r") as f:
+        content = f.read()
+    
+    # Check if '# Work Summary' header exists
+    work_summary_marker = "\n# Work Summary\n"
+    has_summary_section = work_summary_marker in content
+    
+    if not has_summary_section:
+        # Add the header before the summary
+        summary_block = f"\n# Work Summary\n## New Summary\n\n---\nworkHeadline: {work_headline}\n---\n\n{summary_markdown}\n\n"
+        content = content.rstrip() + summary_block
+    else:
+        # Append under existing header
+        summary_block = f"\n## New Summary\n\n---\nworkHeadline: {work_headline}\n---\n\n{summary_markdown}\n\n"
+        content = content.rstrip() + summary_block
+    
+    with open(do_md_path, "w") as f:
+        f.write(content)
+
+
 def cmd_help(_args):
     print("""dtask - manage git branch and commit messages for the current task
 
@@ -144,11 +230,13 @@ Subcommands:
                                         is already committed, it is simply replaced
                                         with no extra commit.
 
-  commit  Commit staged changes on workBranch using the
-             actualCommitMessage from do.md. Unstaged changes are only
-             included when --all or --update is used.
+  commit  Commit staged changes on workBranch using workHeadline as the commit message.
+          Unstaged changes are only included when --all or --update is used.
 
              Options:
+                --wsum                  Generate work summary using wsum module and update
+                                        do.md with workHeadline and summary. Include summary
+                                        in this commit.
                 --actual, -a [message]  Update actualCommitMessage before committing.
                                                 If given with no argument, copies
                                                 intendedCommitMessage to actualCommitMessage
@@ -157,7 +245,8 @@ Subcommands:
                                                 (equivalent to running git add -A first).
                 --update, -u            Stage tracked unstaged changes only
                                                 (equivalent to running git add --update).
-                --final                 Signal task complete. Performs two commits:
+                --final                 Signal task complete. Uses actualCommitMessage
+                                        for commit (not workHeadline). Performs two commits:
                                                 1) commit do.md with staged changes (or additional changes 
                                                     included when --all or --update is used) with actualCommitMessage;
                                                 2) remove do.md and commit with message
@@ -251,6 +340,36 @@ def cmd_commit(args):
 
     frontmatter, body = read_do_md(do_md_path)
 
+    # Track whether dtask itself updated do.md during this command.
+    do_md_updated_by_dtask = False
+
+    # Handle --wsum: generate work summary and update do.md
+    if args.wsum:
+        print("Running wsum to generate work summary...")
+        wsum_result = call_wsum_with_timeout(repo_root, timeout_sec=45)
+        
+        if wsum_result is None:
+            print("\nFallback: set actualCommitMessage in do.md and try again.", file=sys.stderr)
+            sys.exit(1)
+        
+        # Update do.md with work summary
+        try:
+            insert_work_summary_into_do_md(
+                do_md_path,
+                wsum_result.headline,
+                wsum_result.markdown
+            )
+            # Update frontmatter workHeadline
+            frontmatter["workHeadline"] = wsum_result.headline
+            # Reread do.md after insertion
+            frontmatter, body = read_do_md(do_md_path)
+            do_md_updated_by_dtask = True
+            print(f"Work summary added to {DO_MD_RELATIVE}")
+        except Exception as e:
+            print(f"Error: could not insert work summary into do.md: {e}", file=sys.stderr)
+            print("Fallback: set actualCommitMessage in do.md and try again.", file=sys.stderr)
+            sys.exit(1)
+
     # Update actualCommitMessage if --actual provided
     _COPY_INTENDED = '__COPY_INTENDED__'
     if args.actual == _COPY_INTENDED:
@@ -264,17 +383,32 @@ def cmd_commit(args):
             sys.exit(1)
         frontmatter["actualCommitMessage"] = intended
         write_do_md(do_md_path, frontmatter, body)
+        do_md_updated_by_dtask = True
     elif args.actual is not None:
         frontmatter["actualCommitMessage"] = args.actual
         write_do_md(do_md_path, frontmatter, body)
+        do_md_updated_by_dtask = True
 
-    commit_message = frontmatter.get("actualCommitMessage", "").strip()
-    if not commit_message:
-        print(
-            "Error: actualCommitMessage is empty. Set it in do.md or use --actual [<message>].",
-            file=sys.stderr
-        )
-        sys.exit(1)
+    # Determine commit message: use actualCommitMessage for --final, otherwise use workHeadline
+    if args.final:
+        commit_message = frontmatter.get("actualCommitMessage", "").strip()
+        if not commit_message:
+            print(
+                "Error: actualCommitMessage is empty. Set it in do.md or use --actual [<message>].",
+                file=sys.stderr
+            )
+            sys.exit(1)
+    else:
+        # For non-final commits, use workHeadline if available, otherwise fall back to actualCommitMessage
+        commit_message = frontmatter.get("workHeadline", "").strip()
+        if not commit_message:
+            commit_message = frontmatter.get("actualCommitMessage", "").strip()
+        if not commit_message:
+            print(
+                "Error: no commit message available. Use --wsum to generate, or set workHeadline/actualCommitMessage in do.md.",
+                file=sys.stderr
+            )
+            sys.exit(1)
 
     work_branch = frontmatter.get("workBranch", "").strip()
 
@@ -291,6 +425,13 @@ def cmd_commit(args):
             file=sys.stderr
         )
         sys.exit(1)
+
+    # Clarification 2026-05-18: whenever dtask changes do.md, stage it before commit.
+    if do_md_updated_by_dtask:
+        add_do_md = subprocess.run(["git", "add", do_md_path], cwd=repo_root)
+        if add_do_md.returncode != 0:
+            print("Error: git add do.md failed after dtask updated it.", file=sys.stderr)
+            sys.exit(1)
 
     # By default, only already-staged changes are committed.
     # --all stages tracked+untracked changes; --update stages tracked changes only.
@@ -379,6 +520,7 @@ def main():
 
     elif subcommand == "commit":
         parser = argparse.ArgumentParser(prog="dtask commit", add_help=True)
+        parser.add_argument("--wsum", action="store_true", default=False)
         parser.add_argument("--actual", "-a", dest="actual", metavar="MESSAGE",
                             nargs="?", const="__COPY_INTENDED__", default=None)
         mode_group = parser.add_mutually_exclusive_group()
@@ -395,3 +537,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+ 

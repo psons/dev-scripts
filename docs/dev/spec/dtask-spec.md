@@ -52,6 +52,9 @@ commit - add a commit on workBranch using the do.md actualCommitMessage.  If the
 
     --final signals that the task is complete.  dtask commit --final performs two commits: first, all unstaged files are staged and committed using the actualCommitMessage; second, the do.md file is removed and an additional commit is made with a commit message of 'remove do.md'.  This leaves the working tree ready for a new task cycle starting with dtask init.
 
+## clarification 2026-05-18
+Ensure that if do.md is updated in any way by dtask, ensure that it is saved and added to the working set before making the commit. In particular, the --actual flag updates the actualCommitMessage and requires that do.md be written and added to the working set before the commit.
+
 # Change to implement --newdo
 implement --newdo as specified and the script as specified so that the init command will only replace the do.md file if the --newdo flag is provided. 
 

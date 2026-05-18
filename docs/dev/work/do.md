@@ -48,13 +48,22 @@ d - implement dtask enhancements to integrate with the work with wsum module.
     - add a header '# Work Summary' to do.md before adding the work summary if this is the first work summary being added to do.md.
     - the wsum command should only be allowed to take 45 seconds to run. 
         - if not successful in 45 seconds, it should be killed and considered in error.
- d - implement the updated specification section to docs/dev/spec/dtask-spec.md called 'dtask using the wsum.py module'
+ / - implement the updated specification section to docs/dev/spec/dtask-spec.md called 'dtask using the wsum.py module'
 
 d - dtask should always save and commit do.md
     use case:  
     The do.md file now grows with the work summary for intermediate commits on a feature.  If te new summary is part of a later commit, the summary from the change to do.md pollutes what actually changed in the subsequent commit.  It is better to includes the do.md work summary updates in te same commit they describe.
 
 # Work Summary
+## 2026-05-18 13:10
+
+---
+workHeadline: dtask adds do.md to the commit if it changes.
+---
+
+Behavior fix where dtask adds do.md to the commit if it changes in the dtask run.
+
+
 
 ## 2026-05-18 12:23
 
@@ -72,4 +81,19 @@ workHeadline: Enforce dtask work branch in init, mandate do.md commits for histo
 ---
 
 The `dtask` utility now enforces the requirement of a work branch during the `init` command, with updates to both the script and its documentation to ensure better branch management. In `docs/dev/work/do.md`, the task list was significantly updated to include planned enhancements for `do.md` headings and its integration with the `wsum` module for automated work summaries. The update also adds a requirement for `dtask` to consistently commit the `do.md` file to preserve the history of work summaries across intermediate commits. Finally, minor corrections were made to the `do.md` front-matter to fix typos and reset the current commit state.
+## New Summary
+
+---
+workHeadline: dtask: Add --wsum for auto work summary in do.md, refine commit message logic, and auto-stage do.md changes
+---
+
+
+## 2026-05-18 13:58
+
+---
+workHeadline: dtask: Add --wsum for auto work summary in do.md, refine commit message logic, and auto-stage do.md changes
+---
+
+This update to the `dtask` script introduces a new `--wsum` option for the `commit` subcommand, enabling automatic generation and insertion of work summaries into `do.md` using the `wsum` module, complete with a 45-second timeout. The commit message logic has been refined to prioritize `workHeadline` for standard commits and `actualCommitMessage` for `--final` commits. Critically, `dtask` now ensures that any modifications it makes to `do.md`, such as adding work summaries or updating commit messages, are automatically staged for inclusion in the current commit, resolving potential issues with unstaged `do.md` changes.
+
 
