@@ -121,7 +121,13 @@ def git_add_and_commit(repo_root, paths, message):
         sys.exit(1)
 
 
-def call_wsum_with_timeout(repo_root, timeout_sec=45):
+def call_wsum_with_timeout(
+    repo_root,
+    *,
+    include_unstaged=False,
+    include_untracked=False,
+    timeout_sec=45,
+):
     """
     Call wsum.summarize_work() with timeout.
     Returns WorkSummaryResult on success, or None on error.
@@ -137,14 +143,13 @@ def call_wsum_with_timeout(repo_root, timeout_sec=45):
         
         def run_wsum():
             try:
-                # Call with all current work (staged + unstaged) so user gets full summary
-                # Actual commit will still only include staged files (unless --all/--update used)
+                # Match summary scope with dtask commit scope.
                 result_holder["result"] = wsum.summarize_work(
                     diff_text=None,
-                    staged_only=False,
+                    staged_only=not include_unstaged,
                     base_ref="HEAD",
-                    include_unstaged=True,
-                    include_untracked=False,
+                    include_unstaged=include_unstaged,
+                    include_untracked=include_untracked,
                     file_paths=None,
                     extra_diff_args=None,
                     model=None,
@@ -181,28 +186,42 @@ def call_wsum_with_timeout(repo_root, timeout_sec=45):
 
 def insert_work_summary_into_do_md(do_md_path, work_headline, summary_markdown):
     """
-    Insert work summary into do.md.
-    - If no '# Work Summary' header exists, add one before the summary.
-    - Append the new summary with its workHeadline as frontmatter.
+    Insert WorkSummaryResult.markdown verbatim at the top of the # Work Summary section,
+    after the header/frontmatter, before any older summaries.
     """
     with open(do_md_path, "r") as f:
         content = f.read()
-    
-    # Check if '# Work Summary' header exists
-    work_summary_marker = "\n# Work Summary\n"
-    has_summary_section = work_summary_marker in content
-    
-    if not has_summary_section:
-        # Add the header before the summary
-        summary_block = f"\n# Work Summary\n## New Summary\n\n---\nworkHeadline: {work_headline}\n---\n\n{summary_markdown}\n\n"
-        content = content.rstrip() + summary_block
+
+    work_summary_header = "# Work Summary"
+    header_idx = content.find(work_summary_header)
+
+    if header_idx == -1:
+        # No # Work Summary section: add header and insert markdown after it
+        new_content = content.rstrip() + f"\n{work_summary_header}\n\n" + summary_markdown.strip() + "\n"
     else:
-        # Append under existing header
-        summary_block = f"\n## New Summary\n\n---\nworkHeadline: {work_headline}\n---\n\n{summary_markdown}\n\n"
-        content = content.rstrip() + summary_block
-    
+        # Find the end of the header line
+        header_line_end = content.find('\n', header_idx)
+        if header_line_end == -1:
+            header_line_end = len(content)
+        insert_pos = header_line_end + 1
+
+        # If there is frontmatter (--- ... ---) immediately after header, skip it
+        after_header = content[insert_pos:]
+        if after_header.lstrip().startswith('---'):
+            fm_start = insert_pos + after_header.find('---')
+            fm_end = after_header.find('---', 3)
+            if fm_end != -1:
+                fm_end = fm_start + fm_end + 3
+                insert_pos = fm_end
+                # Move past any trailing newlines after frontmatter
+                while insert_pos < len(content) and content[insert_pos] in ('\n', '\r'):
+                    insert_pos += 1
+
+        # Insert the new summary_markdown at insert_pos
+        new_content = content[:insert_pos] + summary_markdown.strip() + "\n" + content[insert_pos:]
+
     with open(do_md_path, "w") as f:
-        f.write(content)
+        f.write(new_content)
 
 
 def cmd_help(_args):
@@ -343,10 +362,22 @@ def cmd_commit(args):
     # Track whether dtask itself updated do.md during this command.
     do_md_updated_by_dtask = False
 
+    # Map dtask commit mode to wsum scope.
+    # default: staged-only
+    # --update: staged + tracked unstaged
+    # --all: staged + tracked unstaged + untracked
+    wsum_include_unstaged = bool(args.all or args.update)
+    wsum_include_untracked = bool(args.all)
+
     # Handle --wsum: generate work summary and update do.md
     if args.wsum:
         print("Running wsum to generate work summary...")
-        wsum_result = call_wsum_with_timeout(repo_root, timeout_sec=45)
+        wsum_result = call_wsum_with_timeout(
+            repo_root,
+            include_unstaged=wsum_include_unstaged,
+            include_untracked=wsum_include_untracked,
+            timeout_sec=45,
+        )
         
         if wsum_result is None:
             print("\nFallback: set actualCommitMessage in do.md and try again.", file=sys.stderr)

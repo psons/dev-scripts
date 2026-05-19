@@ -134,7 +134,12 @@ Add integration between `dtask commit` and `bin/wsum.py` so work summaries and c
 
 ## do.md summary insertion rules
 - If this is the first generated summary being added to `docs/dev/work/do.md`, `dtask` must add a markdown header `# Work Summary` before adding the summary text.
-- If `# Work Summary` already exists, append/update summary content under that section without duplicating the header.
+- If `# Work Summary` already exists, prepend summary content before any other subsections, but after the existing `# Work Summary` header.
+
+### Clarification 2026-05-18 17:21
+dtask should not provide any headings under the # Work Summary header.  The required headings will be part of the WorkSummaryResult.markdown.
+Verified assumption: in the current `bin/wsum.py` implementation, every successful `summarize_work` return includes `WorkSummaryResult.markdown` containing frontmatter with `workHeadline:`.
+The new subsections under '# Work Summary' should be inserted into do.md at the top of the '# Work Summary' before any other older subsections, but after any frontmatter that may be present in the '# Work Summary' section.
 
 ## commit message behavior
 - For `dtask commit` runs without `--final`, default commit message behavior changes to use the first, or newest `workHeadline` from `docs/dev/work/do.md`.
@@ -148,6 +153,9 @@ Add integration between `dtask commit` and `bin/wsum.py` so work summaries and c
 ## wsum error handling
 - If `wsum` returns an error (including timeout termination), `dtask` should surface the `wsum` error details as clearly as possible.
 - Error guidance should recommend manual fallback by asking the user to provide a manual work summary and set `actualCommitMessage:` in `docs/dev/work/do.md`.
+
+## clarification 2026-05-18 13:55
+Update comments to enforces that if dtask commit has been invoked with the default commit of staged changes only, then wsum should only attempt to summarize staged changes.
 
 
 # scenario based test plan for --final edge cases
