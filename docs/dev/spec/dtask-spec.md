@@ -20,7 +20,7 @@ actualCommitMessage: <description_of_completed_work>
 <task_text>
 ```
 
-The 'description:' is constant to for do.md to help AO understand what is in the do.md file, and may be linked from other project mark down files to help agents discover it.
+The 'description:' is constant to for do.md to help understand what is in the do.md file, and may be linked from other project mark down files to help agents discover it.
 
 The 'intendedCommitMessage:' is a message that the engineer believes when starting work, will be a sensible message when committing the work.   
 
@@ -30,7 +30,7 @@ The dtask command supports the following subcommands:
 
 help - prints a list of the sub commands and a description of each.
 
-init - if the git working tree is clean, and there is no do.md file, the init subcommand initializes a new do.md from a base template and sets the priorCommit set, and any other optionally provided information according to the following options:
+init - if the git working tree is clean, and there is no do.md file, the init subcommand initializes a new do.md from a base template and sets the priorCommit, and any other optionally provided information according to the following options:
 
     --workbranch <name_of_a_branch_to_commit_work_on> a git checkout -b will be performed to create and check out the workBranch  
 
@@ -55,7 +55,7 @@ commit - add a commit on workBranch using the do.md actualCommitMessage.  If the
 ## clarification 2026-05-18
 Ensure that if do.md is updated in any way by dtask, ensure that it is saved and added to the working set before making the commit. In particular, the --actual flag updates the actualCommitMessage and requires that do.md be written and added to the working set before the commit.
 
-# Change to implement --newdo
+### Change to implement --newdo
 implement --newdo as specified and the script as specified so that the init command will only replace the do.md file if the --newdo flag is provided. 
 
 # not in scope.
@@ -63,8 +63,10 @@ at this time, do not implement the features in docs/dev/spec/dtask-un-spec.md
 
 # dtask commit enhancements story.
 In this story, the leader `d - ` represents a task to do.
-
+Example
+```markdown
 d - change `dtask commit` behavior to by default only commit staged files and only include unstaged files if a --all switch is provided.
+```
 
 # dtask commit flag --update
 Add a `--update` option to `dtask commit` to support committing tracked work while intentionally leaving untracked files out of scope.
@@ -94,14 +96,14 @@ When refining a task, engineers often create new notes/spec files that should re
 Commit command usage/help should include `--update, -u` and describe it as: stage tracked updates only (same scope as `git add --update`, excluding untracked files).
 
 ## do.md dirty with --final but without --all
-if do.md has been modified since the last commit, and the --final option has been specified, then the do.md final must be added to the staged files to be part of the commit.
+if do.md has been modified since the last commit, and the --final option has been specified, then the do.md must be added to the staged files to be part of the commit.
 As previously specified, the do.md file must be removed if the --final option is given, and an additional commit made with the message ''removed do.md for finalized tasks''
 
 # commit --final remove do.md with working tree clean and no staged changes
 dtask commit --final should remove the do.md file and then commit even if the working tree is clean and there are no staged changes.
 
 # improve the --final help text and commit message.
-I rejected the proposed text in a prior change, but some update is needed.
+Some update is needed.
 helptext for the --final option should be as follows:
  
 ```
@@ -111,7 +113,7 @@ helptext for the --final option should be as follows:
                                                 2) remove do.md and commit with message
                                                     'removed do.md for finalized tasks'.
 ```
-The commit message with the removal of the do.md commit should match the help text for te second commit
+The commit message with the removal of the do.md commit should match the help text for the second commit
 
 # init requires a branch
 ## Use Case
@@ -121,16 +123,16 @@ A mission oriented purpose of dtask is to help the user with good branch managem
 if a branch is not specified with --workbranch (or -b) the command should fail with a message that init requires a branch.
 
 ## not required
-there is no requirement that the specified branch is different than the current branch.  dtask will have no knowledge of branching strategy, but a future utility that will may use dtask
+there is no requirement that the specified branch is different than the current branch.  dtask will have no knowledge of branching strategy, but a future utility that will help with branching strategy may use dtask and have that requirement.
 
 
 # dtask using the wsum.py module
 Add integration between `dtask commit` and `bin/wsum.py` so work summaries and commit headlines can be generated into `docs/dev/work/do.md`.
 
 ## new option
-- Add `--wsum` to `dtask commit`.
+- Add the `--wsum` option to `dtask commit`.
 - When `--wsum` is provided, `dtask` must call the wsum python module function summarize_work and add the the WorkSummaryResult.markdown to `docs/dev/work/do.md`.
-- The appended markdown must include frontmatter key `workHeadline:` and the generated work summary content in the body.
+- The added markdown will include frontmatter key `workHeadline:` and the generated work summary content in the body.
 
 ## do.md summary insertion rules
 - If this is the first generated summary being added to `docs/dev/work/do.md`, `dtask` must add a markdown header `# Work Summary` before adding the summary text.
@@ -141,10 +143,16 @@ dtask should not provide any headings under the # Work Summary header.  The requ
 Verified assumption: in the current `bin/wsum.py` implementation, every successful `summarize_work` return includes `WorkSummaryResult.markdown` containing frontmatter with `workHeadline:`.
 The new subsections under '# Work Summary' should be inserted into do.md at the top of the '# Work Summary' before any other older subsections, but after any frontmatter that may be present in the '# Work Summary' section.
 
+### Clarification 2026-05-19 08:58
+When wsum.summarize_work is invoked by dtask, the scope of the commit from --update or --all should be reflected in the request by setting the correct values for include_unstaged and include_untracked.
+
 ## commit message behavior
 - For `dtask commit` runs without `--final`, default commit message behavior changes to use the first, or newest `workHeadline` from `docs/dev/work/do.md`.
 - `--final` keeps the existing commit message behavior that uses `actualCommitMessage`.
 - Existing `--actual` / `-a` behavior remains unchanged and applies as already implemented for `actualCommitMessage`.
+
+### Clarification 2026-05-19 11:14
+dtask commits without --final or --actual should assure that the frontmatter workHeadline is used to update the actualCommitMessage into the do.md file and used as the commit message. 
 
 ## wsum execution and timeout
 - `dtask --wsum` must allow `wsum.summarize_work` at most 45 seconds to complete.

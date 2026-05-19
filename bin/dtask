@@ -97,7 +97,12 @@ def read_do_md(path):
 
 def write_do_md(path, frontmatter, body):
     """Write do.md with YAML frontmatter and body."""
-    fm_str = yaml.dump(frontmatter, default_flow_style=False, allow_unicode=True).strip()
+    fm_str = yaml.dump(
+        frontmatter,
+        default_flow_style=False,
+        allow_unicode=True,
+        default_style='"'
+    ).strip()
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         f.write(f"---\n{fm_str}\n---\n{body}")
@@ -380,7 +385,7 @@ def cmd_commit(args):
         )
         
         if wsum_result is None:
-            print("\nFallback: set actualCommitMessage in do.md and try again.", file=sys.stderr)
+            print("\nUnable to summarize changes. set actualCommitMessage in do.md and try again with --actual", file=sys.stderr)
             sys.exit(1)
         
         # Update do.md with work summary
@@ -392,8 +397,10 @@ def cmd_commit(args):
             )
             # Update frontmatter workHeadline
             frontmatter["workHeadline"] = wsum_result.headline
-            # Reread do.md after insertion
-            frontmatter, body = read_do_md(do_md_path)
+            # Reread do.md after insertion to get updated body, but preserve the workHeadline we just set
+            _, body = read_do_md(do_md_path)
+            # Write do.md with the updated frontmatter (now includes workHeadline)
+            write_do_md(do_md_path, frontmatter, body)
             do_md_updated_by_dtask = True
             print(f"Work summary added to {DO_MD_RELATIVE}")
         except Exception as e:
@@ -420,7 +427,10 @@ def cmd_commit(args):
         write_do_md(do_md_path, frontmatter, body)
         do_md_updated_by_dtask = True
 
-    # Determine commit message: use actualCommitMessage for --final, otherwise use workHeadline
+    # Determine commit message.
+    # - --final uses actualCommitMessage.
+    # - non-final commits without --actual copy workHeadline into actualCommitMessage,
+    #   save do.md, and use that value as the commit message.
     if args.final:
         commit_message = frontmatter.get("actualCommitMessage", "").strip()
         if not commit_message:
@@ -429,14 +439,24 @@ def cmd_commit(args):
                 file=sys.stderr
             )
             sys.exit(1)
-    else:
-        # For non-final commits, use workHeadline if available, otherwise fall back to actualCommitMessage
+    elif args.actual is None:
         commit_message = frontmatter.get("workHeadline", "").strip()
         if not commit_message:
-            commit_message = frontmatter.get("actualCommitMessage", "").strip()
+            print(
+                "Error: workHeadline is empty. Use --wsum to generate it, or set workHeadline in do.md.",
+                file=sys.stderr
+            )
+            sys.exit(1)
+
+        if frontmatter.get("actualCommitMessage", "").strip() != commit_message:
+            frontmatter["actualCommitMessage"] = commit_message
+            write_do_md(do_md_path, frontmatter, body)
+            do_md_updated_by_dtask = True
+    else:
+        commit_message = frontmatter.get("actualCommitMessage", "").strip()
         if not commit_message:
             print(
-                "Error: no commit message available. Use --wsum to generate, or set workHeadline/actualCommitMessage in do.md.",
+                "Error: actualCommitMessage is empty. Set it in do.md or use --actual [<message>].",
                 file=sys.stderr
             )
             sys.exit(1)
