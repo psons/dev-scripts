@@ -192,7 +192,7 @@ def call_wsum_with_timeout(
 def insert_work_summary_into_do_md(do_md_path, work_headline, summary_markdown):
     """
     Insert WorkSummaryResult.markdown verbatim at the top of the # Work Summary section,
-    after the header/frontmatter, before any older summaries.
+    immediately after the header, before any older summaries.
     """
     with open(do_md_path, "r") as f:
         content = f.read()
@@ -209,18 +209,6 @@ def insert_work_summary_into_do_md(do_md_path, work_headline, summary_markdown):
         if header_line_end == -1:
             header_line_end = len(content)
         insert_pos = header_line_end + 1
-
-        # If there is frontmatter (--- ... ---) immediately after header, skip it
-        after_header = content[insert_pos:]
-        if after_header.lstrip().startswith('---'):
-            fm_start = insert_pos + after_header.find('---')
-            fm_end = after_header.find('---', 3)
-            if fm_end != -1:
-                fm_end = fm_start + fm_end + 3
-                insert_pos = fm_end
-                # Move past any trailing newlines after frontmatter
-                while insert_pos < len(content) and content[insert_pos] in ('\n', '\r'):
-                    insert_pos += 1
 
         # Insert the new summary_markdown at insert_pos
         new_content = content[:insert_pos] + summary_markdown.strip() + "\n" + content[insert_pos:]

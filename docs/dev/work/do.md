@@ -1,15 +1,16 @@
 ---
-"actualCommitMessage": "dtask: Prioritize do.md workHeadline in commits, standardize\
-  \ quoting, enhance error messaging, update docs"
+"actualCommitMessage": "refactor(dtask): Simplify do.md work summary insertion, remove\
+  \ YAML skip logic, update spec"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "dtask use wsum for AI generated work summary and commit\
   \ message"
 "priorCommit": "18416e5fc35b12fb91d3f84b76032340c7f3ff69"
 "workBranch": "dtask-wsum"
-"workHeadline": "dtask: Prioritize do.md workHeadline in commits, standardize quoting,\
-  \ enhance error messaging, update docs"
+"workHeadline": "refactor(dtask): Simplify do.md work summary insertion, remove YAML\
+  \ skip logic, update spec"
 ---
+
 
 
 # do.md - A list of a few small tasks that guide the current commit.
@@ -48,6 +49,13 @@ x - generate an updated specification section to docs/dev/spec/dtask-spec.md cal
     - add documentation that to say that '--final will use the actual commit message behavior (as already implemented), including the existing implementations of --actual (and -a) 
     - if wsum errors, try to communicate the wsum error, and suggest the user provide a manual summary and 'actualCommitMessage:' in do.md
     - add a header '# Work Summary' to do.md before adding the work summary if this is the first work summary being added to do.md.
+## 2026-05-19 12:26
+
+---
+workHeadline: refactor(dtask): Simplify do.md work summary insertion, remove YAML skip logic, update spec
+---
+
+This update streamlines the `dtask` script's handling of work summary insertions into `do.md`. The previous logic in `bin/dtask` for detecting and skipping YAML frontmatter immediately after the `# Work Summary` header has been removed. This change simplifies the insertion process, ensuring new work summaries are now prepended directly after the `# Work Summary` heading. The `dtask-spec.md` documentation has been updated to reflect this revised behavior, explicitly stating that summaries should be inserted immediately following the header, before any existing content.
 ## 2026-05-19 12:06
 
 ---

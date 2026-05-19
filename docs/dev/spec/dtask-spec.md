@@ -136,12 +136,12 @@ Add integration between `dtask commit` and `bin/wsum.py` so work summaries and c
 
 ## do.md summary insertion rules
 - If this is the first generated summary being added to `docs/dev/work/do.md`, `dtask` must add a markdown header `# Work Summary` before adding the summary text.
-- If `# Work Summary` already exists, prepend summary content before any other subsections, but after the existing `# Work Summary` header.
+- If `# Work Summary` already exists, prepend summary content immediately after the existing `# Work Summary` header, before any older subsections.
 
 ### Clarification 2026-05-18 17:21
 dtask should not provide any headings under the # Work Summary header.  The required headings will be part of the WorkSummaryResult.markdown.
 Verified assumption: in the current `bin/wsum.py` implementation, every successful `summarize_work` return includes `WorkSummaryResult.markdown` containing frontmatter with `workHeadline:`.
-The new subsections under '# Work Summary' should be inserted into do.md at the top of the '# Work Summary' before any other older subsections, but after any frontmatter that may be present in the '# Work Summary' section.
+The new subsections under '# Work Summary' should be inserted into do.md at the top of the '# Work Summary' immediately after the '# Work Summary' heading, before any older subsections.
 
 ### Clarification 2026-05-19 08:58
 When wsum.summarize_work is invoked by dtask, the scope of the commit from --update or --all should be reflected in the request by setting the correct values for include_unstaged and include_untracked.
@@ -153,6 +153,9 @@ When wsum.summarize_work is invoked by dtask, the scope of the commit from --upd
 
 ### Clarification 2026-05-19 11:14
 dtask commits without --final or --actual should assure that the frontmatter workHeadline is used to update the actualCommitMessage into the do.md file and used as the commit message. 
+
+## Clarification 2026-05-19 12:14
+work summaries should be inserted into do.md immediately after the heading '# Work Summary', before any existing summary subsection content.
 
 ## wsum execution and timeout
 - `dtask --wsum` must allow `wsum.summarize_work` at most 45 seconds to complete.
