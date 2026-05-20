@@ -3,6 +3,57 @@ create a python script to support the work flow / use cases in docs/dev/spec/use
 
 The dtask command manages the current git branch and commit messages for the current task using yaml front mater in a docs/dev/work/do.md file. 
 
+# Terminology
+
+## file frontmatter
+YAML key/value pairs that appear at the very start of a file, delimited by a `---` line before and after the block.  The file must begin with the opening `---` at column 0 with no leading whitespace.
+
+Pattern:
+```
+---
+key: value
+key2: value2
+---
+<rest of file content>
+```
+
+Example (`docs/dev/work/do.md`):
+```markdown
+---
+workBranch: my-feature
+priorCommit: abc123
+intendedCommitMessage: add login page
+actualCommitMessage: add login page with OAuth support
+---
+Task notes go here.
+```
+
+## section frontmatter
+YAML key/value pairs embedded inside a markdown section body, delimited by a `---` line before and after the block.  Unlike file frontmatter, section frontmatter appears after a markdown heading anywhere in the file and is not required to be at the start of the file.
+
+Pattern:
+```
+## Section Heading
+
+---
+key: value
+key2: value2
+---
+
+Section body text.
+```
+
+Example (a work summary entry inside `# Work Summary`):
+```markdown
+## 2026-05-19 12:26
+
+---
+workHeadline: refactor(dtask): simplify do.md work summary insertion
+---
+
+This update streamlines the dtask script's handling of work summary insertions.
+```
+
 # do.md template
 
 
@@ -136,12 +187,12 @@ Add integration between `dtask commit` and `bin/wsum.py` so work summaries and c
 
 ## do.md summary insertion rules
 - If this is the first generated summary being added to `docs/dev/work/do.md`, `dtask` must add a markdown header `# Work Summary` before adding the summary text.
-- If `# Work Summary` already exists, prepend summary content immediately after the existing `# Work Summary` header, before any older subsections.
+- If `# Work Summary` already exists, prepend summary content immediately after the existing `# Work Summary` header, before any older subsections under '# Work Summary'.
 
 ### Clarification 2026-05-18 17:21
 dtask should not provide any headings under the # Work Summary header.  The required headings will be part of the WorkSummaryResult.markdown.
 Verified assumption: in the current `bin/wsum.py` implementation, every successful `summarize_work` return includes `WorkSummaryResult.markdown` containing frontmatter with `workHeadline:`.
-The new subsections under '# Work Summary' should be inserted into do.md at the top of the '# Work Summary' immediately after the '# Work Summary' heading, before any older subsections.
+The new subsections under '# Work Summary' should be inserted into do.md at the top of the '# Work Summary' immediately after the '# Work Summary' heading, before any older subsections under '# Work Summary'.
 
 ### Clarification 2026-05-19 08:58
 When wsum.summarize_work is invoked by dtask, the scope of the commit from --update or --all should be reflected in the request by setting the correct values for include_unstaged and include_untracked.

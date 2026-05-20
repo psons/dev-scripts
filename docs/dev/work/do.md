@@ -1,5 +1,5 @@
 ---
-"actualCommitMessage": "refactor(dtask): Simplify do.md work summary insertion, remove\
+"actualCommitMessage": "dtask: uses wsum for commit message. Init required branch\
   \ YAML skip logic, update spec"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
@@ -7,8 +7,7 @@
   \ message"
 "priorCommit": "18416e5fc35b12fb91d3f84b76032340c7f3ff69"
 "workBranch": "dtask-wsum"
-"workHeadline": "refactor(dtask): Simplify do.md work summary insertion, remove YAML\
-  \ skip logic, update spec"
+
 ---
 
 
@@ -49,6 +48,22 @@ x - generate an updated specification section to docs/dev/spec/dtask-spec.md cal
     - add documentation that to say that '--final will use the actual commit message behavior (as already implemented), including the existing implementations of --actual (and -a) 
     - if wsum errors, try to communicate the wsum error, and suggest the user provide a manual summary and 'actualCommitMessage:' in do.md
     - add a header '# Work Summary' to do.md before adding the work summary if this is the first work summary being added to do.md.
+
+x - implement the updated specification section to docs/dev/spec/dtask-spec.md called 'dtask using the wsum.py module'
+
+x - dtask should always save and commit do.md
+    use case:  
+    The do.md file now grows with the work summary for intermediate commits on a feature.  If the new summary is part of a later commit, the summary from the change to do.md pollutes what actually changed in the subsequent commit.  It is better to includes the do.md work summary updates in the same commit they describe.
+
+x - update dtask to use wsum --update if the user has passed --update to wsum
+ - verify that the python api supports the equivalent to the --update flag. 
+
+x - update dtask to use wsum --all if the user has passed --all to wsum 
+ - verify that the python api supports the equivalent to the --all flag flag. 
+
+
+# Work Summary
+
 ## 2026-05-19 12:26
 
 ---
@@ -63,20 +78,16 @@ workHeadline: dtask: Prioritize do.md workHeadline in commits, standardize quoti
 ---
 
 This update significantly refines the `dtask commit` command, particularly its handling of commit messages and `do.md` interactions. Non-final commits now prioritize the `workHeadline` from `do.md`, automatically propagating it to `actualCommitMessage` and saving the updated `do.md` before committing, with clearer error messages for missing messages. A change to `write_do_md` standardizes string quoting in `do.md`'s YAML frontmatter. Documentation in `dtask-spec.md` has been updated with clarifications on `wsum` integration, commit scoping, and improved `--final` help text, complementing the removal of several old TODO items.
-x - implement the updated specification section to docs/dev/spec/dtask-spec.md called 'dtask using the wsum.py module'
-
-x - dtask should always save and commit do.md
-    use case:  
-    The do.md file now grows with the work summary for intermediate commits on a feature.  If the new summary is part of a later commit, the summary from the change to do.md pollutes what actually changed in the subsequent commit.  It is better to includes the do.md work summary updates in the same commit they describe.
-
-d - update dtask to use wsum --update if the user has passed --update to wsum
- - verify that the python api supports the equivalent to the --update flag. 
-
-d - update dtask to use wsum --all if the user has passed --all to wsum 
- - verify that the python api supports the equivalent to the --all flag flag. 
 
 
-# Work Summary
+## 2026-05-19 12:06
+
+---
+workHeadline: dtask: Prioritize do.md workHeadline in commits, standardize quoting, enhance error messaging, update docs
+---
+
+This update significantly refines the `dtask commit` command, particularly its handling of commit messages and `do.md` interactions. Non-final commits now prioritize the `workHeadline` from `do.md`, automatically propagating it to `actualCommitMessage` and saving the updated `do.md` before committing, with clearer error messages for missing messages. A change to `write_do_md` standardizes string quoting in `do.md`'s YAML frontmatter. Documentation in `dtask-spec.md` has been updated with clarifications on `wsum` integration, commit scoping, and improved `--final` help text, complementing the removal of several old TODO items.
+
 
 ## 2026-05-19 11:57
 
