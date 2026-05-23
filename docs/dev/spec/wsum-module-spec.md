@@ -73,7 +73,7 @@ Command behavior requirements:
 workHeadline: Doc corrections
 ---
 
-The provided git diff contains several minor corrections across documentation files. In `bin/README.md`, typos like "cand re-do" were corrected to "can re-do", "cets committed" to "gets committed", and "instrctions" to "instructions". The `docs/dev/spec/index-knowledge-copilot-spec.md` file had "suure" corrected to "sure". Finally, `docs/dev/spec/usecases/do-file-tasks.md` and `docs/dev/spec/what-is-where.md` both received grammatical corrections, improving readability and clarity in descriptions of task microsectioning and AI prompt specifications respectively. These changes primarily enhance the accuracy and professionalism of the project's documentation.
+The provided git diff contains several minor corrections across documentation files. In `bin/README.md`, typos like "cand re-do" were corrected to "can re-do", "cets committed" to "gets committed", and "instrctions" to "instructions". The `docs/dev/spec/index-knowledge-copilot-spec.md` file had "suure" corrected to "sure". Finally, `docs/dev/spec/usecases/do-file-tasks.md` and `docs/dev/spec/what-is-where.md` both received grammatical corrections, improving readability and clarity in descriptions of task microsecting and AI prompt specifications respectively. These changes primarily enhance the accuracy and professionalism of the project's documentation.
 
 '''
 

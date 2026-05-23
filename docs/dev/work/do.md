@@ -1,0 +1,24 @@
+---
+"actualCommitMessage": "docs: Add do.md and TODO.md tasks administration"
+"description": "A list of small, focused tasks guiding the current commit with detailed\
+  \ microsected activities."
+"intendedCommitMessage": "introduce new specs for story parsing"
+"priorCommit": "aabedcb91415ed91c91b25f33da59695d650cee6"
+"title": "do.md"
+"workBranch": "new-specs-2"
+"workHeadline": "docs: Add do.md and TODO.md tasks administration"
+---
+
+
+/ - tie off the spec branch and feature. with a commit final with the right files added.
+
+
+# Work Summary
+
+## 2026-05-23 09:32
+
+---
+workHeadline: docs: Add do.md and TODO.md tasks administration
+---
+
+do.md`small, focused tasks that contribute to the current commit. Its primary purpose is to document the activities involved in introducing new specifications for story parsing, providing a microsected breakdown of the

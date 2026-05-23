@@ -26,7 +26,11 @@ The user asserts that a new do.md file should be created clean.  If there is an 
 If the do.md file is already committed, then --newdo has no affect. There is no new commit, and the priorCommit in the new do.md file is the commit from before dtask was run.
 
 ## dtask init with --dirty but not --newdo and do.md is dirty
-The user has not used --newdo to indicate that the existing do.md file is to be overwritten, so dtask should exit with an error.   In this case, if the do.md is top be preserved, then a dtask commit makes more sense
+The user has not used --newdo to indicate that the existing do.md file is to be overwritten, so dtask should exit with an error, refusing to overwrite do.md.   In this case, if the do.md is to be preserved, then a dtask commit makes more sense
+### Test
+---
+given: 
+---
 
 ## dtask commit flag --update
 Frequently in refining a current story or task for implementation, a new spec or story is created.   
