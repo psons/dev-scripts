@@ -1,14 +1,19 @@
 ---
-"actualCommitMessage": "Update work/README.md with info about where the onfilesystem\
-  \ backlog might be."
+"actualCommitMessage": "Commit work/README.md and .gitignore"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
-"intendedCommitMessage": "Update work/README.md with info about where the onfilesystem\
-  \ backlog might be."
-"priorCommit": "4dcf0360fb360aaaf1ded6e8561d50def8075ff8"
+"intendedCommitMessage": "Commit work/README.md and .gitignore"
+"priorCommit": "8bd83c9bc3b26e929fcc1cd4c526ccdf43bf259c"
 "title": "do.md"
 "workBranch": "backlog-plan"
+workHeadline: "Commit work/README.md and .gitignore"
 ---
 
 
+# Work Summary
+
+## 2026-05-26 11:20
+---
+workHeadline: "Commit work/README.md and .gitignore"
+---
 
