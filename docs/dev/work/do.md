@@ -1,12 +1,11 @@
 ---
-"actualCommitMessage": "docs: Add do.md and TODO.md tasks administration"
+"actualCommitMessage": "New bug fix stories, and branch strategy story organization."
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "introduce new specs for story parsing"
 "priorCommit": "aabedcb91415ed91c91b25f33da59695d650cee6"
 "title": "do.md"
 "workBranch": "new-specs-2"
-"workHeadline": "docs: Add do.md and TODO.md tasks administration"
 ---
 
 
