@@ -10,10 +10,18 @@
 ---
 
 
-/ - tie off the spec branch and feature. with a commit final with the right files added.
+x - tie off the spec branch and feature. with a commit final with the right files added.
 
 
 # Work Summary
+
+## 2026-05-26 10:02
+---
+workHeadline: branch strategy story moved from TODO to backlog. backlog/README.md created
+---
+
+backlog/README.md explains pro / con of keeping a backlog in the source repo, and recommends a commit strategy.
+
 
 ## 2026-05-23 09:32
 

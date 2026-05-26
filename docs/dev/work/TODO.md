@@ -1,7 +1,7 @@
 ---
 "description": "Prioritized development tasks and improvements pending implementation."
 "use": "This file is for TODOs that might not get done in the `dtask commit --final` command\
-  \ that will remove do.md from the working tree and get int commits for the do.m:workBranch\
+  \ that will remove do.md from the working tree and get into commits for the do.md:workBranch\
   \ that will get merged to a trunk of archive branch."
 ---
 
@@ -15,14 +15,15 @@ d - buils a few tasks in TODO.md to step toward getting a first pyest BDD workin
 # Misc tasks
 Try to get a testing framework before too may real changes
 
-d - move the creations of te '# Work Summary' heading in do.md to the init command.
+d - move the creations of the '# Work Summary' heading in do.md to the init command.
     - it should always be there, to make tings easier if a manual wsum is added.
 
 d - bug fix: using the --workbranch switch might not in some case be checking out the newly created branch.
 
-d - bug fix: 
+d - bug fix: Work headline not quoted in the do.md work summary to be valid section frontmatter.
 
-    given: 
+d - bug fix: commit wants the workHeadline to be file frontmatter instead of reading it from te lates subsection under '# Work Summary'.
+
     when: uses: $ dtask commit -u
         Error: workHeadline is empty. Use --wsum to generate it, or set workHeadline in do.md.
 
@@ -37,8 +38,4 @@ d - bug fix:
 
 
 
-# branch strategy enhancements story.
-d - build out tool specs to support ../spec/usecases/dtask-branch-enhancements-1-spec.md 
- - [proposed-branching-strategy.md](../spec/usecases/proposed-branching-strategy.md)
- - based on docs/dev/spec/usecases/branch-strategy-request.md
  
