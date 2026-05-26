@@ -15,4 +15,11 @@ Tasks may include a front matter section that immediately follows the line match
 There are two situations that cause a markdown section to be considered a story
 1 - any markdown header with tasks under them.
 2 - Any markdown section where the '# characters that identify it as a markdown header are followed by the string "Story:" before any other non whitespace or newline characters.   
-        
+
+# Example Story with do tasks
+
+## Story: make a little todo list
+
+d - This is a task that s a "do" task
+
+d - this is another task that is a "do task

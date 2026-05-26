@@ -11,14 +11,19 @@ The primary focus is testing `dtask`, a utility that orchestrates localized file
 To ensure test speed, complete environmental isolation, and robust verification of real Git behavior, the project utilizes **Pytest** paired with **Pytest-BDD**.
 
 ### Key Rules
-* **No `src/` Directory Structure:** Tests run directly against executable scripts in `./bin`.
 * **Zero Global State / No State Leakage:** Tests must use standard Pytest fixtures and Pytest-BDD `target_fixture` mappings to pass data down the Given-When-Then pipeline.
 * **Strict Sandboxing:** No test execution may alter the repository hosting this project. Every test interaction with a Git repository or local markdown file must happen inside a sandboxed ecosystem.
 
 ---
 
-## 3. Directory Layout Integration
-Test locations mirror the specification structure. The project layout is organized as follows:
+## 3. Test Repositories
+Repositories to test Git should be simple and minimal with just a few files as needed to represent tracked clean files, tracked dirty files, and untracked files.
+ - file-one.txt
+ - file-two.txt
+ - file-tree.txt
+
+## 4. Directory Layout Integration
+The project layout is organized as follows:
 
 ```text
 .

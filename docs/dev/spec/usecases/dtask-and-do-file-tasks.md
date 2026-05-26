@@ -20,6 +20,10 @@ When the task is complete the user may choose to do a `dtask commit --final` whi
 dtask squash will search from the latest commit backward until it either finds a sequence of commits with the same commit message or reached the priorCommit from the do.md file.  The first sequence of commits with identical commit messages will be squashed into a single commit.
 
 # use situations
+
+## `dtask init --workbranch` with a clean repo
+given a initialized 
+
 ## dtask init with --dirty and --newdo 
 The user asserts that a new do.md file should be created clean.  If there is an existing uncommitted do.md, then it will be added to a commit, and overwritten. That commit will be the priorCommit in the new do.md file because the old one is assumed to relate to a previous task. 
 
