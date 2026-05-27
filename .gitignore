@@ -2,4 +2,5 @@
 .github
 AGENTS.md
 docs/dev/work/backlog
-bin/__pycache__/
+**/__pycache__/
+*.pyc

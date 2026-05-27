@@ -17,10 +17,14 @@ To ensure test speed, complete environmental isolation, and robust verification 
 ---
 
 ## 3. Test Repositories
-Repositories to test Git should be simple and minimal with just a few files as needed to represent tracked clean files, tracked dirty files, and untracked files.
+Repositories to test Git should be simple and minimal with just a few files 
+ - To track the the state of 
+    - docs/dev/work/do.md
+  - To represent tracked clean files, tracked dirty files, and untracked files. 
  - file-one.txt
  - file-two.txt
  - file-tree.txt
+
 
 ## 4. Directory Layout Integration
 The project layout is organized as follows:
