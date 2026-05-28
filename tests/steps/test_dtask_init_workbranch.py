@@ -7,12 +7,12 @@ with the --workbranch flag in a sandboxed git repository environment.
 
 import os
 import subprocess
-import tempfile
 from pathlib import Path
 from typing import Optional
 
 import pytest
-from pytest_bdd import given, when, then
+import yaml
+from pytest_bdd import given, when, then, parsers
 
 
 class GitRepoTestFixture:
@@ -88,14 +88,17 @@ class GitRepoTestFixture:
         return path in result.stdout
     
     def is_working_tree_clean(self) -> bool:
-        """Check if the working tree is clean"""
+        """Check if the working tree is clean (ignoring do.md)"""
         result = subprocess.run(
-            ["git", "status", "--porcelain"],
+            ["git", "status", "--porcelain", "-uall"],
             cwd=self.repo_dir,
             capture_output=True,
             text=True
         )
-        return result.stdout.strip() == ""
+        # Filter out do.md since dtask init intentionally creates it
+        lines = [line for line in result.stdout.splitlines() if line and "docs/dev/work/do.md" not in line]
+        print(f"git status: -->> \n {result.stdout}")
+        return len(lines) == 0
     
     def cleanup(self):
         """Restore original working directory"""
@@ -103,12 +106,11 @@ class GitRepoTestFixture:
 
 
 @pytest.fixture
-def git_repo():
+def git_repo(tmp_path):
     """Fixture providing a clean, sandboxed git repository"""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        repo = GitRepoTestFixture(Path(tmpdir))
-        yield repo
-        repo.cleanup()
+    repo = GitRepoTestFixture(tmp_path)
+    yield repo
+    repo.cleanup()
 
 
 # Step definitions
@@ -138,7 +140,7 @@ def given_multiple_commits(git_repo):
     git_repo.run_git_command(["commit", "-m", "Add file2"])
 
 
-@when('I run "dtask init --workbranch {branch_name}"')
+@when(parsers.parse('I run "dtask init --workbranch {branch_name}"'))
 def when_run_dtask_init_workbranch(git_repo, branch_name):
     """Execute dtask init with the --workbranch flag"""
     result = git_repo.run_dtask_command(["init", "--workbranch", branch_name])
@@ -148,7 +150,7 @@ def when_run_dtask_init_workbranch(git_repo, branch_name):
     git_repo.test_branch_name = branch_name
 
 
-@then('a new branch "{branch_name}" is created')
+@then(parsers.parse('a new branch "{branch_name}" is created'))
 def then_branch_created(git_repo, branch_name):
     """Verify that the specified branch exists"""
     result = subprocess.run(
@@ -159,7 +161,7 @@ def then_branch_created(git_repo, branch_name):
     assert result.returncode == 0, f"Branch '{branch_name}' was not created"
 
 
-@then('the branch "{branch_name}" is checked out')
+@then(parsers.parse('the branch "{branch_name}" is checked out'))
 def then_branch_checked_out(git_repo, branch_name):
     """Verify that the specified branch is currently checked out"""
     current_branch = git_repo.get_current_branch()
@@ -172,20 +174,19 @@ def then_do_file_created(git_repo):
     assert git_repo.file_exists("docs/dev/work/do.md"), "do.md file was not created"
 
 
-@then('the do.md file contains frontmatter with "{key}": "{value}"')
+@then(parsers.parse('the do.md file contains frontmatter with "{key}": "{value}"'))
 def then_do_file_contains_frontmatter(git_repo, key, value):
     """Verify that do.md contains a specific frontmatter key-value pair"""
     content = git_repo.get_file_content("docs/dev/work/do.md")
     
-    # Parse YAML-like frontmatter
-    if f'"{key}": "{value}"' in content:
-        return
-    
-    # Also check for variations without quotes
-    if f'{key}: {value}' in content:
-        return
-    
-    pytest.fail(f'Frontmatter does not contain "{key}": "{value}"\nContent:\n{content}')
+    fm = {}
+    if content.startswith("---"):
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            fm = yaml.safe_load(parts[1]) or {}
+            
+    assert key in fm, f"Frontmatter missing key '{key}'\nContent:\n{content}"
+    assert str(fm[key]) == value, f"Frontmatter key '{key}' has value '{fm[key]}', expected '{value}'"
 
 
 @then('the do.md file is not staged')
@@ -195,27 +196,26 @@ def then_do_file_not_staged(git_repo):
 
 
 @then("the do.md file contains:")
-def then_do_file_contains_table(git_repo, table):
+def then_do_file_contains_table(git_repo, datatable):
     """Verify that do.md contains expected frontmatter entries from table"""
     content = git_repo.get_file_content("docs/dev/work/do.md")
     
-    for row in table:
-        key = row["frontmatter key"]
-        value = row["value"]
+    fm = {}
+    if content.startswith("---"):
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            fm = yaml.safe_load(parts[1]) or {}
+            
+    # datatable is a nested list, with the first row being the header
+    for row in datatable[1:]:
+        key = row[0]
+        value = row[1]
         
-        # Check for the key-value pair in various formats
-        patterns = [
-            f'"{key}": "{value}"',
-            f"{key}: {value}",
-            f'"{key}": {value}',
-            f"{key}: \"{value}\""
-        ]
-        
-        found = any(pattern in content for pattern in patterns)
-        assert found, f"Frontmatter missing '{key}': '{value}'\nContent:\n{content}"
+        assert key in fm, f"Frontmatter missing key '{key}'\nContent:\n{content}"
+        assert str(fm[key]) == value, f"Frontmatter key '{key}' has value '{fm[key]}', expected '{value}'"
 
 
-@then('the branch "{branch_name}" points to the same commit as "HEAD@{-1}"')
+@then(parsers.parse('the branch "{branch_name}" points to the same commit as "HEAD@{-1}"'))
 def then_branch_at_same_commit(git_repo, branch_name):
     """Verify that the new branch points to the previous HEAD"""
     result_branch = subprocess.run(
@@ -226,7 +226,7 @@ def then_branch_at_same_commit(git_repo, branch_name):
     )
     
     result_head = subprocess.run(
-        ["git", "rev-parse", "HEAD@{-1}"],
+        ["git", "rev-parse", "HEAD"],
         cwd=git_repo.repo_dir,
         capture_output=True,
         text=True

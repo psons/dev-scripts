@@ -42,7 +42,7 @@ pytest -m bdd
 ### Run Specific Feature
 
 ```bash
-pytest tests/features/dtask/init_workbranch.feature
+pytest tests/features/dtask/test_init_workbranch.py
 ```
 
 ### Run with Verbose Output

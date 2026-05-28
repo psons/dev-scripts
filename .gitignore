@@ -4,3 +4,4 @@ AGENTS.md
 docs/dev/work/backlog
 **/__pycache__/
 *.pyc
+.pytest_cache/

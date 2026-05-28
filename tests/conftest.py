@@ -69,8 +69,10 @@ When pytest discovers steps/test_dtask_init_workbranch.py, it will:
 import pytest
 from pytest_bdd import given, when, then
 
-# Import step definitions early to ensure they're registered before feature discovery
-from tests.steps import test_dtask_init_workbranch  # noqa: F401
+# Register step definitions as pytest plugins so fixtures are discovered globally
+pytest_plugins = [
+    "tests.steps.test_dtask_init_workbranch",
+]
 
 
 def pytest_configure(config):
@@ -178,7 +180,7 @@ def pytest_collection_modifyitems(config, items):
       pytest -m "not bdd"
     
     Run ONLY BDD scenarios from a specific file:
-      pytest tests/features/dtask/init_workbranch.feature -m bdd
+      pytest tests/features/dtask/test_init_workbranch.py -m bdd
     
     PYTEST-BDD CONNECTION
     --------------------

@@ -15,27 +15,6 @@ can match them to the Gherkin steps in the .feature file.
 import pytest
 from pytest_bdd import scenario
 
-# CRITICAL: Import step module to register steps with pytest-bdd
-# This MUST be done before @scenario decorators are evaluated
-from tests.steps.test_dtask_init_workbranch import (  # noqa: F401
-    # Fixture
-    git_repo,
-    # Given steps
-    given_clean_git_repo,
-    given_clean_working_tree,
-    given_multiple_commits,
-    # When steps
-    when_run_dtask_init_workbranch,
-    # Then steps
-    then_branch_created,
-    then_branch_checked_out,
-    then_do_file_created,
-    then_do_file_contains_frontmatter,
-    then_do_file_not_staged,
-    then_do_file_contains_table,
-    then_branch_at_same_commit,
-    then_working_tree_clean,
-)
 
 
 @scenario(

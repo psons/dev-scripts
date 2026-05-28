@@ -2,7 +2,9 @@
 Specify software as efficiently as possible, leveraging AI,
 with minimal exposure to AI generated errors.
 
-# Approach
+## Key point, Approach.
+The key point in this document is that Gherkin files should be generated from use case driven specs, but and augmented with pytest test cases to control against breakage when enhancements are made. 
+
  - The spec is authoritative for context and user behaviors.
  - The tests are authoritative for technical implementation.
 

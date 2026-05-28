@@ -19,10 +19,10 @@ When the task is complete the user may choose to do a `dtask commit --final` whi
 ### dtask squash, git rebase.
 dtask squash will search from the latest commit backward until it either finds a sequence of commits with the same commit message or reached the priorCommit from the do.md file.  The first sequence of commits with identical commit messages will be squashed into a single commit.
 
-# use situations
+# usage situations
 
 ## `dtask init --workbranch` with a clean repo
-given a initialized 
+Given a initialized git repository and a clean working tree the command `dtask init --workbranch feature-branch` should result in the creation and checkout of 'feature-branch' and the creation of a stubbed in do.md with the frontmatter attribute '"workBranch":' set to "feature-branch"    
 
 ## dtask init with --dirty and --newdo 
 The user asserts that a new do.md file should be created clean.  If there is an existing uncommitted do.md, then it will be added to a commit, and overwritten. That commit will be the priorCommit in the new do.md file because the old one is assumed to relate to a previous task. 
