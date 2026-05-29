@@ -72,6 +72,7 @@ from pytest_bdd import given, when, then
 # Register step definitions as pytest plugins so fixtures are discovered globally
 pytest_plugins = [
     "tests.steps.test_dtask_init_workbranch",
+    "tests.steps.test_dtask_init_dirty_newdo",
 ]
 
 
