@@ -5,13 +5,6 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
-## story: python BDD - dtask init with --dirty and --newdo
-d - do a one time run through AI created "next BDD Feature" for dtask
- generate BDD feature file from usage situation and spec: '## dtask init with --dirty and --newdo ' in docs/dev/spec/usecases/dtask-and-do-file-tasks.md
-    - using the file layout and other instructions for a generalized version of docs/dev/spec/testing-tools/test-tools-spec.md
-    - this is he next use case from the file that isn't generated yet amongst the use cases under under a subsection of docs/dev/spec/usecases/dtask-and-do-file-tasks.md:'# usage situations'
-    - given the spec for the app such as docs/dev/spec/usecases/dtask-and-do-file-tasks.md.
-
 
 ## story: Python BDD skill 
 d - ask copilot to create an AI skill to generate BDD feature files for pytest-bdd

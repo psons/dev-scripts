@@ -59,7 +59,8 @@ pytest -v --gherkin-terminal-reporter
 
 ## Test Design Principles
 
-1. **Sandboxed Environments**: All tests run in isolated temporary directories to prevent side effects on the actual repository
+1. **Sandboxed Environments**:  All tests run in isolated temporary directories to prevent side effects on the actual repository
+                                The actual directory will be: ${TMPDIR}/pytest-of-${USER}
 
 2. **Zero Global State**: Tests use pytest fixtures to manage state, with no shared state between test runs
 

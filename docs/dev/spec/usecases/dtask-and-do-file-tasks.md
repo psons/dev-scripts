@@ -25,12 +25,13 @@ dtask squash will search from the latest commit backward until it either finds a
 Given a initialized git repository and a clean working tree the command `dtask init --workbranch feature-branch` should result in the creation and checkout of 'feature-branch' and the creation of a stubbed in do.md with the frontmatter attribute '"workBranch":' set to "feature-branch"    
 
 ## dtask init with --dirty and --newdo 
-The user asserts that a new do.md file should be created clean.  If there is an existing uncommitted do.md, then it will be added to a commit, and overwritten. That commit will be the priorCommit in the new do.md file because the old one is assumed to relate to a previous task. 
+By including the --newdo flag with the --dirty flag, the user asserts that a new do.md file should be created.  If there is an existing uncommitted do.md, then it will be added to a commit, and overwritten. That commit will be the priorCommit in the new do.md file because the old one is assumed to relate to a previous task. 
 
 If the do.md file is already committed, then --newdo has no affect. There is no new commit, and the priorCommit in the new do.md file is the commit from before dtask was run.
 
 ## dtask init with --dirty but not --newdo and do.md is dirty
 The user has not used --newdo to indicate that the existing do.md file is to be overwritten, so dtask should exit with an error, refusing to overwrite do.md.   In this case, if the do.md is to be preserved, then a dtask commit makes more sense
+
 ### Test
 ---
 given: 
