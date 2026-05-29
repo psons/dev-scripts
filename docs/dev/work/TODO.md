@@ -5,12 +5,26 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
+## story: python BDD - dtask init with --dirty and --newdo
+d - do a one time run through AI created "next BDD Feature" for dtask
+ generate BDD feature file from usage situation and spec: '## dtask init with --dirty and --newdo ' in docs/dev/spec/usecases/dtask-and-do-file-tasks.md
+    - using the file layout and other instructions for a generalized version of docs/dev/spec/testing-tools/test-tools-spec.md
+    - this is he next use case from the file that isn't generated yet amongst the use cases under under a subsection of docs/dev/spec/usecases/dtask-and-do-file-tasks.md:'# usage situations'
+    - given the spec for the app such as docs/dev/spec/usecases/dtask-and-do-file-tasks.md.
 
-# python testing framework
-d - finish saving the gemini web response into the project tree.
-d - get an LLM to set up the framework and tools.
-d - buils a few tasks in TODO.md to step toward getting a first pyest BDD working.
-    d - refine the scaffolding directories. make a few directories perhaps tar'd up to set state.
+
+## story: Python BDD skill 
+d - ask copilot to create an AI skill to generate BDD feature files for pytest-bdd
+    - skill: generate BDD feature file from usage situation  and spec
+    - using the file layout and other instructions for a generalized version of docs/dev/spec/testing-tools/test-tools-spec.md
+    - using the app specific file use case for the next use case that isn't generated yet amongst the use cases under under a subsection of docs/dev/spec/usecases/dtask-and-do-file-tasks.md:'# usage situations'
+    - given the spec for the app such as docs/dev/spec/usecases/dtask-and-do-file-tasks.md.
+    - this workflow should assume the dtask command does not support the feature yet.
+
+
+d - Tech tests: Fill in tests for implementation behaviors and prevent future breakage
+
+
 
 # Misc tasks
 Try to get a testing framework before too may real changes
@@ -35,7 +49,5 @@ d - bug fix: commit wants the workHeadline to be file frontmatter instead of rea
                 "Error: workHeadline is empty. Use --wsum to generate it, or set workHeadline in do.md.",
                 file=sys.stderr
             )
-
-
 
  

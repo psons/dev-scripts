@@ -5,7 +5,6 @@ This module implements the step definitions for testing the dtask init command
 with the --workbranch flag in a sandboxed git repository environment.
 """
 
-import os
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -20,8 +19,6 @@ class GitRepoTestFixture:
     
     def __init__(self, temp_dir: Path):
         self.repo_dir = temp_dir
-        self.original_cwd = os.getcwd()
-        os.chdir(self.repo_dir)
         self._initialize_repo()
     
     def _initialize_repo(self):
@@ -100,17 +97,15 @@ class GitRepoTestFixture:
         print(f"git status: -->> \n {result.stdout}")
         return len(lines) == 0
     
-    def cleanup(self):
-        """Restore original working directory"""
-        os.chdir(self.original_cwd)
-
-
 @pytest.fixture
 def git_repo(tmp_path):
-    """Fixture providing a clean, sandboxed git repository"""
+    """Fixture providing a clean, sandboxed git repository.
+
+    Uses pytest's tmp_path which retains temp directories from the last 3 runs.
+    Configure retention with: pytest --basetemp=<dir> or in pytest.ini via tmp_path_retention_count.
+    """
     repo = GitRepoTestFixture(tmp_path)
     yield repo
-    repo.cleanup()
 
 
 # Step definitions
