@@ -73,6 +73,7 @@ from pytest_bdd import given, when, then
 pytest_plugins = [
     "tests.steps.test_dtask_init_workbranch",
     "tests.steps.test_dtask_init_dirty_newdo",
+  "tests.steps.test_dtask_commit_no_wsum",
 ]
 
 

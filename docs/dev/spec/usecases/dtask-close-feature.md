@@ -1,4 +1,5 @@
-Commands i use when closing out a feature and starting another one.
+
+Commands I use when closing out a feature and starting another one.
   526  git status
   527  git add docs/dev/work/TODO.md bin/dtask bin/README.md.gitignore
   528  git add docs/dev/work/TODO.md bin/dtask bin/README.md .gitignore
