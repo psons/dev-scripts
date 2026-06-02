@@ -5,9 +5,14 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
+d - use the bdd skill to generate integration tests between the dtask and wsum modules.
+ - Refer to the gemini output for some tips.
+    - should use BDD for the user surfaced behaviors through dtask --wsum
+    - should use direct code integration of te dtask consumption of the contract.
 
 d - Tech tests: Fill in tests for implementation behaviors and prevent future breakage
     - What is he best way to discover the need for such tests?  Run coverage?
+
 
 # Misc tasks
 Try to get a testing framework before too may real changes
@@ -29,5 +34,12 @@ d - bug fix: commit wants the workHeadline to be file frontmatter instead of rea
                 "Error: workHeadline is empty. Use --wsum to generate it, or set workHeadline in do.md.",
                 file=sys.stderr
             )
+
+# story: BDD process
+d - update ai/skills/pytest-bdd-from-command/SKILL.md so that it runs successfuly for commands that have not been implemented yet.
+ - a  goal is to use the spec to run BDD prior to implementation.
+ - currently the skill has a quality gate that says: "- Generated tests pass locally with pytest."
+    When BDD happens before implementation, this quality gate has to be deferred to be part of the implementation step.
+
 
  

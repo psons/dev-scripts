@@ -112,6 +112,9 @@ implement --newdo as specified and the script as specified so that the init comm
 # not in scope.
 at this time, do not implement the features in docs/dev/spec/dtask-un-spec.md
 
+# dtask commit enhancements story.
+change `dtask commit` behavior to by default only commit staged files and only include unstaged files if a --all switch is provided.
+
 # dtask commit flag --update
 Add a `--update` option to `dtask commit` to support committing tracked work while intentionally leaving untracked files out of scope.
 
@@ -252,7 +255,7 @@ command:
 expected results:
 - command exits successfully.
 - exactly one new commit is created.
-- commit message is `remove do.md`.
+- commit message is `removed do.md for finalized tasks`.
 - commit deletes docs/dev/work/do.md.
 
 verification checks:

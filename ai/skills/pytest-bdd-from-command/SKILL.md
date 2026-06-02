@@ -33,6 +33,10 @@ Provide:
 - Always generate both success-path and failure-path scenarios, even when only one path is explicitly requested.
 - Step definitions must execute commands through a shared helper/fixture layer; do not run command execution inline in individual step functions.
 - Clarification for compliance with `docs/dev/spec/testing-tools/test-tools-spec.md`: share helper code, not runtime state. Command result objects, temp paths, and mutable context must be created per scenario (or per step as needed) and passed through fixtures/`target_fixture`, with no cross-scenario object reuse.
+- Always read `docs/dev/spec/testing-tools/test-tools-spec.md` before generating or modifying pytest-bdd artifacts.
+- Use command-scoped step phrases for command-specific suites to prevent cross-command collisions.
+  - Prefer phrases like `I run <command_slug> command "..."`, `the <command_slug> command succeeds`, and `the <command_slug> error output mentions "..."`.
+  - Avoid adding generic phrases such as `I run "..."`, `the command succeeds`, or `the error output mentions "..."` when other command families already exist in the suite.
 - Apply fixed file naming:
 	- Feature file: `tests/features/<command_slug>/<command_slug>.feature`
 	- Step file: `tests/steps/test_<command_slug>_steps.py`
@@ -62,10 +66,14 @@ Provide:
 5. Wire imports and discovery.
 - Ensure step modules are discoverable by pytest collection in this repo layout.
 - Keep test naming aligned with existing patterns (`test_*.py`).
+- Before finalizing, scan existing step files for overlapping generic step phrases and resolve collisions by namespacing new phrases to the command.
 
 6. Validate by running tests.
 - Run targeted tests first, then broader suite if requested.
 - Example: `pytest tests/features/<topic> -q`
+
+7. Keep test documentation aligned.
+- If generated/updated tests change behavior, structure, naming, or workflow guidance, update `tests/README.md` in the same change.
 
 ## Decision Points
 - If command behavior changes by flag combinations: prefer multiple scenarios over one oversized scenario.
@@ -83,6 +91,8 @@ Provide:
 - Step implementations call a shared command execution helper/fixture instead of direct subprocess logic per step.
 - Runtime objects are isolated per scenario: no shared mutable command-result objects, no shared mutable temp repo paths, and no leaked state between scenarios.
 - Generated files follow the fixed naming convention for feature and step files.
+- `tests/README.md` reflects the latest test suite structure and usage guidance when generated outputs introduce meaningful changes.
+- Command-specific suites use command-scoped step text, and no generic step phrase collision is introduced across command families.
 
 ## Output Contract
 Return:

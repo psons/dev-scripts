@@ -11,10 +11,18 @@ tests/
 ├── conftest.py              # Pytest configuration and fixtures
 ├── features/                # Gherkin feature files (.feature)
 │   └── dtask/
-│       └── init_workbranch.feature
+│       ├── init_workbranch.feature
+│       ├── init_dirty_newdo.feature
+│       └── commit_no_wsum.feature
+├── features/
+│   └── wsum/
+│       └── wsum.feature
 ├── steps/                   # Step definition implementations
 │   ├── __init__.py
-│   └── test_dtask_init_workbranch.py
+│   ├── test_dtask_init_workbranch.py
+│   ├── test_dtask_init_dirty_newdo.py
+│   └── test_dtask_commit_no_wsum.py
+│   └── test_wsum_steps.py
 └── README.md               # This file
 ```
 
@@ -43,6 +51,14 @@ pytest -m bdd
 
 ```bash
 pytest tests/features/dtask/test_init_workbranch.py
+```
+
+Other feature modules:
+
+```bash
+pytest tests/features/dtask/test_init_dirty_newdo.py
+pytest tests/features/dtask/test_commit_no_wsum.py
+pytest tests/features/wsum/test_wsum.py
 ```
 
 ### Run with Verbose Output
@@ -89,9 +105,77 @@ Tests the `dtask init --workbranch` command:
   - Verifies branch points to correct commit
   - Verifies working tree remains clean
 
+### init_dirty_newdo.feature
+
+Tests `dtask init` behavior for dirty working trees and do.md replacement safeguards:
+
+- **Scenario 1**: `--dirty --newdo` commits dirty do.md before replacing
+  - Verifies an intermediate `do.md when ...` commit is made
+  - Verifies new do.md `priorCommit` points to the save commit
+- **Scenario 2**: `--dirty --newdo` when do.md is already committed
+  - Verifies no extra save commit is made
+  - Verifies new do.md `priorCommit` points to pre-command HEAD
+- **Scenario 3**: `--dirty` without `--newdo` when do.md is dirty
+  - Verifies non-zero exit and guidance mentioning `--newdo`
+  - Verifies existing do.md content remains unchanged after failure
+- **Scenario 4**: `--dirty` with only non-do.md dirty files
+  - Verifies init succeeds and creates do.md
+  - Verifies pre-existing non-do.md modifications remain present
+
+### commit_no_wsum.feature
+
+Tests `dtask commit` behavior without `--wsum` integration:
+
+- **Scenario 1**: Default commit uses `workHeadline`
+  - Verifies commit message comes from `workHeadline`
+  - Verifies `actualCommitMessage` is updated to match
+  - Verifies untracked files are excluded
+- **Scenario 2**: `--actual <message>` uses explicit message
+  - Verifies explicit message is written to do.md and used for commit
+- **Scenario 3**: `--actual` without message copies `intendedCommitMessage`
+  - Verifies copied value is committed and persisted to do.md
+- **Scenario 4**: `--update` includes tracked unstaged changes only
+  - Verifies tracked changes are included and untracked are excluded
+- **Scenario 5**: `--final` with dirty do.md
+  - Verifies first commit includes do.md changes and task files
+  - Verifies second commit removes do.md with finalized removal message
+- **Scenario 6**: `--final` with clean working tree
+  - Verifies removal-only finalization commit still occurs
+- **Scenario 7**: `--all` and `--update` are mutually exclusive
+  - Verifies command fails with argparse conflict error
+
+### wsum.feature
+
+Tests `wsum.py` as a standalone CLI utility (explicitly excluding dtask integration):
+
+- **Scenario 1**: default invocation is staged-only
+  - Verifies staged changes are summarized
+  - Verifies tracked unstaged and untracked files are excluded
+- **Scenario 2**: `--all` includes staged, tracked unstaged, and untracked changes
+  - Verifies inclusion scope matches all-change semantics
+- **Scenario 3**: `--update` includes tracked unstaged but excludes untracked
+  - Verifies update scope alignment with tracked-only semantics
+- **Scenario 4**: `--base` compares against a non-default ref
+  - Verifies base-ref override is applied
+- **Scenario 5**: stdin diff input takes precedence
+  - Verifies provided stdin diff is summarized instead of internal git diff
+- **Scenario 6**: empty diff handling
+  - Verifies command exits with error when there is nothing to summarize
+- **Scenario 7**: extra diff arg validation
+  - Verifies unsupported extra git diff args are rejected with an error
+- **Scenario 8**: markdown formatting compatibility
+  - Verifies timestamp heading and `workHeadline` frontmatter structure
+
 ## Step Definitions
 
-Step definitions are implemented in `steps/test_dtask_init_workbranch.py` and include:
+Step definitions are implemented across:
+
+- `steps/test_dtask_init_workbranch.py`
+- `steps/test_dtask_init_dirty_newdo.py`
+- `steps/test_dtask_commit_no_wsum.py`
+- `steps/test_wsum_steps.py`
+
+Together they include:
 
 - **Given**: Repository initialization and state setup
 - **When**: dtask command execution
