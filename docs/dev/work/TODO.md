@@ -5,8 +5,13 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
+d - Test the BDD skill by skill by generating tests for the dtask commit scenarios
+---
+    story: Python BDD skill
+---
 
 d - Tech tests: Fill in tests for implementation behaviors and prevent future breakage
+    - What is he best way to discover the need for such tests?  Run coverage?
 
 # Misc tasks
 Try to get a testing framework before too may real changes
