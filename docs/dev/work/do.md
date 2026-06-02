@@ -1,5 +1,6 @@
 ---
-"actualCommitMessage": " SKILL.md in source control; symlink .github/skills to ai/skills to be less tied to copilot"
+"actualCommitMessage": "AI skill to generate BDD feature,step, and test files for\
+  \ pytest-bdd"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "AI skill to generate BDD feature,step, and test files for\
@@ -7,8 +8,10 @@
 "priorCommit": "2191f0fb525d55e36a4e66909248c2b299319aeb"
 "title": "do.md"
 "workBranch": "bdd-dtask-init-dbdd-feature-skillhon"
-"workHeadline": " SKILL.md in source control; symlink .github/skills to ai/skills to be less tied to copilot"
+"workHeadline": " SKILL.md in source control; symlink .github/skills to ai/skills\
+  \ to be less tied to copilot"
 ---
+
 
 ## story: Python BDD skill 
 x - ask copilot to create an AI skill to generate BDD feature files for pytest-bdd
