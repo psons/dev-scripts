@@ -46,9 +46,11 @@ def given_uncommitted_do_md(git_repo):
     """Create docs/dev/work/do.md but leave it untracked (never committed)."""
     do_md = git_repo.repo_dir / "docs" / "dev" / "work" / "do.md"
     do_md.parent.mkdir(parents=True, exist_ok=True)
-    do_md.write_text(
+    original_content = (
         "---\ntitle: do.md\nworkBranch: old-feature\n---\nOld task notes.\n"
     )
+    do_md.write_text(original_content)
+    git_repo.original_do_md_content = original_content
 
 
 @given("the working tree has a committed do.md file")
@@ -160,6 +162,18 @@ def then_error_mentions(git_repo, text):
     assert text in combined, (
         f"Expected '{text}' in command output.\n"
         f"stdout: {result.stdout}\nstderr: {result.stderr}"
+    )
+
+
+@then("the existing do.md content is unchanged")
+def then_existing_do_md_content_unchanged(git_repo):
+    """Assert dtask did not overwrite a dirty do.md when --newdo was omitted."""
+    do_md = git_repo.repo_dir / "docs" / "dev" / "work" / "do.md"
+    assert do_md.exists(), "Expected pre-existing do.md to still exist after failure"
+    actual_content = do_md.read_text()
+    assert actual_content == git_repo.original_do_md_content, (
+        "Expected do.md content to remain unchanged after failed init without --newdo.\n"
+        f"Actual:\n{actual_content}"
     )
 
 

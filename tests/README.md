@@ -106,6 +106,40 @@ To add new test scenarios:
 3. Use the `GitRepoTestFixture` class to manage sandboxed repositories
 4. Run tests to verify: `pytest`
 
+## Explaining and Expanding the Suite with the New Skill
+
+Use the `pytest-bdd-from-command` skill to generate and explain pytest-bdd coverage from a command reference plus an expected outcome.
+
+What to provide to the skill:
+
+1. Command usage details (syntax, flags, examples, expected errors)
+2. A short description of desired behavior (success and failure expectations)
+3. Any constraints (file naming, fixture reuse, target folders)
+
+What the skill will produce in this repository:
+
+1. Gherkin feature files in `tests/features/<command_slug>/<command_slug>.feature`
+2. Step definition files in `tests/steps/test_<command_slug>_steps.py`
+3. Runnable pytest commands and scenario coverage notes
+
+Required compliance from `docs/dev/spec/testing-tools/test-tools-spec.md`:
+
+1. Shared helper code is required for command execution logic
+2. Runtime objects must remain isolated per scenario (no mutable object reuse across scenarios)
+3. Scenario state must flow through fixtures and pytest-bdd `target_fixture` mappings
+4. No global state leakage and no side effects outside test sandboxes
+
+Suggested prompt pattern:
+
+"Using the pytest-bdd-from-command skill, generate feature and step files for <command>, include success and failure scenarios, and keep runtime state isolated per scenario."
+
+Leaner prompt pattern:
+
+"Use pytest-bdd-from-command for <command> with this outcome: <expected outcome>."
+
+The "<expected outcome>" should be a reference to a section in a file under docs/dev/spec/usecases such as the subsections under 
+'# usage situations' in docs/dev/work/backlog-link/branch-strategy-story.md. 
+
 ## Common Issues
 
 ### pytest-bdd not found

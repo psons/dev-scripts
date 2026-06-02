@@ -30,6 +30,7 @@ Feature: dtask init with --dirty and --newdo flags
     When I run "dtask init --workbranch new-feature --dirty"
     Then the command fails with a non-zero exit code
     And the error output mentions "--newdo"
+    And the existing do.md content is unchanged
 
   Scenario: dirty allows init when only non-do.md files are dirty
     Given the working tree has a modified tracked file "file-one.txt"
