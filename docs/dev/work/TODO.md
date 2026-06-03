@@ -5,11 +5,6 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
-d - use the bdd skill to generate integration tests between the dtask and wsum modules.
- - Refer to the gemini output for some tips.
-    - should use BDD for the user surfaced behaviors through dtask --wsum
-    - should use direct code integration of te dtask consumption of the contract.
-
 d - Tech tests: Fill in tests for implementation behaviors and prevent future breakage
     - What is he best way to discover the need for such tests?  Run coverage?
 

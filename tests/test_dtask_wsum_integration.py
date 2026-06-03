@@ -166,7 +166,10 @@ class TestDtaskWsumIntegration:
 
     def test_markdown_insertion_into_do_md(self, tmp_path):
         """Test that the markdown format is suitable for insertion into do.md."""
-        do_md = tmp_path / "do.md"
+        # Create the correct directory structure: docs/dev/work/do.md
+        do_md_dir = tmp_path / "docs" / "dev" / "work"
+        do_md_dir.mkdir(parents=True, exist_ok=True)
+        do_md = do_md_dir / "do.md"
         do_md.write_text("# Work Summary\n\n## Previous entry\n\nOld text.\n")
 
         result = WorkSummaryResult(

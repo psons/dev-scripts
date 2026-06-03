@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat: Enhance `wsum` and `dtask` testing with unit/integration\
-  \ tests and documentation; clarify `wsum` subprocess wrapper."
+"actualCommitMessage": "bug fix: correct tmp_path tests with do.md to use the correct\
+  \ path."
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Generate feature files and tests from specs and prove that\
@@ -8,9 +8,9 @@
 "priorCommit": "5e6dbd5b99a63892f1b9a816642f2a46c838c3a1"
 "title": "do.md"
 "workBranch": "tests-dtask-commit"
-"workHeadline": "feat: Enhance `wsum` and `dtask` testing with unit/integration tests\
-  \ and documentation; clarify `wsum` subprocess wrapper."
+"workHeadline": "bug fix: correct tmp_path tests with do.md to use the correct path."
 ---
+
 
 
 / - use the bdd skill to generate integration tests between the dtask and wsum modules.
@@ -53,6 +53,15 @@ story: Python BDD skill
 ---
 
 # Work Summary
+
+## 2026-06-03 16:24
+
+---
+workHeadline: bug fix: correct tmp_path tests with do.md to use the correct path.
+---
+
+bug fix: correct tmp_path tests with do.md to use the correct path.
+
 
 ## 2026-06-03 15:33
 
