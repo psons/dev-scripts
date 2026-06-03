@@ -166,6 +166,36 @@ Tests `wsum.py` as a standalone CLI utility (explicitly excluding dtask integrat
 - **Scenario 8**: markdown formatting compatibility
   - Verifies timestamp heading and `workHeadline` frontmatter structure
 
+## Unit Tests
+
+In addition to BDD tests, the suite includes comprehensive unit tests for internal APIs and integration contracts:
+
+- `tests/test_wsum_unit.py` — Unit tests for wsum module functions
+  - `TestValidateExtraDiffArgs`: Tests diff argument allow-list enforcement
+  - `TestSummarizeWork`: Tests end-to-end summarization with mocked LLM calls
+  - `TestRunGemini`: Tests Gemini subprocess integration
+  - `TestHeadlineFromSummary`: Tests headline generation and truncation
+  - Total: 18 test cases
+
+- `tests/test_dtask_wsum_integration.py` — Contract tests for dtask ↔ wsum integration
+  - `TestWorkSummaryResultContract`: Validates WorkSummaryResult properties and immutability
+  - `TestMarkdownFormatContract`: Validates markdown structure compatibility with dtask
+  - `TestDtaskWsumIntegration`: Integration scenarios (None handling, errors, markdown insertion)
+  - Total: 10 test cases
+
+### Unit Test Design
+
+Unit tests isolate internal APIs by mocking external dependencies:
+
+- **Mocked Dependencies**: Git commands, LLM subprocess calls, file I/O
+- **Real Instances**: WorkSummaryResult dataclass instances (not MagicMock) to enforce contracts
+- **Focused Assertions**: Each test validates one specific behavior or contract requirement
+
+Run unit tests:
+```bash
+pytest tests/test_wsum_unit.py tests/test_dtask_wsum_integration.py -v
+```
+
 ## Step Definitions
 
 Step definitions are implemented across:

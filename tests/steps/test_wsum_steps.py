@@ -16,6 +16,15 @@ from pytest_bdd import given, parsers, then, when
 WSUM_SCRIPT = Path(__file__).resolve().parents[2] / "bin" / "wsum.py"
 
 WSUM_WRAPPER_CODE = r'''
+# Subprocess wrapper for wsum CLI testing.
+# This code is executed in an isolated subprocess to test wsum behavior
+# with deterministic, monkeypatched LLM functions instead of calling
+# the real Gemini API. This approach:
+# - Avoids API dependencies and credential exposure in test output
+# - Provides deterministic, repeatable test results
+# - Isolates the wsum module in a fresh subprocess context
+# - Monkeypatches run_gemini and headline_from_summary for test stubs
+
 import importlib.util
 import sys
 
@@ -42,7 +51,17 @@ raise SystemExit(module.main(args))
 
 
 def _build_minimal_env() -> dict[str, str]:
-    """Build a minimal environment for subprocesses to reduce secret exposure."""
+    """
+    Build a minimal environment for subprocesses to reduce secret exposure.
+
+    Creates an environment dict containing only essential variables (PATH, HOME,
+    LANG, LC_ALL, PYTHONPATH). This prevents accidental propagation of unrelated
+    credentials, API keys, or tokens into child processes. All other environment
+    variables are explicitly excluded from the subprocess context.
+
+    Returns:
+        dict[str, str]: A minimal environment dict safe for subprocess execution.
+    """
     env: dict[str, str] = {}
     for key in ["PATH", "HOME", "LANG", "LC_ALL", "PYTHONPATH"]:
         value = os.environ.get(key)
@@ -52,6 +71,21 @@ def _build_minimal_env() -> dict[str, str]:
 
 
 def _wsum_wrapper_command(args: list[str]) -> list[str]:
+    """
+    Build a subprocess command to execute wsum with monkeypatched LLM stubs.
+
+    Instead of writing a fake 'gemini' binary to PATH (a broad security concern),
+    this function constructs a command that runs the WSUM_WRAPPER_CODE in an
+    isolated subprocess. The wrapper dynamically loads the wsum module and
+    monkeypatches its LLM functions (run_gemini, headline_from_summary) with
+    deterministic test stubs that return predictable values.
+
+    Args:
+        args: Command-line arguments to pass to wsum.main().
+
+    Returns:
+        list[str]: A command list suitable for subprocess.Popen or subprocess.run.
+    """
     return [sys.executable, "-c", WSUM_WRAPPER_CODE, str(WSUM_SCRIPT), *args]
 
 

@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "wsum tests: Security review and fix with Python stubs and\
-  \ hardened subprocess environments"
+"actualCommitMessage": "feat: Enhance `wsum` and `dtask` testing with unit/integration\
+  \ tests and documentation; clarify `wsum` subprocess wrapper."
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Generate feature files and tests from specs and prove that\
@@ -8,26 +8,41 @@
 "priorCommit": "5e6dbd5b99a63892f1b9a816642f2a46c838c3a1"
 "title": "do.md"
 "workBranch": "tests-dtask-commit"
-"workHeadline": "wsum tests: Security review and fix with Python stubs and hardened\
-  \ subprocess environments"
+"workHeadline": "feat: Enhance `wsum` and `dtask` testing with unit/integration tests\
+  \ and documentation; clarify `wsum` subprocess wrapper."
 ---
 
 
+/ - use the bdd skill to generate integration tests between the dtask and wsum modules.
+ - Refer to the gemini output for some tips.
+    - should use BDD for the user surfaced behaviors through dtask --wsum
+    - should use direct code integration of the dtask consumption of the contract.
+    x - forming gemini prompt: "In this project, what is the best way to test the wsum.summarize_work function which calls the gemini CLI external command.   The project already has BDD tests to test the command line usages of ..."
+---
+prompt: Use pytest-bdd-from-command to generate CLI tests for dtask commit related behaviors that use he --wsum option. 
+---
 
 
-/ - manually review the BDD wsum.py tests in tests/steps/test_wsum_steps.py
+x - dtask - wsum integration test
+---
+prompt: review the testing strategy in docs/dev/spec/testing-tools/test-integration-dtask-call-wsum.md and propose corrections or improvements.
+prompt: Update docs/dev/spec/testing-tools/test-integration-dtask-call-wsum.md with the recommendations and generate the unit tests.  Do not generate the BDD CLI tests because there will be a separate run if the BDD skill to do that.
+---
+
+
+x - manually review the BDD wsum.py tests in tests/steps/test_wsum_steps.py
     x - update "then" clause to read and write proper YAML front matter. `the markdown output includes workHeadline frontmatter` 
     ---
     prompt: "improve any tests that read or write YAML frontmatter according to the new rule in docs/dev/spec/testing-tools/test-tools-spec.md"
     ---
-    d - given_fake_gemini_cli should not generate a fake command at run time.   Is there a more secure practice?
+    x - given_fake_gemini_cli should not generate a fake command at run time.   Is there a more secure practice?
         - should "I want predictable wsum CLI behavior for diff selection and markdown output" be a behavior of the feature?  it is really just a requirement of testing...
             - should it be in the feature file?
 
 
 x - Generate BDD tests for the wsum.py module as a command line utility.
 ---
-"prompt": "Use pytest-bdd-from-command for wsum.py as specified in the in docs/dev/spec/wsum-module-spec.md. Ignore testing of integration with dtask, which will be part of a different feature test"
+"prompt": "Use pytest-bdd-from-command for wsum.py as specified in the in docs/dev/spec/wsum-module-spec.md. Ignore testing of integration with dtask, which will be part of a different future test"
 ---
 
 x - Test the BDD skill by generating tests for the dtask commit scenarios not including --wsum
@@ -38,6 +53,14 @@ story: Python BDD skill
 ---
 
 # Work Summary
+
+## 2026-06-03 15:33
+
+---
+workHeadline: feat: Enhance `wsum` and `dtask` testing with unit/integration tests and documentation; clarify `wsum` subprocess wrapper.
+---
+
+The project now includes comprehensive unit and integration tests for the `wsum` module and its interaction with `dtask`. New documentation in `docs/dev/spec/testing-tools/test-integration-dtask-call-wsum.md` details these testing strategies, which are further reflected in an updated `tests/README.md`. Specifically, new files `tests/test_wsum_unit.py` and `tests/test_dtask_wsum_integration.py` establish a robust contract, verifying `wsum.summarize_work`'s structure, markdown format, and error handling, while ensuring `dtask` correctly invokes `wsum` and handles its responses. Additionally, comments were added to `tests/steps/test_wsum_steps.py` to clarify the `wsum` subprocess wrapper and environment building for enhanced security and test determinism.
 
 ## 2026-06-03 08:03
 
