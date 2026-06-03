@@ -5,7 +5,7 @@ Feature: wsum command behavior without dtask integration
 
   Background:
     Given a git repository with tracked files for wsum
-    And a fake gemini cli is available for wsum tests
+    And deterministic gemini stubs are active for wsum tests
 
   Scenario: default invocation summarizes staged changes only
     Given the tracked file "file-one.txt" has staged changes with content "staged-change-one"

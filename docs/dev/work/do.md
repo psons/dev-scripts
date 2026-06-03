@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Refactor test utilities to standardize YAML frontmatter parsing\
-  \ using python-frontmatter"
+"actualCommitMessage": "wsum tests: Security review and fix with Python stubs and\
+  \ hardened subprocess environments"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Generate feature files and tests from specs and prove that\
@@ -8,21 +8,21 @@
 "priorCommit": "5e6dbd5b99a63892f1b9a816642f2a46c838c3a1"
 "title": "do.md"
 "workBranch": "tests-dtask-commit"
-"workHeadline": "Refactor test utilities to standardize YAML frontmatter parsing using\
-  \ python-frontmatter"
+"workHeadline": "wsum tests: Security review and fix with Python stubs and hardened\
+  \ subprocess environments"
 ---
+
 
 
 
 / - manually review the BDD wsum.py tests in tests/steps/test_wsum_steps.py
- d - update "then" clause to read and write proper YAML front matter. `the markdown output includes workHeadline frontmatter` 
----
-prompt: "improve any tests that read or write YAML frontmatter according to the new rule in docs/dev/spec/testing-tools/test-tools-spec.md"
----
- d - the spec docs/dev/spec/testing-tools/test-tools-spec.md should be updated to require that all features that read and write frontmatter must use real libraries to do so.
- d - given_fake_gemini_cli should not generate a fake command at run time.   Is there a more secure practice?
-    - should "I want predictable wsum CLI behavior for diff selection and markdown output" be a behavior of the feature?  it is really just a requirement of testing...
-        - should it be in the feature file?
+    x - update "then" clause to read and write proper YAML front matter. `the markdown output includes workHeadline frontmatter` 
+    ---
+    prompt: "improve any tests that read or write YAML frontmatter according to the new rule in docs/dev/spec/testing-tools/test-tools-spec.md"
+    ---
+    d - given_fake_gemini_cli should not generate a fake command at run time.   Is there a more secure practice?
+        - should "I want predictable wsum CLI behavior for diff selection and markdown output" be a behavior of the feature?  it is really just a requirement of testing...
+            - should it be in the feature file?
 
 
 x - Generate BDD tests for the wsum.py module as a command line utility.
@@ -38,6 +38,15 @@ story: Python BDD skill
 ---
 
 # Work Summary
+
+## 2026-06-03 08:03
+
+---
+workHeadline: `wsum`: Refactor testing infrastructure for reliability and security with Python stubs and hardened subprocess environments
+---
+
+The `wsum` command's testing infrastructure has been significantly refactored to enhance reliability and security. The previous approach of mocking the Gemini CLI using a fake executable in the system's PATH has been replaced with a Python-based wrapper that directly overrides `wsum.py`'s external communication functions with deterministic stubs. This ensures consistent test results and reduces reliance on environment modifications. Furthermore, subprocesses now run within a minimal environment to limit potential secret exposure, and command parsing for `wsum` invocations in tests has been improved for robustness.
+
 
 ## 2026-06-03 07:35
 

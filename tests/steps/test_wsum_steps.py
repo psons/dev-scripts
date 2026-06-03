@@ -5,16 +5,54 @@ from __future__ import annotations
 import os
 import pty
 import re
-import stat
+import shlex
 import subprocess
 import sys
 from pathlib import Path
 
-import frontmatter
 import yaml
 from pytest_bdd import given, parsers, then, when
 
 WSUM_SCRIPT = Path(__file__).resolve().parents[2] / "bin" / "wsum.py"
+
+WSUM_WRAPPER_CODE = r'''
+import importlib.util
+import sys
+
+path = sys.argv[1]
+args = sys.argv[2:]
+
+spec = importlib.util.spec_from_file_location("wsum_under_test", path)
+module = importlib.util.module_from_spec(spec)
+assert spec.loader is not None
+sys.modules[spec.name] = module
+spec.loader.exec_module(module)
+
+def _fake_run_gemini(diff_text, *, model=None, max_sentences=6):
+    return "SUMMARY:" + diff_text
+
+def _fake_headline_from_summary(summary, max_len=130, model=None):
+    return "fake-headline-for-tests"
+
+module.run_gemini = _fake_run_gemini
+module.headline_from_summary = _fake_headline_from_summary
+
+raise SystemExit(module.main(args))
+'''
+
+
+def _build_minimal_env() -> dict[str, str]:
+    """Build a minimal environment for subprocesses to reduce secret exposure."""
+    env: dict[str, str] = {}
+    for key in ["PATH", "HOME", "LANG", "LC_ALL", "PYTHONPATH"]:
+        value = os.environ.get(key)
+        if value is not None:
+            env[key] = value
+    return env
+
+
+def _wsum_wrapper_command(args: list[str]) -> list[str]:
+    return [sys.executable, "-c", WSUM_WRAPPER_CODE, str(WSUM_SCRIPT), *args]
 
 
 @given("a git repository with tracked files for wsum")
@@ -25,31 +63,10 @@ def given_repo_with_tracked_files(git_repo):
     git_repo.run_git_command(["commit", "-m", "Add tracked files for wsum tests"])
 
 
-@given("a fake gemini cli is available for wsum tests")
+@given("deterministic gemini stubs are active for wsum tests")
 def given_fake_gemini_cli(git_repo):
-    fake_bin = git_repo.repo_dir / "fake-bin"
-    fake_bin.mkdir(parents=True, exist_ok=True)
-    gemini_script = fake_bin / "gemini"
-    gemini_script.write_text(
-        "#!/usr/bin/env python3\n"
-        "import sys\n"
-        "args = sys.argv[1:]\n"
-        "prompt = ''\n"
-        "if '-p' in args:\n"
-        "    i = args.index('-p')\n"
-        "    if i + 1 < len(args):\n"
-        "        prompt = args[i + 1]\n"
-        "if 'single-line, information-dense summary suitable as a git commit message' in prompt:\n"
-        "    print('fake-headline-for-tests')\n"
-        "else:\n"
-        "    data = sys.stdin.read()\n"
-        "    print('SUMMARY:' + data)\n"
-    )
-    gemini_script.chmod(gemini_script.stat().st_mode | stat.S_IEXEC)
-
-    env = os.environ.copy()
-    env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
-    git_repo.wsum_env = env
+    """Activate deterministic LLM stubs without writing executables into PATH."""
+    git_repo.wsum_env = _build_minimal_env()
 
 
 @given(parsers.parse('the tracked file "{filename}" has staged changes with content "{content}"'))
@@ -88,18 +105,17 @@ def given_clean_working_tree(git_repo):
         text=True,
         check=True,
     )
-    lines = [line for line in result.stdout.splitlines() if "fake-bin/" not in line]
-    assert not lines, f"Expected clean tree (excluding fake-bin), got:\n{result.stdout}"
+    assert result.stdout.strip() == "", f"Expected clean tree, got:\n{result.stdout}"
 
 
 @when(parsers.parse('I run wsum command "{command}"'))
 def when_run_wsum(git_repo, command):
-    args = command.split()
+    args = shlex.split(command)
     assert args[0] == "wsum", f"Expected command to start with wsum, got: {command}"
     master_fd, slave_fd = pty.openpty()
     try:
         proc = subprocess.Popen(
-            [sys.executable, str(WSUM_SCRIPT), *args[1:]],
+            _wsum_wrapper_command(args[1:]),
             cwd=git_repo.repo_dir,
             stdin=slave_fd,
             stdout=subprocess.PIPE,
@@ -113,7 +129,7 @@ def when_run_wsum(git_repo, command):
         os.close(slave_fd)
 
     git_repo.last_wsum_result = subprocess.CompletedProcess(
-        [sys.executable, str(WSUM_SCRIPT), *args[1:]],
+        _wsum_wrapper_command(args[1:]),
         proc.returncode,
         stdout,
         stderr,
@@ -122,10 +138,10 @@ def when_run_wsum(git_repo, command):
 
 @when(parsers.parse('I run wsum command "{command}" with stdin diff:'))
 def when_run_wsum_with_stdin(git_repo, command, docstring):
-    args = command.split()
+    args = shlex.split(command)
     assert args[0] == "wsum", f"Expected command to start with wsum, got: {command}"
     git_repo.last_wsum_result = subprocess.run(
-        [sys.executable, str(WSUM_SCRIPT), *args[1:]],
+        _wsum_wrapper_command(args[1:]),
         cwd=git_repo.repo_dir,
         capture_output=True,
         text=True,
@@ -188,7 +204,7 @@ def then_output_has_timestamp_heading(git_repo):
 @then("the markdown output includes workHeadline frontmatter")
 def then_output_has_workheadline_frontmatter(git_repo):
     result = git_repo.last_wsum_result
-    match = re.search(r"\n---\n(.*?)\n---\n", result.stdout, re.DOTALL)
+    match = re.search(r"^## .*?\n\n---\n(.*?)\n---\n", result.stdout, re.DOTALL | re.MULTILINE)
     assert match, f"Expected YAML frontmatter block in output:\n{result.stdout}"
     metadata = yaml.safe_load(match.group(1)) or {}
     assert "workHeadline" in metadata, (
