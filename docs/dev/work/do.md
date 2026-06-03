@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat(BDD wsum): Implement wsum BDD tests; refine test generation\
-  \ skill and documentation standards"
+"actualCommitMessage": "Refactor test utilities to standardize YAML frontmatter parsing\
+  \ using python-frontmatter"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Generate feature files and tests from specs and prove that\
@@ -8,12 +8,22 @@
 "priorCommit": "5e6dbd5b99a63892f1b9a816642f2a46c838c3a1"
 "title": "do.md"
 "workBranch": "tests-dtask-commit"
-"workHeadline": "feat(BDD wsum): Implement wsum BDD tests; refine test generation\
-  \ skill and documentation standards"
+"workHeadline": "Refactor test utilities to standardize YAML frontmatter parsing using\
+  \ python-frontmatter"
 ---
 
 
-d - manually review the BDD wsum.py tests
+
+/ - manually review the BDD wsum.py tests in tests/steps/test_wsum_steps.py
+ d - update "then" clause to read and write proper YAML front matter. `the markdown output includes workHeadline frontmatter` 
+---
+prompt: "improve any tests that read or write YAML frontmatter according to the new rule in docs/dev/spec/testing-tools/test-tools-spec.md"
+---
+ d - the spec docs/dev/spec/testing-tools/test-tools-spec.md should be updated to require that all features that read and write frontmatter must use real libraries to do so.
+ d - given_fake_gemini_cli should not generate a fake command at run time.   Is there a more secure practice?
+    - should "I want predictable wsum CLI behavior for diff selection and markdown output" be a behavior of the feature?  it is really just a requirement of testing...
+        - should it be in the feature file?
+
 
 x - Generate BDD tests for the wsum.py module as a command line utility.
 ---
@@ -28,6 +38,14 @@ story: Python BDD skill
 ---
 
 # Work Summary
+
+## 2026-06-03 07:35
+
+---
+workHeadline: Refactor test utilities to standardize YAML frontmatter parsing using python-frontmatter for improved robustness and spec
+---
+
+This update standardizes YAML frontmatter parsing across the project's testing utilities, aligning with a newly introduced specification for correct YAML handling. The `python-frontmatter` library has been integrated and added to test dependencies, replacing previous manual parsing and direct `PyYAML` usage. This refactoring is evident in `test_dtask_commit_no_wsum.py`, `test_dtask_init_dirty_newdo.py`, `test_dtask_init_workbranch.py`, and `test_wsum_steps.py`, where functions for reading, writing, and asserting frontmatter content now leverage the `frontmatter` library for improved robustness and adherence to YAML standards.
 
 ## 2026-06-02 14:27
 

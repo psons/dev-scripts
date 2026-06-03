@@ -16,6 +16,7 @@ To ensure test speed, complete environmental isolation, and robust verification 
 * **Step Phrase Isolation Across Commands:** When multiple command families are tested in the same repository (for example `dtask` and `wsum`), step phrases must be command-scoped to avoid cross-feature step resolution collisions.
   - Prefer command-specific phrases such as `I run wsum command "..."`, `the wsum command succeeds`, and `the wsum error output mentions "..."`.
   - Avoid generic shared phrases like `I run "..."`, `the command succeeds`, and `the error output mentions "..."` across unrelated command families.
+* **Correct YAML parsing** A YAML parser should be used for reading and writing YAML with correct adherence to quoting and escaping rules.
 
 ---
 

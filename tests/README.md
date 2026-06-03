@@ -32,7 +32,7 @@ tests/
 
 Install test dependencies:
 ```bash
-pip install pytest pytest-bdd
+pip install pytest pytest-bdd python-frontmatter
 ```
 
 ### Run All Tests

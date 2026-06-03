@@ -14,8 +14,8 @@ registered globally via pytest_plugins in tests/conftest.py.
 import subprocess
 from pathlib import Path
 
+import frontmatter
 import pytest
-import yaml
 from pytest_bdd import given, when, then, parsers
 
 
@@ -289,10 +289,5 @@ def then_file_still_modified(git_repo, filename):
 # ---------------------------------------------------------------------------
 
 def _parse_frontmatter(content: str) -> dict:
-    """Parse YAML frontmatter from a file whose content starts with ---."""
-    if not content.startswith("---"):
-        return {}
-    parts = content.split("---", 2)
-    if len(parts) < 3:
-        return {}
-    return yaml.safe_load(parts[1]) or {}
+    """Parse YAML frontmatter using python-frontmatter."""
+    return frontmatter.loads(content).metadata

@@ -14,7 +14,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-import yaml
+import frontmatter
 from pytest_bdd import given, when, then, parsers
 
 DO_MD_RELATIVE = "docs/dev/work/do.md"
@@ -44,25 +44,20 @@ def _current_head(git_repo) -> str:
     return result.stdout.strip()
 
 
-def _render_do_md(frontmatter: dict, body: str = "Task notes.\n") -> str:
-    yaml_text = yaml.safe_dump(frontmatter, sort_keys=False).strip()
-    return f"---\n{yaml_text}\n---\n{body.rstrip()}\n"
+def _render_do_md(metadata: dict, body: str = "Task notes.\n") -> str:
+    post = frontmatter.Post(body.rstrip() + "\n", **metadata)
+    return frontmatter.dumps(post)
 
 
 def _read_frontmatter(git_repo) -> dict:
     content = _do_md_path(git_repo).read_text()
-    if not content.startswith("---"):
-        return {}
-    parts = content.split("---", 2)
-    if len(parts) < 3:
-        return {}
-    return yaml.safe_load(parts[1]) or {}
+    return frontmatter.loads(content).metadata
 
 
-def _write_committed_do_md(git_repo, frontmatter: dict, body: str = "Task notes.\n"):
+def _write_committed_do_md(git_repo, metadata: dict, body: str = "Task notes.\n"):
     do_md = _do_md_path(git_repo)
     do_md.parent.mkdir(parents=True, exist_ok=True)
-    do_md.write_text(_render_do_md(frontmatter, body))
+    do_md.write_text(_render_do_md(metadata, body))
     git_repo.run_git_command(["add", DO_MD_RELATIVE])
     git_repo.run_git_command(["commit", "-m", "Add committed do.md"])
 

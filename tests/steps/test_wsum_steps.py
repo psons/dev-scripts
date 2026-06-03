@@ -10,6 +10,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import frontmatter
+import yaml
 from pytest_bdd import given, parsers, then, when
 
 WSUM_SCRIPT = Path(__file__).resolve().parents[2] / "bin" / "wsum.py"
@@ -186,6 +188,9 @@ def then_output_has_timestamp_heading(git_repo):
 @then("the markdown output includes workHeadline frontmatter")
 def then_output_has_workheadline_frontmatter(git_repo):
     result = git_repo.last_wsum_result
-    assert "---" in result.stdout and "workHeadline:" in result.stdout, (
+    match = re.search(r"\n---\n(.*?)\n---\n", result.stdout, re.DOTALL)
+    assert match, f"Expected YAML frontmatter block in output:\n{result.stdout}"
+    metadata = yaml.safe_load(match.group(1)) or {}
+    assert "workHeadline" in metadata, (
         f"Expected workHeadline frontmatter in output:\n{result.stdout}"
     )

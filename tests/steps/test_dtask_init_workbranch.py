@@ -9,8 +9,8 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
+import frontmatter
 import pytest
-import yaml
 from pytest_bdd import given, when, then, parsers
 
 
@@ -173,12 +173,7 @@ def then_do_file_created(git_repo):
 def then_do_file_contains_frontmatter(git_repo, key, value):
     """Verify that do.md contains a specific frontmatter key-value pair"""
     content = git_repo.get_file_content("docs/dev/work/do.md")
-    
-    fm = {}
-    if content.startswith("---"):
-        parts = content.split("---", 2)
-        if len(parts) >= 3:
-            fm = yaml.safe_load(parts[1]) or {}
+    fm = frontmatter.loads(content).metadata
             
     assert key in fm, f"Frontmatter missing key '{key}'\nContent:\n{content}"
     assert str(fm[key]) == value, f"Frontmatter key '{key}' has value '{fm[key]}', expected '{value}'"
@@ -194,12 +189,7 @@ def then_do_file_not_staged(git_repo):
 def then_do_file_contains_table(git_repo, datatable):
     """Verify that do.md contains expected frontmatter entries from table"""
     content = git_repo.get_file_content("docs/dev/work/do.md")
-    
-    fm = {}
-    if content.startswith("---"):
-        parts = content.split("---", 2)
-        if len(parts) >= 3:
-            fm = yaml.safe_load(parts[1]) or {}
+    fm = frontmatter.loads(content).metadata
             
     # datatable is a nested list, with the first row being the header
     for row in datatable[1:]:
