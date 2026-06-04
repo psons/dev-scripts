@@ -27,7 +27,8 @@ Because the `release` branch doesn't technically record that it incorporated `de
 
 To maintain a squashed release branch without crippling the repository's Git history, here are two approaches. Approach A makes the exact requested strategy work flawlessly, while Approach B is a common industry alternative.
 
-### Approach A: The "Ours" Merge Trick (Workaround) (Not chosen alternative)
+### Approach A: The "Ours" Merge Trick (Workaround) (Need to test this before choosing it as the chosen alternative)
+  - what if the dummy commit back to develop is not mode?  Is there a way to fix it later, so that the release branch can again be updated from tue develop branch?
 You can maintain the squashed release branch without breaking Git's history tree by creating a "dummy merge" back to `develop` immediately after a release.
 
 **The Workflow:**
@@ -49,7 +50,7 @@ You can maintain the squashed release branch without breaking Git's history tree
    ```
 **Why this works:** The `merge -s ours` operation creates a parent relationship tying `develop` to the latest commit on `release`. The next time you run `git merge --squash develop` into `release`, Git knows exactly where the last release left off, and the diff will only contain the changes made *since* the last release.
 
-### Approach B: Squash Feature Branches, Tag Releases (Chosen Alternative)
+### Approach B: Squash Feature Branches, Tag Releases 
 If executing dummy merges introduces too much overhead, consider shifting the squash step earlier in the process.
 
 **The Workflow:**
