@@ -1,11 +1,17 @@
 ---
-"actualCommitMessage": "BDD suit: some tests failing : test_dtask_commit_wsum - tests\
-  \ for dtask commit --wsum, enhance documentation, and refactor test fixtures"
+"actualCommitMessage": "BDD and unit tests to prove implementation matches specs for\
+  \ dtask and wsum"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Generate feature files and tests from specs and prove that\
   \ implementation matches"
 "priorCommit": "5e6dbd5b99a63892f1b9a816642f2a46c838c3a1"
+"releaseStatement": "The releasable body of work body of work from this do.md file\
+  \ establishes via BDD that the implementation of dtask and wsum match the use cases\
+  \ and specs. Further, if the behavior changes, tests will break. Unit tests are\
+  \ implemented to detect if work has broken the API relationship between dtask and\
+  \ wsum. These tests are important because they empower AI or humans to change the\
+  \ code, ad address any broader impact of the changes immediately. "
 "title": "do.md"
 "workBranch": "tests-dtask-commit"
 "workHeadline": "BDD suit: some tests failing : test_dtask_commit_wsum - tests for\
@@ -13,7 +19,7 @@
 ---
 
 
-/ - use the bdd skill to generate integration tests between the dtask and wsum modules.
+x - use the bdd skill to generate integration tests between the dtask and wsum modules.
  - Refer to the gemini output for some tips.
     - should use BDD for the user surfaced behaviors through dtask --wsum
     - should use direct code integration of the dtask consumption of the contract.
@@ -21,8 +27,8 @@
     x - begin to trouble shoot 10 failed tests that can not find step definitions
         - tests/features/dtask_commit_wsum/steps.py
         - tests/features/dtask_commit_wsum/dtask_commit_wsum.feature
-    / - make tests pass:
-        - 6 of 10 failing.
+    x - make tests pass:
+        - 0 of 10 failing.
 
 x - dtask - wsum integration test
 ---
