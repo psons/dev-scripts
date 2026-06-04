@@ -5,7 +5,7 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
-d - Tech tests: Fill in tests for implementation behaviors and prevent future breakage
+x - Tech tests: Fill in tests for implementation behaviors and prevent future breakage
     - What is he best way to discover the need for such tests?  Run coverage?
 
 

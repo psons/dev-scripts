@@ -54,6 +54,24 @@ def get_current_commit(repo_root):
     return result.stdout.strip()
 
 
+def get_current_branch(repo_root, *, fail_on_error=False):
+    """Return current branch using symbolic-ref so it works before first commit."""
+    result = subprocess.run(
+        ["git", "symbolic-ref", "--short", "HEAD"],
+        capture_output=True, text=True, cwd=repo_root
+    )
+    if result.returncode != 0:
+        if fail_on_error:
+            git_error = (result.stderr or "").strip()
+            if git_error:
+                print(git_error, file=sys.stderr)
+            else:
+                print("Error: failed to determine current branch.", file=sys.stderr)
+            sys.exit(1)
+        return ""
+    return result.stdout.strip()
+
+
 def is_working_tree_dirty(repo_root):
     result = subprocess.run(
         ["git", "status", "--porcelain"],
@@ -322,12 +340,8 @@ def cmd_init(args):
 
     prior_commit = get_current_commit(repo_root)
 
-    # Determine current branch for frontmatter
-    branch_result = subprocess.run(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-        capture_output=True, text=True, cwd=repo_root
-    )
-    current_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else ""
+    # Determine current branch for frontmatter.
+    current_branch = get_current_branch(repo_root)
 
     frontmatter = {
         "title": DO_MD_TITLE,
@@ -460,12 +474,8 @@ def cmd_commit(args):
 
     work_branch = frontmatter.get("workBranch", "").strip()
 
-    # Verify we are on the correct workBranch
-    branch_result = subprocess.run(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-        capture_output=True, text=True, cwd=repo_root
-    )
-    current_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else ""
+    # Verify we are on the correct workBranch.
+    current_branch = get_current_branch(repo_root, fail_on_error=True)
 
     if work_branch and current_branch != work_branch:
         print(
