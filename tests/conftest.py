@@ -66,15 +66,24 @@ When pytest discovers steps/test_dtask_init_workbranch.py, it will:
 4. Then when .feature files are parsed, the steps are available
 """
 
+import sys
+from pathlib import Path
+
 import pytest
 from pytest_bdd import given, when, then
+
+# Add bin directory to sys.path for wsum import (needed for plugin loading)
+_bin_dir = Path(__file__).resolve().parent.parent / "bin"
+if str(_bin_dir) not in sys.path:
+    sys.path.insert(0, str(_bin_dir))
 
 # Register step definitions as pytest plugins so fixtures are discovered globally
 pytest_plugins = [
     "tests.steps.test_dtask_init_workbranch",
     "tests.steps.test_dtask_init_dirty_newdo",
-  "tests.steps.test_dtask_commit_no_wsum",
-  "tests.steps.test_wsum_steps",
+    "tests.steps.test_dtask_commit_no_wsum",
+    "tests.steps.test_wsum_steps",
+    "tests.features.dtask_commit_wsum.steps",
 ]
 
 

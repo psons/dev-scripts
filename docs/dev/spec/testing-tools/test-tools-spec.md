@@ -64,3 +64,40 @@ Any project skill that generates or modifies pytest-bdd artifacts (including `py
 If a skill definition does not already include that requirement, it must be updated to include it.
 
 Skills must also enforce command-scoped step phrasing to prevent step-definition conflicts between different command families.
+
+## 6. Pytest-BDD Plugin Registration Requirements
+
+### Why This Is Required
+Pytest-BDD only matches Given/When/Then strings against step definitions that are imported and registered before scenario binding and execution.
+
+If a feature suite's step module is not registered as a plugin, scenario collection may succeed while step resolution fails at runtime with `StepDefinitionNotFoundError`.
+
+### Required Registration Pattern
+Every feature suite must register its step module in the top-level test plugin list:
+
+1. Register in `tests/conftest.py` under `pytest_plugins`.
+
+Pytest 9 no longer supports defining `pytest_plugins` in non-top-level `conftest.py` files.
+
+### Global Registration (Cross-Suite)
+When steps are shared broadly, register modules in the root test plugin list:
+
+```python
+# tests/conftest.py
+pytest_plugins = [
+  "tests.steps.test_dtask_init_workbranch",
+  "tests.steps.test_dtask_init_dirty_newdo",
+  "tests.steps.test_dtask_commit_no_wsum",
+  "tests.steps.test_wsum_steps",
+]
+```
+
+Use this list for shared/common step modules and suite-specific step modules.
+
+Because these registrations are global, command-scoped step phrases are mandatory to prevent collisions between suites.
+
+### Operational Rules
+* A new feature suite is incomplete unless plugin registration is added in the same change set as the new `.feature` and step-definition files.
+* Adding only `scenarios(...)` in a test module is not sufficient registration.
+* Do not define `pytest_plugins` in non-top-level conftest files such as `tests/features/<suite>/conftest.py`.
+* Tests should be executed with `pytest`, not plain `python`, so pytest plugin hooks and registration are active.

@@ -8,22 +8,27 @@ This directory contains the test suite for the `dtask` CLI utility. Tests follow
 
 ```
 tests/
-├── conftest.py              # Pytest configuration and fixtures
-├── features/                # Gherkin feature files (.feature)
-│   └── dtask/
-│       ├── init_workbranch.feature
-│       ├── init_dirty_newdo.feature
-│       └── commit_no_wsum.feature
-├── features/
+├── conftest.py                                  # Pytest configuration and fixtures
+├── features/                                    # Gherkin feature files (.feature)
+│   ├── dtask/
+│   │   ├── init_workbranch.feature
+│   │   ├── init_dirty_newdo.feature
+│   │   └── commit_no_wsum.feature
+│   ├── dtask_commit_wsum/
+│   │   ├── dtask_commit_wsum.feature
+│   │   ├── conftest.py
+│   │   └── test_dtask_commit_wsum.py
 │   └── wsum/
 │       └── wsum.feature
-├── steps/                   # Step definition implementations
+├── steps/                                       # Step definition implementations
 │   ├── __init__.py
+│   ├── conftest.py                              # Shared fixtures for step definitions
 │   ├── test_dtask_init_workbranch.py
 │   ├── test_dtask_init_dirty_newdo.py
-│   └── test_dtask_commit_no_wsum.py
+│   ├── test_dtask_commit_no_wsum.py
+│   ├── test_dtask_commit_wsum_steps.py
 │   └── test_wsum_steps.py
-└── README.md               # This file
+└── README.md                                    # This file
 ```
 
 ## Running Tests
@@ -50,12 +55,13 @@ pytest -m bdd
 ### Run Specific Feature
 
 ```bash
-pytest tests/features/dtask/test_init_workbranch.py
+pytest tests/features/dtask_commit_wsum/test_dtask_commit_wsum.py
 ```
 
 Other feature modules:
 
 ```bash
+pytest tests/features/dtask/test_init_workbranch.py
 pytest tests/features/dtask/test_init_dirty_newdo.py
 pytest tests/features/dtask/test_commit_no_wsum.py
 pytest tests/features/wsum/test_wsum.py
@@ -144,6 +150,60 @@ Tests `dtask commit` behavior without `--wsum` integration:
 - **Scenario 7**: `--all` and `--update` are mutually exclusive
   - Verifies command fails with argparse conflict error
 
+### commit_wsum.feature
+
+Tests `dtask commit --wsum` integration for automatic work summary generation:
+
+- **Scenario 1**: Commit staged changes with auto-generated work summary
+  - Verifies work summary is generated and inserted into do.md
+  - Verifies commit message is set to generated work headline
+  - Verifies `actualCommitMessage` is updated in do.md frontmatter
+  - Verifies do.md is staged in the commit
+
+- **Scenario 2**: `--wsum --update` includes tracked unstaged changes
+  - Verifies wsum is called with unstaged changes included
+  - Verifies commit includes both staged and unstaged tracked files
+  - Verifies work summary reflects all included changes
+
+- **Scenario 3**: `--wsum --all` includes all changes
+  - Verifies wsum includes staged, tracked unstaged, and untracked files
+  - Verifies commit includes all change categories
+  - Verifies work summary reflects full scope
+
+- **Scenario 4**: `--wsum --actual <message>` overrides work headline
+  - Verifies work summary is still generated
+  - Verifies explicit message is used for commit instead of headline
+  - Verifies `actualCommitMessage` is set to explicit message
+
+- **Scenario 5**: Error handling when wsum times out (>45 seconds)
+  - Verifies exit code 1 on timeout
+  - Verifies error mentions 45-second limit
+  - Verifies do.md is NOT modified on failure
+
+- **Scenario 6**: Error handling when wsum fails
+  - Verifies exit code 1 on wsum error
+  - Verifies error suggests manual fallback via `actualCommitMessage`
+  - Verifies do.md is NOT modified on failure
+
+- **Scenario 7**: Error when no staged changes
+  - Verifies exit code 1 when nothing to commit
+  - Verifies error message guides user to stage files
+
+- **Scenario 8**: Verify do.md structure after commit
+  - Verifies `workHeadline` is set with non-empty value
+  - Verifies `actualCommitMessage` matches work headline
+  - Verifies `# Work Summary` section exists in body
+
+- **Scenario 9**: Work headline properties and format
+  - Verifies headline is single-line text
+  - Verifies headline is used as commit message
+  - Verifies commit appears in git log
+
+- **Scenario 10**: Multiple consecutive commits with --wsum
+  - Verifies do.md accumulates multiple work summary entries
+  - Verifies entries are in chronological order (newest first)
+  - Verifies each commit is independently recorded
+
 ### wsum.feature
 
 Tests `wsum.py` as a standalone CLI utility (explicitly excluding dtask integration):
@@ -203,6 +263,7 @@ Step definitions are implemented across:
 - `steps/test_dtask_init_workbranch.py`
 - `steps/test_dtask_init_dirty_newdo.py`
 - `steps/test_dtask_commit_no_wsum.py`
+- `steps/test_dtask_commit_wsum_steps.py`
 - `steps/test_wsum_steps.py`
 
 Together they include:
@@ -210,6 +271,16 @@ Together they include:
 - **Given**: Repository initialization and state setup
 - **When**: dtask command execution
 - **Then**: Assertions on repository state, file content, and git status
+
+### Command-Scoped Step Phrases
+
+To avoid collisions between different command families (dtask, wsum), step definitions use command-scoped phrases:
+
+- For `dtask commit --wsum` steps: `I run dtask commit --wsum command`, `the dtask commit --wsum command succeeds`, etc.
+- For `dtask init` steps: `I run "dtask init --workbranch"` (feature-specific scope)
+- For `wsum` steps: Feature-specific or command-scoped depending on context
+
+This prevents pytest-bdd from incorrectly resolving step phrases across different feature files.
 
 ## Extending Tests
 

@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "bug fix: correct tmp_path tests with do.md to use the correct\
-  \ path."
+"actualCommitMessage": "BDD suit: some tests failing : test_dtask_commit_wsum - tests\
+  \ for dtask commit --wsum, enhance documentation, and refactor test fixtures"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Generate feature files and tests from specs and prove that\
@@ -8,9 +8,9 @@
 "priorCommit": "5e6dbd5b99a63892f1b9a816642f2a46c838c3a1"
 "title": "do.md"
 "workBranch": "tests-dtask-commit"
-"workHeadline": "bug fix: correct tmp_path tests with do.md to use the correct path."
+"workHeadline": "BDD suit: some tests failing : test_dtask_commit_wsum - tests for\
+  \ dtask commit --wsum, enhance documentation, and refactor test fixtures"
 ---
-
 
 
 / - use the bdd skill to generate integration tests between the dtask and wsum modules.
@@ -18,11 +18,12 @@
     - should use BDD for the user surfaced behaviors through dtask --wsum
     - should use direct code integration of the dtask consumption of the contract.
     x - forming gemini prompt: "In this project, what is the best way to test the wsum.summarize_work function which calls the gemini CLI external command.   The project already has BDD tests to test the command line usages of ..."
----
-prompt: Use pytest-bdd-from-command to generate CLI tests for dtask commit related behaviors that use he --wsum option. 
----
-
-
+    x - begin to trouble shoot 10 failed tests that can not find step definitions
+        - tests/features/dtask_commit_wsum/steps.py
+        - tests/features/dtask_commit_wsum/dtask_commit_wsum.feature
+    / - make tests pass:
+        - 6 of 10 failing.
+        
 x - dtask - wsum integration test
 ---
 prompt: review the testing strategy in docs/dev/spec/testing-tools/test-integration-dtask-call-wsum.md and propose corrections or improvements.
@@ -51,8 +52,43 @@ story: Python BDD skill
 "prompt": "Use pytest-bdd-from-command for dtask commit related behaviors without the --wsum option as specified in the in docs/dev/spec/dtask-spec.md.\
     \ the --wsum integrations will be tested as part of a separate feature"
 ---
+# Un Committed files Summary
+
+## 2026-06-04 05:46
+
+---
+workHeadline: feat: Introduce BDD tests for dtask commit --wsum, enhance documentation, and refactor test fixtures
+prompt: Use pytest-bdd-from-command to generate CLI tests for dtask commit related behaviors that use the --wsum option. 
+prompt-note: "This might have been a bad prompt because it does not specify the spec."
+---
+
+This diff introduces comprehensive Behavior-Driven Development (BDD) tests for the `dtask commit --wsum` command, which enables automatic work summary generation for Git commits. The `tests/README.md` has been significantly expanded to document the new `commit_wsum.feature` and its ten scenarios, covering various aspects like summary generation, file inclusion, message overriding, and error handling. To support these new tests, `tests/conftest.py` was updated to include the `bin` directory in `sys.path` for `wsum` import and to register the new `test_dtask_commit_wsum` step definitions. Additionally, the `GitRepoTestFixture` utility class was refactored and moved to `tests/steps/conftest.py` to promote code reuse across different test step modules.
+
+$ git status
+On branch tests-dtask-commit
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   docs/dev/work/do.md
+        modified:   tests/README.md
+        modified:   tests/conftest.py
+        modified:   tests/steps/test_dtask_init_workbranch.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        BDD_GENERATION_SUMMARY.md
+        tests/features/dtask_commit_wsum/
+        tests/steps/conftest.py
 
 # Work Summary
+
+## 2026-06-04 10:50
+
+---
+"workHeadline": "BDD suit: some tests failing : test_dtask_commit_wsum - tests for dtask commit --wsum, enhance documentation, and refactor test fixtures"
+---
+
+This change introduces comprehensive BDD tests for the `dtask commit --wsum` command, covering automatic work summary generation, argument handling, and error conditions. To support the new test suite, the step definitions were registered as a global plugin in `tests/conftest.py`, and this registration pattern was documented as a new requirement in the project's testing specification. Key test infrastructure was also refactored, with the `GitRepoTestFixture` helper class moved to a shared `tests/steps/conftest.py` for broader reuse. The test suite's `README.md` was updated to document the new feature scenarios and testing conventions.
 
 ## 2026-06-03 16:24
 
