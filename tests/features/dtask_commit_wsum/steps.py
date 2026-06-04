@@ -10,6 +10,10 @@ commit-specific helpers for wsum integration testing.
 
 import subprocess
 import sys
+import os
+import io
+import runpy
+import contextlib
 from pathlib import Path
 from typing import Optional
 from unittest.mock import patch, MagicMock
@@ -37,6 +41,35 @@ class MockWorkSummaryResult:
     def __init__(self, headline: str = "Work summary headline", markdown: str = "Generated summary content"):
         self.headline = headline
         self.markdown = markdown
+
+
+def _run_dtask_inprocess(repo_dir: Path, args: list[str]) -> subprocess.CompletedProcess:
+    """Run bin/dtask in-process so local monkeypatches affect execution."""
+    dtask_path = Path(__file__).resolve().parents[3] / "bin" / "dtask"
+    old_cwd = os.getcwd()
+    old_argv = sys.argv[:]
+    stdout_buffer = io.StringIO()
+    stderr_buffer = io.StringIO()
+    exit_code = 0
+
+    try:
+        os.chdir(repo_dir)
+        sys.argv = ["dtask", *args]
+        with contextlib.redirect_stdout(stdout_buffer), contextlib.redirect_stderr(stderr_buffer):
+            try:
+                runpy.run_path(str(dtask_path), run_name="__main__")
+            except SystemExit as exc:
+                exit_code = exc.code if isinstance(exc.code, int) else 1
+    finally:
+        os.chdir(old_cwd)
+        sys.argv = old_argv
+
+    return subprocess.CompletedProcess(
+        args=["dtask", *args],
+        returncode=exit_code,
+        stdout=stdout_buffer.getvalue(),
+        stderr=stderr_buffer.getvalue(),
+    )
 
 
 # ============================================================================
@@ -93,6 +126,13 @@ def given_staged_file_one(commit_wsum_repo):
     assert commit_wsum_repo.is_file_staged("file-one.txt"), "file-one.txt should be staged"
 
 
+@given("I have staged file-two.txt")
+def given_staged_file_two(commit_wsum_repo):
+    """Stage file-two.txt."""
+    commit_wsum_repo.run_git_command(["add", "file-two.txt"])
+    assert commit_wsum_repo.is_file_staged("file-two.txt"), "file-two.txt should be staged"
+
+
 @given("I have modified file-two.txt (unstaged)")
 def given_modified_file_two_unstaged(commit_wsum_repo):
     """Create or modify file-two.txt but do not stage it"""
@@ -104,6 +144,14 @@ def given_modified_file_two_unstaged(commit_wsum_repo):
         commit_wsum_repo.run_git_command(["commit", "-m", "Add file-two"])
     
     file_path.write_text("Modified content in file-two (unstaged)\n")
+    commit_wsum_repo.test_file_two_modified = True
+
+
+@given("I have modified file-two.txt")
+def given_modified_file_two(commit_wsum_repo):
+    """Create or modify file-two.txt."""
+    file_path = commit_wsum_repo.repo_dir / "file-two.txt"
+    file_path.write_text("Modified content in file-two\n")
     commit_wsum_repo.test_file_two_modified = True
 
 
@@ -166,18 +214,18 @@ def when_run_dtask_commit_wsum_actual(commit_wsum_repo, message):
 
 @when("I run dtask commit --wsum command with wsum timeout")
 def when_run_dtask_commit_wsum_timeout(commit_wsum_repo):
-    """Execute dtask commit --wsum with mocked wsum timeout"""
-    # Mock wsum.summarize_work to timeout
-    with patch('wsum.summarize_work') as mock_wsum:
-        # Simulate a timeout by making the mock take longer than 45 seconds
-        # In reality we'll use side_effect to raise an exception after a delay
-        def timeout_side_effect(*args, **kwargs):
-            time.sleep(1)  # Simulate slow operation
-            raise TimeoutError("Simulated wsum timeout")
-        
-        mock_wsum.side_effect = timeout_side_effect
-        
-        result = commit_wsum_repo.run_dtask_command(["commit", "--wsum"])
+    """Execute dtask commit --wsum and force the timeout code path deterministically."""
+
+    def slow_wsum(*args, **kwargs):
+        time.sleep(0.5)
+        return MockWorkSummaryResult()
+
+    # Run dtask in-process so this patch affects the wsum call used by dtask.
+    # Patch Thread.join to return immediately; combined with slow_wsum this
+    # makes the worker thread still alive at the timeout check.
+    with patch('wsum.summarize_work', side_effect=slow_wsum), \
+         patch('threading.Thread.join', lambda self, timeout=None: None):
+        result = _run_dtask_inprocess(commit_wsum_repo.repo_dir, ["commit", "--wsum"])
         commit_wsum_repo.last_command_result = result
         commit_wsum_repo.test_exit_code = result.returncode
 
@@ -188,8 +236,9 @@ def when_run_dtask_commit_wsum_error(commit_wsum_repo):
     # Mock wsum.summarize_work to return an error/None
     with patch('wsum.summarize_work') as mock_wsum:
         mock_wsum.return_value = None  # Simulate wsum failure
-        
-        result = commit_wsum_repo.run_dtask_command(["commit", "--wsum"])
+
+        # Run dtask in-process so this patch affects the wsum call used by dtask.
+        result = _run_dtask_inprocess(commit_wsum_repo.repo_dir, ["commit", "--wsum"])
         commit_wsum_repo.last_command_result = result
         commit_wsum_repo.test_exit_code = result.returncode
 
@@ -261,6 +310,13 @@ def then_commit_created(commit_wsum_repo):
 def then_new_commit_created(commit_wsum_repo):
     """Verify that a new commit was created (used in multi-commit scenarios)"""
     then_commit_created(commit_wsum_repo)
+
+
+@then("a commit is created with message from work headline")
+def then_commit_created_with_headline_message(commit_wsum_repo):
+    """Verify a commit was created and its message matches do.md workHeadline."""
+    then_commit_created(commit_wsum_repo)
+    then_commit_message_from_generated_headline(commit_wsum_repo)
 
 
 @then("the commit message contains the work headline from do.md")

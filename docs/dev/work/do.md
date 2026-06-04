@@ -23,7 +23,7 @@
         - tests/features/dtask_commit_wsum/dtask_commit_wsum.feature
     / - make tests pass:
         - 6 of 10 failing.
-        
+
 x - dtask - wsum integration test
 ---
 prompt: review the testing strategy in docs/dev/spec/testing-tools/test-integration-dtask-call-wsum.md and propose corrections or improvements.
@@ -52,35 +52,18 @@ story: Python BDD skill
 "prompt": "Use pytest-bdd-from-command for dtask commit related behaviors without the --wsum option as specified in the in docs/dev/spec/dtask-spec.md.\
     \ the --wsum integrations will be tested as part of a separate feature"
 ---
-# Un Committed files Summary
-
-## 2026-06-04 05:46
-
----
-workHeadline: feat: Introduce BDD tests for dtask commit --wsum, enhance documentation, and refactor test fixtures
-prompt: Use pytest-bdd-from-command to generate CLI tests for dtask commit related behaviors that use the --wsum option. 
-prompt-note: "This might have been a bad prompt because it does not specify the spec."
----
-
-This diff introduces comprehensive Behavior-Driven Development (BDD) tests for the `dtask commit --wsum` command, which enables automatic work summary generation for Git commits. The `tests/README.md` has been significantly expanded to document the new `commit_wsum.feature` and its ten scenarios, covering various aspects like summary generation, file inclusion, message overriding, and error handling. To support these new tests, `tests/conftest.py` was updated to include the `bin` directory in `sys.path` for `wsum` import and to register the new `test_dtask_commit_wsum` step definitions. Additionally, the `GitRepoTestFixture` utility class was refactored and moved to `tests/steps/conftest.py` to promote code reuse across different test step modules.
-
-$ git status
-On branch tests-dtask-commit
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-        modified:   docs/dev/work/do.md
-        modified:   tests/README.md
-        modified:   tests/conftest.py
-        modified:   tests/steps/test_dtask_init_workbranch.py
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-        BDD_GENERATION_SUMMARY.md
-        tests/features/dtask_commit_wsum/
-        tests/steps/conftest.py
 
 # Work Summary
+
+## 2026-06-04 11:22
+
+---
+"workHeadline": "Feat(dtask): commit with wsum tests pass. Implement commit validation; improve testing with `_run_dtask_inprocess` for `wsum` mocking and expanded scenarios"
+---
+
+The `dtask commit` command now includes a validation check that prevents commits when no changes are staged, guiding users to prepare their changes or use the `--all`/`--update` flags. To enhance test reliability, a new `_run_dtask_inprocess` helper was introduced, allowing `dtask` to run within the test process and enabling more precise mocking of internal functions, such as `wsum`'s summarization. This improvement ensures that `wsum` timeout and error scenarios can be deterministically tested. Additionally, the test setup for `dtask_commit_wsum` was expanded with pre-existing tracked files and new steps to cover `--all` and `--update` commit scenarios, alongside an assertion to verify commit messages reflect the work headline from `do.md`.
+
+
 
 ## 2026-06-04 10:50
 

@@ -362,6 +362,15 @@ def cmd_commit(args):
     wsum_include_unstaged = bool(args.all or args.update)
     wsum_include_untracked = bool(args.all)
 
+    # In default commit mode (no --all/--update), staged changes are required.
+    # Check this before running wsum so users see the precise staging guidance.
+    if not args.all and not args.update and not args.final and not has_staged_changes(repo_root):
+        print(
+            "Error: no staged changes to commit. Stage files first or use --all/--update.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     # Handle --wsum: generate work summary and update do.md
     if args.wsum:
         print("Running wsum to generate work summary...")

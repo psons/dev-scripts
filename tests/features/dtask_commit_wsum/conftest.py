@@ -83,6 +83,10 @@ def commit_wsum_repo(tmp_path, mock_gemini_in_path, mock_wsum_summarize):
     # Create docs/dev/work directory
     docs_path = repo.repo_dir / "docs" / "dev" / "work"
     docs_path.mkdir(parents=True, exist_ok=True)
+
+    # Seed tracked files used by --update/--all scenarios.
+    (repo.repo_dir / "file-one.txt").write_text("Initial file-one content\n")
+    (repo.repo_dir / "file-two.txt").write_text("Initial file-two content\n")
     
     # Create do.md with proper frontmatter
     do_md_path = docs_path / "do.md"
@@ -99,8 +103,8 @@ def commit_wsum_repo(tmp_path, mock_gemini_in_path, mock_wsum_summarize):
     fm_str += "---"
     
     do_md_path.write_text(fm_str + body)
-    repo.run_git_command(["add", "docs/dev/work/do.md"])
-    repo.run_git_command(["commit", "-m", "Initialize do.md"])
+    repo.run_git_command(["add", "docs/dev/work/do.md", "file-one.txt", "file-two.txt"])
+    repo.run_git_command(["commit", "-m", "Initialize do.md and tracked files"])
     
     # Store reference to the mock for customization in tests
     repo.mock_wsum_summarize = mock_wsum_summarize
