@@ -103,6 +103,15 @@ def then_do_file_not_staged(git_repo):
     assert not git_repo.is_file_staged("docs/dev/work/do.md"), "do.md should not be staged"
 
 
+@then(parsers.parse('the do.md file body contains the "{heading}" heading'))
+def then_do_file_body_contains_heading(git_repo, heading):
+    """Verify that the requested heading exists in do.md body content."""
+    content = git_repo.get_file_content("docs/dev/work/do.md")
+    post = frontmatter.loads(content)
+    body = post.content
+    assert heading in body, f"Expected heading '{heading}' in do.md body.\nBody:\n{body}"
+
+
 @then("the do.md file contains:")
 def then_do_file_contains_table(git_repo, datatable):
     """Verify that do.md contains expected frontmatter entries from table"""

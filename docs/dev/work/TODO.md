@@ -5,13 +5,18 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
-a - Tech tests: Fill in tests for implementation behaviors and prevent future breakage
-    - What is he best way to discover the need for such tests?  Run coverage?
-    - abandoned due to complexity running coverage and getting a report from tests that run in subprocesses.
-        The subprocesses are part of the tests that use monkey patching on return attributes to make the tests deterministic.
-
-
 # Misc tasks
+
+# x story: initialize '# Work Summary' header as part of init when do.md is created.
+---
+"intendedCommitMessage": "resilience improvements for work summary insertion in do.md"    
+---
+    / - make dtask --wsum wsum behavior resilient to missing '# Work Summary' header in do.md by defaulting to inserting before any '## YYYY-MM-DD hh:mm' header
+    / - if there is no '# Work Summary' header in do.md and no '## YYYY-MM-DD hh:mm' headers, create the '# Work Summary' header and insert the new work summary after it. 
+
+    / - move the creations of the '# Work Summary' heading in do.md to the init command.
+    - it should always be there, to make tings easier if a manual wsum is added.
+
 
 
 

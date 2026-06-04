@@ -204,6 +204,14 @@ dtask commits without --final or --actual should assure that the frontmatter wor
 ## Clarification 2026-05-19 12:14
 work summaries should be inserted into do.md immediately after the heading '# Work Summary', before any existing summary subsection content.
 
+## Enhancement for '# Work Summary' 2026-06-04
+make `dtask --wsum` wsum behavior tolerant of missing '# Work Summary' header in do.md by 
+ - inserting a new '# Work Summary' header before any '## YYYY-MM-DD hh:mm' subsections if they exist
+ - inserting a new '# Work Summary' header at the end of the file.
+then insert the new '## YYYY-MM-DD hh:mm' subsection
+ 
+ When dtask init is run and a new do.md file is created, always include the '# Work Summary' heading in do.md, so that it is already there if a user wants to manually write work summaries.
+
 ## wsum execution and timeout
 - `dtask --wsum` must allow `wsum.summarize_work` at most 45 seconds to complete.
 - If `wsum` does not complete within 45 seconds, `dtask` must terminate the `wsum.summarize_work` call, treat this as an error, and stop the `--wsum` update flow.
@@ -217,7 +225,6 @@ Update comments to enforces that if dtask commit has been invoked with the defau
 
 
 # scenario based test plan for --final edge cases
-Scenario based tests are deferred at this time so as to avoid creating a scheme to avoid polluting the git index.
 
 ## scenario 1: do.md dirty, --final, no --all
 goal: confirm dirty do.md is included in the first commit, then do.md is removed in the second commit.

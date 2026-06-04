@@ -12,6 +12,7 @@ Feature: dtask init with --dirty and --newdo flags
     Then the command succeeds
     And a commit exists with a message containing "do.md when"
     And a new "docs/dev/work/do.md" file is created
+    And the do.md file body contains the "# Work Summary" heading
     And the new do.md priorCommit matches the commit that saved the old do.md
     And the do.md file is not staged
 
@@ -22,6 +23,7 @@ Feature: dtask init with --dirty and --newdo flags
     Then the command succeeds
     And no commit was made with a message containing "do.md when"
     And a new "docs/dev/work/do.md" file is created
+    And the do.md file body contains the "# Work Summary" heading
     And the new do.md priorCommit matches the commit before dtask ran
     And the do.md file is not staged
 
@@ -38,4 +40,5 @@ Feature: dtask init with --dirty and --newdo flags
     When I run "dtask init --workbranch new-feature --dirty"
     Then the command succeeds
     And a new "docs/dev/work/do.md" file is created
+    And the do.md file body contains the "# Work Summary" heading
     And the file "file-one.txt" is still modified in the working tree

@@ -86,6 +86,25 @@ Feature: dtask commit with --wsum flag
     And the do.md body contains the "# Work Summary" section
     And the work summary is inserted before any older summaries
 
+  Scenario: Missing Work Summary header with existing dated summaries inserts header before first dated summary
+    Given do.md has no Work Summary header
+    And do.md has an existing dated summary section
+    And I have modified file-one.txt
+    And I have staged file-one.txt
+    When I run dtask commit --wsum command
+    Then the dtask commit --wsum command succeeds
+    And do.md has a Work Summary header before the first dated summary section
+    And the newest generated summary is immediately after the Work Summary header
+
+  Scenario: Missing Work Summary and dated summaries creates header at end and inserts generated summary
+    Given do.md has no Work Summary header
+    And do.md has no dated summary sections
+    And I have modified file-one.txt
+    And I have staged file-one.txt
+    When I run dtask commit --wsum command
+    Then the dtask commit --wsum command succeeds
+    And do.md ends with a Work Summary section containing the newest generated summary
+
   Scenario: Work headline is generated and matches expected format
     Given I have modified file-one.txt with description "Add new feature"
     And I have staged file-one.txt

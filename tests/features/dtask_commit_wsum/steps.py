@@ -14,6 +14,7 @@ import os
 import io
 import runpy
 import contextlib
+import re
 from pathlib import Path
 from typing import Optional
 from unittest.mock import patch, MagicMock
@@ -173,6 +174,47 @@ def given_clean_working_tree_no_staged(commit_wsum_repo):
         text=True
     )
     assert result.stdout.strip() == "", "Working tree should be clean"
+
+
+@given("do.md has no Work Summary header")
+def given_do_md_missing_work_summary_header(commit_wsum_repo):
+    """Remove the # Work Summary header from do.md body if present."""
+    do_md_path = commit_wsum_repo.repo_dir / "docs" / "dev" / "work" / "do.md"
+    post = frontmatter.loads(do_md_path.read_text())
+    body = post.content
+    body = re.sub(r"(?m)^# Work Summary\s*\n?", "", body, count=1)
+    post.content = body
+    do_md_path.write_text(frontmatter.dumps(post))
+
+
+@given("do.md has an existing dated summary section")
+def given_do_md_has_existing_dated_section(commit_wsum_repo):
+    """Seed do.md body with an older dated summary section."""
+    do_md_path = commit_wsum_repo.repo_dir / "docs" / "dev" / "work" / "do.md"
+    post = frontmatter.loads(do_md_path.read_text())
+    dated_block = (
+        "## 2026-05-01 10:00\n\n"
+        "---\n"
+        "workHeadline: Older summary\n"
+        "---\n\n"
+        "Older summary body.\n"
+    )
+    content = post.content
+    if not content.endswith("\n"):
+        content += "\n"
+    post.content = content + "\n" + dated_block
+    do_md_path.write_text(frontmatter.dumps(post))
+
+
+@given("do.md has no dated summary sections")
+def given_do_md_has_no_dated_sections(commit_wsum_repo):
+    """Remove all dated summary subsection headings from do.md body."""
+    do_md_path = commit_wsum_repo.repo_dir / "docs" / "dev" / "work" / "do.md"
+    post = frontmatter.loads(do_md_path.read_text())
+    body = post.content
+    body = re.sub(r"(?m)^## \d{4}-\d{2}-\d{2} \d{2}:\d{2}\s*$", "", body)
+    post.content = body
+    do_md_path.write_text(frontmatter.dumps(post))
 
 
 # ============================================================================
@@ -552,6 +594,55 @@ def then_work_summary_is_latest(commit_wsum_repo):
     assert "# Work Summary" in body, "Work Summary section should exist"
     # Since we can't easily verify ordering without knowing the exact format,
     # we just verify the section exists
+
+
+@then("do.md has a Work Summary header before the first dated summary section")
+def then_work_summary_before_first_dated_section(commit_wsum_repo):
+    """Verify # Work Summary is present and precedes the first dated subsection."""
+    do_md_content = commit_wsum_repo.get_file_content("docs/dev/work/do.md")
+    body = frontmatter.loads(do_md_content).content
+    header_idx = body.find("# Work Summary")
+    assert header_idx >= 0, "Expected '# Work Summary' header in do.md body"
+
+    match = re.search(r"(?m)^## \d{4}-\d{2}-\d{2} \d{2}:\d{2}\s*$", body)
+    assert match is not None, "Expected at least one dated summary section"
+    assert header_idx < match.start(), "# Work Summary should appear before first dated summary"
+
+
+@then("the newest generated summary is immediately after the Work Summary header")
+def then_generated_summary_is_first_under_header(commit_wsum_repo):
+    """Verify the generated summary appears first in newest-first order under the header."""
+    do_md_content = commit_wsum_repo.get_file_content("docs/dev/work/do.md")
+    body = frontmatter.loads(do_md_content).content
+
+    match = re.search(r"(?m)^# Work Summary\s*$", body)
+    assert match is not None, "Expected '# Work Summary' header in do.md body"
+
+    after_header = body[match.end():]
+    dated_matches = re.findall(r"(?m)^## \d{4}-\d{2}-\d{2} \d{2}:\d{2}\s*$", after_header)
+    normalized = [match.strip() for match in dated_matches]
+    assert normalized, "Expected dated summary sections under '# Work Summary'"
+    assert "## 2026-05-01 10:00" in normalized, "Expected pre-existing dated summary to remain"
+    assert normalized[0] != "## 2026-05-01 10:00", (
+        "Newest generated summary should be directly under '# Work Summary'"
+    )
+
+
+@then("do.md ends with a Work Summary section containing the newest generated summary")
+def then_work_summary_created_at_end_with_generated_entry(commit_wsum_repo):
+    """Verify fallback behavior when no summary section exists in do.md."""
+    do_md_content = commit_wsum_repo.get_file_content("docs/dev/work/do.md")
+    body = frontmatter.loads(do_md_content).content.strip()
+
+    assert "# Work Summary" in body, "Expected '# Work Summary' header to be created"
+    last_header_idx = body.rfind("# Work Summary")
+    assert last_header_idx >= 0
+
+    trailing_section = body[last_header_idx:]
+    assert re.search(r"(?m)^## \d{4}-\d{2}-\d{2} \d{2}:\d{2}\s*$", trailing_section), (
+        "Expected generated dated summary under created '# Work Summary' section"
+    )
+    assert "workHeadline:" in trailing_section, "Expected generated workHeadline frontmatter"
 
 
 @then("the work headline is a single line summary")

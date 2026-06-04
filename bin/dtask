@@ -7,6 +7,7 @@ import subprocess
 import argparse
 import signal
 import threading
+import re
 
 try:
     import yaml
@@ -22,6 +23,7 @@ DO_MD_DESCRIPTION = (
 DO_MD_TITLE = ("do.md")
 
 DO_MD_BODY = """
+# Work Summary
 
 """
 
@@ -216,20 +218,33 @@ def insert_work_summary_into_do_md(do_md_path, work_headline, summary_markdown):
         content = f.read()
 
     work_summary_header = "# Work Summary"
-    header_idx = content.find(work_summary_header)
+    summary_block = summary_markdown.strip() + "\n"
 
-    if header_idx == -1:
-        # No # Work Summary section: add header and insert markdown after it
-        new_content = content.rstrip() + f"\n{work_summary_header}\n\n" + summary_markdown.strip() + "\n"
+    # Ensure the first generated summary is inserted directly under '# Work Summary'.
+    header_match = re.search(r"(?m)^# Work Summary\s*$", content)
+
+    if header_match is not None:
+        insert_pos = header_match.end()
+        # If the header line is not newline-terminated, normalize by adding one.
+        if insert_pos >= len(content) or content[insert_pos:insert_pos + 1] != "\n":
+            new_content = content[:insert_pos] + "\n" + summary_block + content[insert_pos:]
+        else:
+            new_content = content[:insert_pos + 1] + summary_block + content[insert_pos + 1:]
     else:
-        # Find the end of the header line
-        header_line_end = content.find('\n', header_idx)
-        if header_line_end == -1:
-            header_line_end = len(content)
-        insert_pos = header_line_end + 1
-
-        # Insert the new summary_markdown at insert_pos
-        new_content = content[:insert_pos] + summary_markdown.strip() + "\n" + content[insert_pos:]
+        # Enhancement 2026-06-04:
+        # If '# Work Summary' is missing, insert it before any existing
+        # summary timestamp subsection (## YYYY-MM-DD hh:mm) if present.
+        first_timestamp_match = re.search(r"(?m)^## \d{4}-\d{2}-\d{2} \d{2}:\d{2}\s*$", content)
+        if first_timestamp_match is not None:
+            header_block = work_summary_header + "\n\n" + summary_block
+            insert_at = first_timestamp_match.start()
+            new_content = content[:insert_at] + header_block + content[insert_at:]
+        else:
+            # No work summary area exists yet; append the header and new summary.
+            base = content.rstrip("\n")
+            if base:
+                base += "\n\n"
+            new_content = base + work_summary_header + "\n\n" + summary_block
 
     with open(do_md_path, "w") as f:
         f.write(new_content)

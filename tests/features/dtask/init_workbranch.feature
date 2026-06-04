@@ -12,6 +12,7 @@ Feature: dtask init with --workbranch flag
     Then a new branch "my-feature" is created
     And the branch "my-feature" is checked out
     And a "docs/dev/work/do.md" file is created
+    And the do.md file body contains the "# Work Summary" heading
     And the do.md file contains frontmatter with "workBranch": "my-feature"
     And the do.md file is not staged
 
