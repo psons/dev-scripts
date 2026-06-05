@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import json
 import os
 import re
 import subprocess
@@ -113,11 +114,14 @@ def headline_from_summary(summary: str, max_len: int = 130, model: str | None = 
 
 def render_markdown(timestamp: str, headline: str, summary: str) -> str:
     """Render a do.md-compatible work summary markdown block."""
+    # Use JSON string encoding, which is valid YAML double-quoted scalar syntax,
+    # to ensure a single-line and safely escaped workHeadline value.
+    yaml_quoted_headline = json.dumps(headline)
     return (
         "\n"
         f"## {timestamp}\n\n"
         "---\n"
-        f"workHeadline: {headline}\n"
+        f"workHeadline: {yaml_quoted_headline}\n"
         "---\n\n"
         f"{summary.strip()}\n"
     )

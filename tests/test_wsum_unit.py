@@ -81,7 +81,7 @@ class TestSummarizeWork:
         assert isinstance(result, WorkSummaryResult)
         assert result.headline == "feat(file): Add new content"
         assert result.summary == "Added new content to file.txt."
-        assert "workHeadline: feat(file): Add new content" in result.markdown
+        assert 'workHeadline: "feat(file): Add new content"' in result.markdown
         assert "## " in result.markdown  # Timestamp heading present
 
     @patch('wsum.collect_diff')
@@ -201,8 +201,26 @@ class TestSummarizeWork:
         # Check structure
         assert markdown.startswith("\n## ")  # Timestamp heading
         assert "---\n" in markdown  # Frontmatter delimiters
-        assert "workHeadline: Short headline" in markdown
+        assert 'workHeadline: "Short headline"' in markdown
         assert "This is the summary text." in markdown
+
+    @patch('wsum.headline_from_summary')
+    @patch('wsum.run_gemini')
+    @patch('wsum.collect_diff')
+    def test_summarize_work_markdown_quotes_and_escapes_headline(
+        self,
+        mock_collect_diff,
+        mock_run_gemini,
+        mock_headline,
+    ):
+        """Test that markdown renders workHeadline as quoted single-line YAML."""
+        mock_collect_diff.return_value = "diff"
+        mock_run_gemini.return_value = "Summary"
+        mock_headline.return_value = 'Fix "quoted" value: path\\name'
+
+        result = summarize_work()
+
+        assert 'workHeadline: "Fix \\"quoted\\" value: path\\\\name"' in result.markdown
 
 
 class TestRunGemini:

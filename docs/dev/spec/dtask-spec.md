@@ -48,7 +48,7 @@ Example (a work summary entry inside `# Work Summary`):
 ## 2026-05-19 12:26
 
 ---
-workHeadline: refactor(dtask): simplify do.md work summary insertion
+"workHeadline": "refactor(dtask): simplify do.md work summary insertion"
 ---
 
 This update streamlines the dtask script's handling of work summary insertions.
@@ -211,6 +211,9 @@ make `dtask --wsum` wsum behavior tolerant of missing '# Work Summary' header in
 then insert the new '## YYYY-MM-DD hh:mm' subsection
  
  When dtask init is run and a new do.md file is created, always include the '# Work Summary' heading in do.md, so that it is already there if a user wants to manually write work summaries.
+
+## Enhancements for workHeadline in do.md work summaries and commit messages
+
 
 ## wsum execution and timeout
 - `dtask --wsum` must allow `wsum.summarize_work` at most 45 seconds to complete.

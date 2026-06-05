@@ -155,3 +155,5 @@ Update the wsum command as described in bullet items and sections marked (revise
 # Revision prompt
 Refactor and implement the headline_from_summary function to use gemini again to generate a shorter summary as described in bullet items and sections marked (revised 2026-05-15 - 09:46).
 
+## Enhancements for workHeadline as quoted YAML frontmatter 2026-06-03
+the workHeadline in the markdown in WorkSummaryResult returned by summarize_work() should be correctly quoted YAML, and all on a single line
