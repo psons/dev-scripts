@@ -81,8 +81,8 @@ Feature: dtask commit with --wsum flag
     And I have staged file-one.txt
     When I run dtask commit --wsum command
     Then the dtask commit --wsum command succeeds
-    And the do.md frontmatter contains workHeadline with a non-empty value
-    And the do.md frontmatter contains actualCommitMessage matching the work headline
+    And the Work Summary section contains topmost workHeadline with a non-empty value
+    And the do.md frontmatter contains actualCommitMessage matching the topmost work headline
     And the do.md body contains the "# Work Summary" section
     And the work summary is inserted before any older summaries
 

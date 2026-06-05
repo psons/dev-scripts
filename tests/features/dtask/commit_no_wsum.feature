@@ -12,12 +12,12 @@ Feature: dtask commit without --wsum
       | workBranch | current branch |
       | priorCommit | current HEAD |
 
-  Scenario: default commit uses workHeadline and keeps untracked files out of scope
+  Scenario: default commit uses Work Summary workHeadline and keeps untracked files out of scope
     Given the committed do.md file has frontmatter:
       | key | value |
-      | workHeadline | feat: commit staged files without wsum |
       | intendedCommitMessage | planned staged work |
       | actualCommitMessage | stale actual message |
+    And do.md has a Work Summary entry with workHeadline "feat: commit staged files without wsum"
     And the tracked file "file-one.txt" has staged changes with content "file-one staged update"
     And the untracked file "notes.txt" exists with content "temporary notes"
     When I run "dtask commit"
@@ -30,7 +30,6 @@ Feature: dtask commit without --wsum
   Scenario: --actual with an explicit message updates do.md before committing
     Given the committed do.md file has frontmatter:
       | key | value |
-      | workHeadline | feat: explicit actual message is honored |
       | intendedCommitMessage | planned work |
       | actualCommitMessage | stale actual message |
     And the tracked file "file-one.txt" has staged changes with content "file-one staged update"
@@ -43,7 +42,6 @@ Feature: dtask commit without --wsum
   Scenario: --actual without an argument copies intendedCommitMessage
     Given the committed do.md file has frontmatter:
       | key | value |
-      | workHeadline | feat: copied intended message |
       | intendedCommitMessage | copied intended message |
       | actualCommitMessage | stale actual message |
     And the tracked file "file-one.txt" has staged changes with content "file-one staged update"
@@ -56,9 +54,9 @@ Feature: dtask commit without --wsum
   Scenario: --update includes tracked unstaged changes but excludes untracked files
     Given the committed do.md file has frontmatter:
       | key | value |
-      | workHeadline | feat: include tracked updates only |
       | intendedCommitMessage | planned update work |
       | actualCommitMessage | stale actual message |
+    And do.md has a Work Summary entry with workHeadline "feat: include tracked updates only"
     And the tracked file "file-one.txt" has staged changes with content "file-one staged update"
     And the tracked file "file-two.txt" has unstaged changes with content "file-two tracked update"
     And the untracked file "notes.txt" exists with content "temporary notes"
@@ -75,7 +73,6 @@ Feature: dtask commit without --wsum
       | key | value |
       | actualCommitMessage | feat: finalize dirty task |
       | intendedCommitMessage | planned final work |
-      | workHeadline | feat: work summary not used for final |
     And the tracked file "file-one.txt" has staged changes with content "file-one staged update"
     And the do.md file has dirty text "Additional notes that must be committed first."
     When I run "dtask commit --final"
@@ -93,10 +90,24 @@ Feature: dtask commit without --wsum
       | key | value |
       | actualCommitMessage | feat: finalize clean task |
       | intendedCommitMessage | planned clean final work |
-      | workHeadline | feat: work summary not used for final |
     When I run "dtask commit --final"
     Then the command succeeds
     And the latest commit message is "removed do.md for finalized tasks"
+    And the do.md file no longer exists
+
+  Scenario: --final falls back to Work Summary workHeadline when actualCommitMessage is empty
+    Given the committed do.md file has frontmatter:
+      | key | value |
+      | intendedCommitMessage | planned clean final work |
+      | actualCommitMessage | |
+    And do.md has a Work Summary entry with workHeadline "feat: final fallback headline"
+    And the tracked file "file-one.txt" has staged changes with content "file-one staged update"
+    When I run "dtask commit --final"
+    Then the command succeeds
+    And the last 2 commit messages are:
+      | message |
+      | removed do.md for finalized tasks |
+      | feat: final fallback headline |
     And the do.md file no longer exists
 
   Scenario: --all and --update cannot be combined
@@ -104,7 +115,6 @@ Feature: dtask commit without --wsum
       | key | value |
       | actualCommitMessage | feat: invalid flag combination |
       | intendedCommitMessage | planned work |
-      | workHeadline | feat: invalid flag combination |
     When I run "dtask commit --all --update"
     Then the command fails with a non-zero exit code
     And the error output mentions "not allowed with argument"

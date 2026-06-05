@@ -22,6 +22,7 @@ import threading
 import time
 
 import frontmatter
+import yaml
 import pytest
 from pytest_bdd import given, when, then, parsers
 
@@ -42,6 +43,41 @@ class MockWorkSummaryResult:
     def __init__(self, headline: str = "Work summary headline", markdown: str = "Generated summary content"):
         self.headline = headline
         self.markdown = markdown
+
+
+def _extract_topmost_workheadline_from_work_summary(do_md_content: str) -> str:
+    """Return first parse-valid workHeadline from do.md Work Summary region."""
+    post = frontmatter.loads(do_md_content)
+    body = post.content
+
+    start_match = re.search(r"(?m)^# Work Summary\s*$", body)
+    if start_match is None:
+        return ""
+
+    region_start = start_match.end()
+    remainder = body[region_start:]
+    next_h1 = re.search(r"(?m)^# (?!#).*$", remainder)
+    region = remainder if next_h1 is None else remainder[:next_h1.start()]
+
+    for block_match in re.finditer(r"(?ms)^---\s*\n(.*?)\n---\s*$", region):
+        block = block_match.group(1)
+
+        if len(re.findall(r"(?m)^\s*['\"]?workHeadline['\"]?\s*:", block)) > 1:
+            continue
+
+        try:
+            parsed = yaml.safe_load(block)
+        except yaml.YAMLError:
+            continue
+
+        if not isinstance(parsed, dict) or "workHeadline" not in parsed:
+            continue
+
+        candidate = str(parsed.get("workHeadline", "")).strip()
+        if candidate:
+            return candidate
+
+    return ""
 
 
 def _run_dtask_inprocess(repo_dir: Path, args: list[str]) -> subprocess.CompletedProcess:
@@ -363,7 +399,7 @@ def then_commit_created_with_headline_message(commit_wsum_repo):
 
 @then("the commit message contains the work headline from do.md")
 def then_commit_message_is_work_headline(commit_wsum_repo):
-    """Verify that commit message matches the workHeadline from do.md"""
+    """Verify that commit message matches topmost Work Summary workHeadline."""
     # Get the last commit message
     result = subprocess.run(
         ["git", "log", "-1", "--format=%B"],
@@ -373,12 +409,11 @@ def then_commit_message_is_work_headline(commit_wsum_repo):
     )
     last_commit_msg = result.stdout.strip()
     
-    # Get workHeadline from do.md
+    # Get topmost workHeadline from do.md Work Summary section frontmatter.
     do_md_content = commit_wsum_repo.get_file_content("docs/dev/work/do.md")
-    fm = frontmatter.loads(do_md_content).metadata
-    work_headline = fm.get("workHeadline", "").strip()
+    work_headline = _extract_topmost_workheadline_from_work_summary(do_md_content)
     
-    assert work_headline, "workHeadline should be set in do.md"
+    assert work_headline, "workHeadline should be present in Work Summary section frontmatter"
     assert last_commit_msg == work_headline, \
         f"Commit message '{last_commit_msg}' does not match workHeadline '{work_headline}'"
 
@@ -473,12 +508,11 @@ def then_commit_message_from_generated_headline(commit_wsum_repo):
     )
     last_commit_msg = result.stdout.strip()
     
-    # Get workHeadline from do.md
+    # Get topmost workHeadline from do.md Work Summary section frontmatter.
     do_md_content = commit_wsum_repo.get_file_content("docs/dev/work/do.md")
-    fm = frontmatter.loads(do_md_content).metadata
-    work_headline = fm.get("workHeadline", "").strip()
+    work_headline = _extract_topmost_workheadline_from_work_summary(do_md_content)
     
-    assert work_headline, "workHeadline should be generated in do.md"
+    assert work_headline, "workHeadline should be generated in Work Summary section frontmatter"
     assert last_commit_msg == work_headline, \
         f"Commit message '{last_commit_msg}' should match generated workHeadline '{work_headline}'"
 
@@ -548,26 +582,25 @@ def then_work_summary_reflects_all_changes(commit_wsum_repo):
     assert len(parts) > 1 and parts[1].strip(), "Work Summary should have content"
 
 
-@then("the do.md frontmatter contains workHeadline with a non-empty value")
-def then_frontmatter_has_work_headline(commit_wsum_repo):
-    """Verify that workHeadline is set in do.md frontmatter"""
+@then("the Work Summary section contains topmost workHeadline with a non-empty value")
+def then_work_summary_has_work_headline(commit_wsum_repo):
+    """Verify that topmost workHeadline is present in Work Summary section frontmatter."""
     do_md_content = commit_wsum_repo.get_file_content("docs/dev/work/do.md")
-    fm = frontmatter.loads(do_md_content).metadata
-    
-    assert "workHeadline" in fm, "workHeadline should be in frontmatter"
-    assert fm["workHeadline"].strip(), "workHeadline should not be empty"
+    work_headline = _extract_topmost_workheadline_from_work_summary(do_md_content)
+
+    assert work_headline, "Work Summary topmost workHeadline should not be empty"
 
 
-@then("the do.md frontmatter contains actualCommitMessage matching the work headline")
+@then("the do.md frontmatter contains actualCommitMessage matching the topmost work headline")
 def then_frontmatter_actual_matches_headline(commit_wsum_repo):
-    """Verify that actualCommitMessage matches workHeadline"""
+    """Verify that actualCommitMessage matches topmost Work Summary workHeadline."""
     do_md_content = commit_wsum_repo.get_file_content("docs/dev/work/do.md")
     fm = frontmatter.loads(do_md_content).metadata
-    
-    work_headline = fm.get("workHeadline", "").strip()
+
+    work_headline = _extract_topmost_workheadline_from_work_summary(do_md_content)
     actual_msg = fm.get("actualCommitMessage", "").strip()
     
-    assert work_headline, "workHeadline should be set"
+    assert work_headline, "workHeadline should be set in Work Summary section"
     assert actual_msg == work_headline, \
         f"actualCommitMessage '{actual_msg}' should match workHeadline '{work_headline}'"
 
@@ -649,8 +682,7 @@ def then_work_summary_created_at_end_with_generated_entry(commit_wsum_repo):
 def then_work_headline_single_line(commit_wsum_repo):
     """Verify that work headline is a single line (no newlines)"""
     do_md_content = commit_wsum_repo.get_file_content("docs/dev/work/do.md")
-    fm = frontmatter.loads(do_md_content).metadata
-    work_headline = fm.get("workHeadline", "").strip()
+    work_headline = _extract_topmost_workheadline_from_work_summary(do_md_content)
     
     assert work_headline, "workHeadline should be set"
     assert '\n' not in work_headline, "workHeadline should be a single line"
@@ -668,8 +700,7 @@ def then_headline_used_as_commit_message(commit_wsum_repo):
     last_commit_msg = result.stdout.strip()
     
     do_md_content = commit_wsum_repo.get_file_content("docs/dev/work/do.md")
-    fm = frontmatter.loads(do_md_content).metadata
-    work_headline = fm.get("workHeadline", "").strip()
+    work_headline = _extract_topmost_workheadline_from_work_summary(do_md_content)
     
     assert last_commit_msg == work_headline, \
         f"Commit message should be workHeadline. got '{last_commit_msg}', expected '{work_headline}'"

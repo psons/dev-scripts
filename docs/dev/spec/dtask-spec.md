@@ -212,7 +212,31 @@ then insert the new '## YYYY-MM-DD hh:mm' subsection
  
  When dtask init is run and a new do.md file is created, always include the '# Work Summary' heading in do.md, so that it is already there if a user wants to manually write work summaries.
 
-## Enhancements for workHeadline in do.md work summaries and commit messages
+## Enhancements for workHeadline in do.md work summaries and commit messages 2026-06-04
+workHeadline should not be a file frontmatter attribute.
+
+definition: topmost means earliest in file order, where file order is from the first line in the file to the last line in the file.
+
+for commit message candidate selection, scan only the Work Summary region.
+the Work Summary region starts at the line matching '# Work Summary' and ends at the next level-1 heading ('# ...') or end of file.
+within that region, the commit message workHeadline is the first parse-valid section frontmatter value for key workHeadline encountered during a top-to-bottom scan.
+parse-valid means a non-empty YAML scalar value for key workHeadline.
+only section frontmatter blocks inside the Work Summary region are eligible for commit message workHeadline selection.
+section frontmatter outside the Work Summary region is ignored.
+if a section frontmatter block is malformed YAML, ignore that block and continue scanning.
+if key workHeadline appears more than once in a single section frontmatter block, treat that block as invalid and continue scanning.
+
+workHeadline should never be read or written as file frontmatter as defined in the terminology section of this spec.
+
+for the commit message, dtask commit without --final must use this precedence order:
+ - commit message workHeadline
+ - resulting actualCommitMessage after processing --actual behavior for this command invocation
+ - error: no commit message available
+
+for the commit message, dtask commit with --final must use this precedence order:
+ - resulting actualCommitMessage after processing --actual behavior for this command invocation
+ - commit message workHeadline
+ - error: no commit message available
 
 
 ## wsum execution and timeout

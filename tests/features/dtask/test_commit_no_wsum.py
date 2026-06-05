@@ -10,7 +10,7 @@ from pytest_bdd import scenario
 
 @scenario(
     "dtask/commit_no_wsum.feature",
-    "default commit uses workHeadline and keeps untracked files out of scope",
+    "default commit uses Work Summary workHeadline and keeps untracked files out of scope",
 )
 def test_default_commit_uses_workheadline(git_repo):
     pass
@@ -53,6 +53,14 @@ def test_commit_final_dirty_do_md(git_repo):
     "--final removes do.md even when the working tree is clean",
 )
 def test_commit_final_clean_tree(git_repo):
+    pass
+
+
+@scenario(
+    "dtask/commit_no_wsum.feature",
+    "--final falls back to Work Summary workHeadline when actualCommitMessage is empty",
+)
+def test_commit_final_fallback_to_workheadline(git_repo):
     pass
 
 

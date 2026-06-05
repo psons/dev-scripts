@@ -250,6 +250,53 @@ def insert_work_summary_into_do_md(do_md_path, work_headline, summary_markdown):
         f.write(new_content)
 
 
+def extract_commit_message_work_headline(body: str) -> str:
+    """Return topmost parse-valid workHeadline from the Work Summary region."""
+    work_summary_start = re.search(r"(?m)^# Work Summary\s*$", body)
+    if work_summary_start is None:
+        return ""
+
+    region_start = work_summary_start.end()
+    rest = body[region_start:]
+
+    next_h1 = re.search(r"(?m)^# (?!#).*$", rest)
+    if next_h1 is None:
+        work_summary_region = rest
+    else:
+        work_summary_region = rest[:next_h1.start()]
+
+    frontmatter_blocks = re.finditer(
+        r"(?ms)^---\s*\n(.*?)\n---\s*$",
+        work_summary_region,
+    )
+
+    for block_match in frontmatter_blocks:
+        block_text = block_match.group(1)
+
+        # Duplicate keys in one block are invalid for commit-message selection.
+        key_occurrences = re.findall(r"(?m)^\s*['\"]?workHeadline['\"]?\s*:", block_text)
+        if len(key_occurrences) > 1:
+            continue
+
+        try:
+            parsed = yaml.safe_load(block_text)
+        except yaml.YAMLError:
+            continue
+
+        if not isinstance(parsed, dict) or "workHeadline" not in parsed:
+            continue
+
+        candidate = parsed.get("workHeadline")
+        if candidate is None:
+            continue
+
+        candidate_text = str(candidate).strip()
+        if candidate_text:
+            return candidate_text
+
+    return ""
+
+
 def cmd_help(_args):
     print("""dtask - manage git branch and commit messages for the current task
 
@@ -421,12 +468,8 @@ def cmd_commit(args):
                 wsum_result.headline,
                 wsum_result.markdown
             )
-            # Update frontmatter workHeadline
-            frontmatter["workHeadline"] = wsum_result.headline
-            # Reread do.md after insertion to get updated body, but preserve the workHeadline we just set
+            # Reread do.md after insertion to capture updated body.
             _, body = read_do_md(do_md_path)
-            # Write do.md with the updated frontmatter (now includes workHeadline)
-            write_do_md(do_md_path, frontmatter, body)
             do_md_updated_by_dtask = True
             print(f"Work summary added to {DO_MD_RELATIVE}")
         except Exception as e:
@@ -453,28 +496,37 @@ def cmd_commit(args):
         write_do_md(do_md_path, frontmatter, body)
         do_md_updated_by_dtask = True
 
-    # Determine commit message.
-    # - --final uses actualCommitMessage.
-    # - non-final commits without --actual copy workHeadline into actualCommitMessage,
-    #   save do.md, and use that value as the commit message.
+    # Determine commit message based on Work Summary section frontmatter and
+    # resulting actualCommitMessage after --actual handling.
+    commit_message_work_headline = extract_commit_message_work_headline(body)
+
     if args.final:
         commit_message = frontmatter.get("actualCommitMessage", "").strip()
         if not commit_message:
-            print(
-                "Error: actualCommitMessage is empty. Set it in do.md or use --actual [<message>].",
-                file=sys.stderr
-            )
-            sys.exit(1)
-    elif args.actual is None:
-        commit_message = frontmatter.get("workHeadline", "").strip()
+            commit_message = commit_message_work_headline
+
         if not commit_message:
             print(
-                "Error: workHeadline is empty. Use --wsum to generate it, or set workHeadline in do.md.",
+                "Error: no commit message available. Set actualCommitMessage in do.md, "
+                "use --actual, or add workHeadline section frontmatter under '# Work Summary'.",
                 file=sys.stderr
             )
             sys.exit(1)
 
-        if frontmatter.get("actualCommitMessage", "").strip() != commit_message:
+    elif args.actual is None:
+        commit_message = commit_message_work_headline
+        if not commit_message:
+            commit_message = frontmatter.get("actualCommitMessage", "").strip()
+
+        if not commit_message:
+            print(
+                "Error: no commit message available. Set actualCommitMessage in do.md, "
+                "use --actual, or add workHeadline section frontmatter under '# Work Summary'.",
+                file=sys.stderr
+            )
+            sys.exit(1)
+
+        if commit_message_work_headline and frontmatter.get("actualCommitMessage", "").strip() != commit_message:
             frontmatter["actualCommitMessage"] = commit_message
             write_do_md(do_md_path, frontmatter, body)
             do_md_updated_by_dtask = True

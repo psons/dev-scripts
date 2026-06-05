@@ -12,6 +12,7 @@ This module covers:
 from __future__ import annotations
 
 import subprocess
+import re
 from pathlib import Path
 
 import frontmatter
@@ -174,6 +175,38 @@ def given_untracked_file(git_repo, filename, content):
 def given_dirty_do_md(git_repo, content):
     do_md = _do_md_path(git_repo)
     do_md.write_text(do_md.read_text().rstrip() + f"\n\n{content}\n")
+
+
+@given(parsers.parse('do.md has a Work Summary entry with workHeadline "{headline}"'))
+def given_do_md_work_summary_entry_with_headline(git_repo, headline):
+    do_md = _do_md_path(git_repo)
+    post = frontmatter.loads(do_md.read_text())
+
+    summary_entry = (
+        "## 2026-06-04 20:30\n\n"
+        "---\n"
+        f"workHeadline: \"{headline}\"\n"
+        "---\n\n"
+        "Summary text.\n"
+    )
+
+    body = post.content.rstrip("\n")
+    if "# Work Summary" in body:
+        body = re.sub(
+            r"(?m)^# Work Summary\s*$",
+            "# Work Summary\n\n" + summary_entry.rstrip("\n"),
+            body,
+            count=1,
+        )
+    else:
+        if body:
+            body += "\n\n"
+        body += "# Work Summary\n\n" + summary_entry.rstrip("\n")
+
+    post.content = body + "\n"
+    do_md.write_text(frontmatter.dumps(post))
+    git_repo.run_git_command(["add", DO_MD_RELATIVE])
+    git_repo.run_git_command(["commit", "-m", "Add Work Summary entry for commit message selection"])
 
 
 # ---------------------------------------------------------------------------
