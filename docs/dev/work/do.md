@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "dtask: Prioritize `workHeadline` from `do.md`'s `# Work Summary`\
-  \ for commit messages; add parser, update tests & docs"
+"actualCommitMessage": ""
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "resilience improvements for work summary insertion in do.md"
@@ -11,9 +10,7 @@
   \ YAML using JSON encoding, improving parsing; updates specs"
 ---
 
-
-
-# / story: simple commit message enhancements.
+# x story: simple commit message enhancements.
  - workHeadline should not be a file frontMatter attribute
  - if there is no workSummary available at all, use the same actualCommit message logic as --final
  - if there is any work summary with a workHeadline, use the latest one (which should be at the top of the #w Work Summary section)
@@ -26,13 +23,12 @@ Later, I expect to make a task and story parser that has a simpler more tolerant
 x - write docs/dev/spec/wsum-module-spec.md '## Enhancements for workHeadline as quoted YAML frontmatter 2026-06-03' to feed a prompt.
 prompt: do the section docs/dev/spec/wsum-module-spec.md '## Enhancements for workHeadline as quoted YAML frontmatter' and provide unit tests as needed in tests/test_wsum_unit.py.
 
-/ - write '## Enhancements for workHeadline in do.md work summaries and commit messages 2026-06-04' in docs/dev/spec/dtask-spec.md to feed a prompt.
+x - write '## Enhancements for workHeadline in do.md work summaries and commit messages 2026-06-04' in docs/dev/spec/dtask-spec.md to feed a prompt.
 prompt: do the section '## Enhancements for workHeadline in do.md work summaries and commit messages 2026-06-04' in docs/dev/spec/dtask-spec.md, and update BDD tests as needed.
-
 
 x - bug fix: Work headline not quoted in the do.md work summary to be valid section frontmatter.
 
-/ - bug fix: commit wants the workHeadline to be file frontmatter instead of reading it from te lates subsection under '# Work Summary'.
+x - bug fix: commit wants the workHeadline to be file frontmatter instead of reading it from te lates subsection under '# Work Summary'.
 
     when: uses: $ dtask commit -u
         Error: workHeadline is empty. Use --wsum to generate it, or set workHeadline in do.md.
@@ -49,14 +45,23 @@ x - bug fix: Work headline not quoted in the do.md work summary to be valid sect
 # x story: initialize '# Work Summary' header as part of init when do.md is created.
 prompt: implement '## Enhancement for '# Work Summary' 2026-06-04' in docs/dev/spec/dtask-spec.md, and add BDD tests as needed to the existing dtask commit wsum and init scenarios.
 
-/ - make dtask --wsum wsum behavior resilient to missing '# Work Summary' header in do.md by defaulting to inserting before any '## YYYY-MM-DD hh:mm' header
+x - make dtask --wsum wsum behavior resilient to missing '# Work Summary' header in do.md by defaulting to inserting before any '## YYYY-MM-DD hh:mm' header
 
-/ - if there is no '# Work Summary' header in do.md and no '## YYYY-MM-DD hh:mm' headers, create the '# Work Summary' header and insert the new work summary after it. 
+x - if there is no '# Work Summary' header in do.md and no '## YYYY-MM-DD hh:mm' headers, create the '# Work Summary' header and insert the new work summary after it. 
 
-/ - move the creations of the '# Work Summary' heading in do.md to the init command.
+x - move the creations of the '# Work Summary' heading in do.md to the init command.
     - it should always be there, to make tings easier if a manual wsum is added.
 
 # Work Summary
+
+## 2026-06-05 16:25
+
+---
+workHeadline: "Refactor dtask workHeadline from do.md's # Work Summary, improve wsum quoting, and ensure header presence. Update BDD"
+---
+
+This update fundamentally refactors how `dtask` extracts and prioritizes commit messages, now sourcing the `workHeadline` from the topmost valid frontmatter block within the `# Work Summary` section of `do.md`, rather than from the file's main frontmatter. This change is complemented by an enhancement to `wsum.py` to ensure `workHeadline` is consistently quoted and escaped as single-line YAML, improving parsing reliability. Additionally, `dtask` now gracefully handles the absence of a `# Work Summary` header in `do.md` by intelligently inserting it before any existing dated summaries or appending it at the end of the file. Extensive updates to the `dtask-spec.md` and `wsum-module-spec.md` document these new behaviors, which are thoroughly validated by new and modified BDD and unit tests.
+
 
 ## 2026-06-04 21:43
 
