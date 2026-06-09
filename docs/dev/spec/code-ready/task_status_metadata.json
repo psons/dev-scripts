@@ -1,0 +1,8 @@
+{
+    "abandoned": { "val": "a", "pat_str": "^[aA] *-" },
+    "completed": { "val": "x", "pat_str": "^[xX] *-" },
+    "scheduled": { "val": "s", "pat_str": "^[sS] *-" },
+    "in_progress": { "val": "/", "pat_str": "^[\\/\\\\] *-" },
+    "unfinished": { "val": "u", "pat_str": "^[uU] *-" },
+    "do": { "val": "d", "pat_str": "^[dD] *-" }
+}

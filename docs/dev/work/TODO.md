@@ -7,6 +7,7 @@
 
 # Misc tasks
 
+d - write a version of backlog that parses stories and tasks out of a file and loads them into the GB domain model in memory
 
 
  
