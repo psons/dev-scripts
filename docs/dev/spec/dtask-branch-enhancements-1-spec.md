@@ -1,9 +1,11 @@
 
 See also: [proposed-branching-strategy.md](usecases/proposed-branching-strategy.md)
 
-dtask init should not default to workBranch:main 
+For branching strategy, dtask init should not be done to workBranch:main or whatever the detailed commits are kept on.
+ - dtask requires a work branch, but currently allows it to be main.
+ - a tool to manage branching strategy should do whatever branch merging is called for by the strategy.
 
-dtask should require a workBranch be specified other than main, but allow support for an override.
+d - dtask should require a workBranch be specified other than main, but allow support for an override.
 
 should support default branch names, but allow environment vars to set different names for te branch roles:
     release

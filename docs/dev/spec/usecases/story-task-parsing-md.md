@@ -1,3 +1,9 @@
+# Context / Backgroun
+This spec is primarily to describe parsing the parser capabilities of the bin/gbdata.py module.
+That module also contains domain data model for the gb-data schema.
+
+Stories and tasks authored within markdown files per this doc should be available vis the bin/gbdata.py module to a backlog.py plugin implementation that will provide abilities to read and possibly write tasks.
+
 # Stories
 Users should quickly begin to enumerate tasks in a markdown file to begin analyzing and executing work.
 
