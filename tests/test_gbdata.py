@@ -22,6 +22,7 @@ sys.modules["gbdata"] = gbdata
 _spec.loader.exec_module(gbdata)
 
 TaskStatus = gbdata.TaskStatus
+Task = gbdata.Task
 compile_status_patterns = gbdata.compile_status_patterns
 detect_status = gbdata.detect_status
 load_status_map = gbdata.load_status_map
@@ -224,3 +225,15 @@ def test_parse_stories_from_markdown_file_reads_and_parses(tmp_path: Path):
 
     assert len(stories) == 1
     assert stories[0].name == "Story"
+
+
+def test_task_attribs_defaults_to_none():
+    task = Task(id="t1", name="demo")
+
+    assert task.attribs is None
+
+
+def test_task_attribs_accepts_string_map():
+    task = Task(id="t1", name="demo", attribs={"prompt": "build parser"})
+
+    assert task.attribs == {"prompt": "build parser"}

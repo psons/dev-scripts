@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat: Implement backlog.py command module & define CLI pattern;\
-  \ enhance dtask/gbdata for markdown task parsing"
+"actualCommitMessage": "feat(gbdata): Add `attribs` field to `Task` dataclass for\
+  \ flexible metadata; update specs and TODO"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "build out backlog.py and bltodo plugin"
@@ -10,9 +10,17 @@
 ---
 
 
+
 # Work Summary
 
 
+## 2026-06-10 18:34
+
+---
+workHeadline: "feat(gbdata): Add `attribs` field to `Task` dataclass for flexible metadata; update specs and TODO"
+---
+
+This change introduces a new `attribs` dictionary field to the `Task` dataclass in `bin/gbdata.py`, enabling the storage of unvalidated key-value metadata. The `gbdata-spec-ready.md` documentation was updated to reflect this addition, specifying that parsed markdown tasks should default `attribs` to `None` and outlining new tests for this functionality. The `TODO.md` file was also revised to clarify the purpose of the `attribs` field, emphasizing its role in facilitating data exchange between backlog interfaces and underlying implementations, and another task was marked as completed. This enhancement provides a flexible mechanism for applications to associate arbitrary data with tasks and stories within the `gbdata` model.
 ## 2026-06-10 16:48
 
 ---

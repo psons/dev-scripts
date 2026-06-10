@@ -42,6 +42,7 @@ class Task:
     name: str
     status: TaskStatus | None = None
     detail: str | None = None
+    attribs: dict[str, str] | None = None
 
 
 @dataclass(frozen=True, slots=True)

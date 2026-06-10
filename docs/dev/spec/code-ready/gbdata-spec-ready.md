@@ -51,6 +51,7 @@ Implement dataclasses with `frozen=True` and `slots=True`:
    - `name: str`
    - `status: TaskStatus | None = None`
    - `detail: str | None = None`
+   - `attribs: dict[str, str] | None = None`
 
 2. `Story`
    - `id: str`
@@ -167,6 +168,7 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
   - a new story boundary,
   - a heading at same or higher level than current story.
 - Preserve newlines in detail text; trim outer blank lines.
+- Parsed markdown tasks default `attribs` to `None` in this phase.
 
 #### Story Description Handling
 - Lines after a story header that are not task headers and not a closing heading boundary are story description context.
@@ -269,6 +271,7 @@ At minimum, include tests for:
    - indented task-like line not recognized
    - task detail accumulation until boundary
    - task names/defaults for empty headline
+   - task `attribs` default to `None`
 
 5. Boundary behavior
    - same-level heading closes current story
