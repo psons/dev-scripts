@@ -33,8 +33,8 @@ strip_status_prefix = gbdata.strip_status_prefix
 
 def _status_maps() -> tuple[dict[TaskStatus, object], dict[TaskStatus, object]]:
     repo_root = Path(__file__).resolve().parents[1]
-    story = load_status_map(repo_root / "docs/dev/spec/code-ready/story_status_metadata.json")
-    task = load_status_map(repo_root / "docs/dev/spec/code-ready/task_status_metadata.json")
+    story = load_status_map(repo_root / "docs/dev/spec/story_status_metadata.json")
+    task = load_status_map(repo_root / "docs/dev/spec/task_status_metadata.json")
     return story, task
 
 

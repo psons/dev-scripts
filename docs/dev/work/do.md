@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Docs: Add dryrun for bltodo load, plan gbdata refactor to\
-  \ mdgbdata module, and consolidate gbdata background info"
+"actualCommitMessage": "Realign gbdata docs: consolidate spec files, obsolete old,\
+  \ revise background rationale, and update tests and do.md"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "build out backlog.py and bltodo plugin"
@@ -10,20 +10,23 @@
 ---
 
 
+
 x - improve the gb-data model to include an attribs dictionary that can hold unvalidated key-value data such as 'prompt: ' frontmatter like attributes for Goals, tasks, and stories.
  source: project: dev-scripts
  file: docs/dev/work/TODO.md
  - the attribs will be useful for holding data to be passed back from apps using backlog interfaces to the underlying implementation of the backlog when updating, such as a source file, or a story name if the underlying interface does not support stories as a first class object.  (This may be true of taskwarrior)
 
-d - update the gbdata module to separate the gb-data types from the parsing capabilities so that backlog.py and plugins such as bltodo.py can import the same gb-data classes. 
+/ - update the gbdata module to separate the gb-data types from the parsing capabilities so that backlog.py and plugins such as bltodo.py can import the same gb-data classes. 
 
-    d - realign the specs to streamline maintenance.
-    prompt: audit the information in docs/dev/spec/code-ready/gbdata-spec-ready.md to determine if there is any background information in source documets docs/dev/spec/backlog-spec.md and docs/dev/spec/usecases/story-task-parsing-md.md that is pertinant to gbdata.py but not in gbdata-spec-ready.md include any missing information in a document  docs/dev/spec/md-gb-data-background.md 
+    x - realign the specs to streamline maintenance.
+    prompt: audit the information in docs/dev/spec/gbdata-spec-ready.md to determine if there is any background information in source documets docs/dev/spec/backlog-spec.md and docs/dev/spec/usecases/story-task-parsing-md.md that is pertinant to gbdata.py but not in gbdata-spec-ready.md include any missing information in a document  docs/dev/spec/md-gb-data-background.md 
 
 
-    prompt: Please update the background doc to include any information that from docs/dev/spec/gbdata-spec.md that is not included in docs/dev/spec/code-ready/gbdata-spec-ready.md.
+    prompt: Please update the background doc to include any information that from docs/dev/spec/gbdata-spec.md that is not included in docs/dev/spec/gbdata-spec-ready.md.
 
-    prompt: update the tone and perspective of docs/dev/spec/md-gb-data-background.md  to read as an authoritative source of reasoning for the specification in docs/dev/spec/code-ready/gbdata-spec-ready.md.  The specs are to be streamlined so that docs/dev/spec/gbdata-spec.md can be treated as obsolete and moved to docs/dev/spec/obsolete, and later deleted.  It should be possible to regenerate gbdata.py from md-gb-data-background.md and gbdata-spec-ready.md without gbdata-spec.md. story-task-parsing-md.md will be retained for future user documentation, and may be referenced from md-gb-data-background.md, but should not be required for future revisions to gbdata.py.  The background file will be the foundation for a future refactor to separate markdown parsing from the gb types.
+    prompt: update the tone and perspective of docs/dev/spec/md-gb-data-background.md  to read as an authoritative source of reasoning for the specification in docs/dev/spec/gbdata-spec-ready.md.  The specs are to be streamlined so that docs/dev/spec/gbdata-spec.md can be treated as obsolete and moved to docs/dev/spec/obsolete, and later deleted.  It should be possible to regenerate gbdata.py from md-gb-data-background.md and gbdata-spec-ready.md without gbdata-spec.md. story-task-parsing-md.md will be retained for future user documentation, and may be referenced from md-gb-data-background.md, but should not be required for future revisions to gbdata.py.  The background file will be the foundation for a future refactor to separate markdown parsing from the gb types.
+
+    prompt: move gbdata-spec-ready.md to docs/dev/spec and update any markdown links to its location.
 
     d - split mdgbdata-spec.md out of docs/dev/spec/gbdata-spec.md
     - parsing is existing spec, but the code ready spec will be impacted too.
@@ -43,7 +46,7 @@ d - update the gbdata module to separate the gb-data types from the parsing capa
             generate docs/dev/spec/mdgbdata-spec.md as a spec for mdgbdata.py with the parsing capabilities of gbdata.py. mdgbdata.py will replace gbdata.py as a parser, so create unit tests for mdgbdata.py to match the tests for gbdata.py to match  
         d - prompt 2 of 2 to remove markdown parsing capabilities from gbdata.py:
             remove the markdown parsing capabilities from docs/dev/spec/gbdata-spec.md that have been migrated to mdgbdata-spec.md.
-                - regenerate docs/dev/spec/code-ready/gbdata-spec-ready.md and gbdata.py (Actually should enhance gbdata-spec.md to eliminate need for code-ready directory)
+                - regenerate docs/dev/spec/gbdata-spec-ready.md and gbdata.py (Actually should enhance gbdata-spec.md to eliminate need for code-ready directory)
                 - regenerate gbdata.py (determine if it still needs ay unit testing, ad adapt as appropriate)
 
     d - fully describe MGBDF serialization docs/dev/spec/mdgbdata-spec.md
@@ -70,6 +73,13 @@ d - update dtask with a pop subcommand that pops a story by default from backlog
 # Work Summary
 
 
+## 2026-06-11 09:21
+
+---
+workHeadline: "Realign gbdata docs: consolidate spec files, obsolete old, revise background rationale, and update tests and do.md"
+---
+
+The `docs/dev/spec/code-ready` directory has been removed, with its contents, `gbdata-spec-ready.md` and associated JSON metadata files, moved directly into the `docs/dev/spec` directory. The `gbdata-spec.md` file has been marked obsolete and relocated to `docs/dev/spec/obsolete`, while the `md-gb-data-background.md` document has been substantially revised to serve as the authoritative rationale and governance context for the `gbdata.py` implementation. Consequently, test file paths in `tests/test_gbdata.py` have been updated to reflect these new document locations, and the `do.md` task list has been updated to reflect the progress on this specification realignment.
 ## 2026-06-11 08:54
 
 ---
