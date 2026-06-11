@@ -111,14 +111,14 @@ An important principle is that the tools wsum and dtask provide a simple to use 
 
 Provide an analysis of this spec to determine where the overall design can be improved.  Focus on reusability opportunities and integration usability with planned dtask enhancements.
 
-Does the existing worksum command provide the capability to compare staged changes to other branches or commits other than the most recent commit?
+Does the existing wsum command provide the capability to compare staged changes to other branches or commits other than the most recent commit?
 
 What design improvements can be made so that any git diff can be summarized?  Specifically should the wsum command support arbitrary arguments to pass through from its invocation to the git diff?   Or is it better to read the diff output from stdin and allow the invoking program to provide the diff?
 
 ## Design Review Results
 
 1. Current capability assessment:
-The existing `worksum` command already supports comparing against refs other than the most recent commit via `--base` (for example `main`, `HEAD~2`, or a commit SHA), and it supports staged-only mode via `--staged`. This means branch/commit comparison is already partially solved in the current implementation.
+The existing `wsum` command already supports comparing against refs other than the most recent commit via `--base` (for example `main`, `HEAD~2`, or a commit SHA), and it supports staged-only mode via `--staged`. This means branch/commit comparison is already partially solved in the current implementation.
 Action completed in this spec: the new wsum defaults to diffing staged changes against HEAD, and adopts item 5 integration guidance.
 
 

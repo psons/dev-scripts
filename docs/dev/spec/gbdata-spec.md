@@ -16,4 +16,6 @@ gbdata.py should include a class or method to be used for parsing mark down file
  - docs/dev/spec/code-ready/story_status_metadata.json
  - docs/dev/spec/code-ready/task_status_metadata.json
 
+# update 2026-06-10 add tas.attribs
+Update the docs/dev/spec/code-ready/gbdata-spec-ready.md to reflect an addition to https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json whic adds 'attribs' to the Task type.  After updating gbdata-spec-ready.md, also update bin/gbdata.py
 
