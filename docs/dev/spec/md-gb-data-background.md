@@ -1,17 +1,17 @@
 # Markdown GB Data Background and Rationale
 
 ## Status and Authority
-This document is the authoritative reasoning and governance context for the gbdata implementation specification in [docs/dev/spec/gbdata-spec-ready.md](docs/dev/spec/gbdata-spec-ready.md).
+This document is the authoritative reasoning and governance context for the gbdata implementation specification in [docs/dev/spec/gbdata-spec-2.md](docs/dev/spec/gbdata-spec-2.md).
 
-For implementation work on [bin/gbdata.py](bin/gbdata.py), this document and [docs/dev/spec/gbdata-spec-ready.md](docs/dev/spec/gbdata-spec-ready.md) together form the complete source-of-truth pair:
-- [docs/dev/spec/gbdata-spec-ready.md](docs/dev/spec/gbdata-spec-ready.md) defines executable requirements.
+For implementation work on [bin/gbdata.py](bin/gbdata.py), this document and [docs/dev/spec/gbdata-spec-2.md](docs/dev/spec/gbdata-spec-2.md) together form the complete source-of-truth pair:
+- [docs/dev/spec/gbdata-spec-2.md](docs/dev/spec/gbdata-spec-2.md) defines executable requirements.
 - [docs/dev/spec/md-gb-data-background.md](docs/dev/spec/md-gb-data-background.md) defines rationale, source hierarchy, and architectural intent.
 
 [docs/dev/spec/gbdata-spec.md](docs/dev/spec/gbdata-spec.md) is superseded, should be moved to docs/dev/spec/obsolete, and is not required for future gbdata revisions.
 
 ## Source Hierarchy
 The source hierarchy for gbdata is:
-1. [docs/dev/spec/gbdata-spec-ready.md](docs/dev/spec/gbdata-spec-ready.md)
+1. [docs/dev/spec/gbdata-spec-2.md](docs/dev/spec/gbdata-spec-2.md)
 2. [docs/dev/spec/md-gb-data-background.md](docs/dev/spec/md-gb-data-background.md)
 
 Supporting and contextual references:
@@ -22,7 +22,7 @@ The use-case document remains valid for user-facing documentation and examples, 
 
 ## Obsolescence of gbdata-spec.md
 The historical role of [docs/dev/spec/gbdata-spec.md](docs/dev/spec/gbdata-spec.md) has been fully absorbed by:
-- implementation requirements in [docs/dev/spec/gbdata-spec-ready.md](docs/dev/spec/gbdata-spec-ready.md)
+- implementation requirements in [docs/dev/spec/gbdata-spec-2.md](docs/dev/spec/gbdata-spec-2.md)
 - rationale and governance in [docs/dev/spec/md-gb-data-background.md](docs/dev/spec/md-gb-data-background.md)
 
 Remaining facts from [docs/dev/spec/gbdata-spec.md](docs/dev/spec/gbdata-spec.md) that are intentionally retained here:
@@ -63,7 +63,7 @@ Implications:
 
 ## Independence From Legacy Inputs
 Future regeneration and revision of [bin/gbdata.py](bin/gbdata.py) must be possible using only:
-- [docs/dev/spec/gbdata-spec-ready.md](docs/dev/spec/gbdata-spec-ready.md)
+- [docs/dev/spec/gbdata-spec-2.md](docs/dev/spec/gbdata-spec-2.md)
 - [docs/dev/spec/md-gb-data-background.md](docs/dev/spec/md-gb-data-background.md)
 
 [docs/dev/spec/gbdata-spec.md](docs/dev/spec/gbdata-spec.md) must not be required for implementation decisions.
@@ -72,7 +72,7 @@ Future regeneration and revision of [bin/gbdata.py](bin/gbdata.py) must be possi
 [docs/dev/spec/usecases/story-task-parsing-md.md](docs/dev/spec/usecases/story-task-parsing-md.md) is retained for user documentation and explanatory use cases.
 
 It may be referenced for narrative examples, but future parser behavior revisions for [bin/gbdata.py](bin/gbdata.py) should be authored directly in:
-- [docs/dev/spec/gbdata-spec-ready.md](docs/dev/spec/gbdata-spec-ready.md)
+- [docs/dev/spec/gbdata-spec-2.md](docs/dev/spec/gbdata-spec-2.md)
 - [docs/dev/spec/md-gb-data-background.md](docs/dev/spec/md-gb-data-background.md)
 
 ## Foundation for Parser/Types Separation
@@ -83,4 +83,4 @@ Refactor direction:
 - Isolate markdown parsing policy and boundary logic into a dedicated module boundary.
 - Preserve behavior compatibility through focused parser tests and contract tests at the type boundary.
 
-This separation is architectural intent. Until that refactor is executed, current behavior remains governed by [docs/dev/spec/gbdata-spec-ready.md](docs/dev/spec/gbdata-spec-ready.md), with rationale from this document.
+This separation is architectural intent. Until that refactor is executed, current behavior remains governed by [docs/dev/spec/gbdata-spec-2.md](docs/dev/spec/gbdata-spec-2.md), with rationale from this document.

@@ -5,17 +5,17 @@ The short single character "val" code to represent the status of stories in shor
 The "pat_str" attributes that must correspond 1 for 1 with the enum values and the short hand "val" codes, but due to the securiy risk of client code being generated to use the patterns directly in code, they will be part of the specification text and treated as source code. 
 
 # Requirements
-Develop a detailed code implementation design as docs/dev/spec/gbdata-spec-ready.md to be the single source of truth for implementation for bin/gbdata.py.
+Develop a detailed code implementation design as docs/dev/spec/gbdata-spec-2.md to be the single source of truth for implementation for bin/gbdata.py.
 The purpose for files in docs/dev/spec/code-ready/ should be guided by the README.md there.
 
-bin/gbdata.py should no be generated from this file and should only be generated from docs/dev/spec/gbdata-spec-ready.md after it has been reviewed with a separate prompt issued to generate bin/gbdata.py
+bin/gbdata.py should no be generated from this file and should only be generated from docs/dev/spec/gbdata-spec-2.md after it has been reviewed with a separate prompt issued to generate bin/gbdata.py
 
-The gbdata-spec-ready.md spec should contain all the design details and facts to generate a python module bin/gbdata.py that contains the types described in https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json.
+The gbdata-spec-2.md spec should contain all the design details and facts to generate a python module bin/gbdata.py that contains the types described in https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json.
 
 gbdata.py should include a class or method to be used for parsing mark down file to build Story objects containing Tasks according to the use cases and rules in docs/dev/spec/usecases/story-task-parsing-md.md.  The parsers should use the status text patterns in:
  - docs/dev/spec/code-ready/story_status_metadata.json
  - docs/dev/spec/code-ready/task_status_metadata.json
 
 # update 2026-06-10 add tas.attribs
-Update the docs/dev/spec/gbdata-spec-ready.md to reflect an addition to https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json whic adds 'attribs' to the Task type.  After updating gbdata-spec-ready.md, also update bin/gbdata.py
+Update the docs/dev/spec/gbdata-spec-2.md to reflect an addition to https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json whic adds 'attribs' to the Task type.  After updating gbdata-spec-2.md, also update bin/gbdata.py
 

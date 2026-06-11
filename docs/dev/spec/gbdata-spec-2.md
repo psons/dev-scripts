@@ -13,8 +13,8 @@ The module must:
 ## Inputs and Dependencies
 
 ### Local Files Used at Runtime
-- `docs/dev/spec/code-ready/story_status_metadata.json`
-- `docs/dev/spec/code-ready/task_status_metadata.json`
+- `docs/dev/spec/story_status_metadata.json`
+- `docs/dev/spec/task_status_metadata.json`
 
 ### Python Version and Libraries
 - Target Python: 3.11+
