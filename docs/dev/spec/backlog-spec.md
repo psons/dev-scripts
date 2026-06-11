@@ -65,6 +65,7 @@ If BL_TODO_FILE is not set, default to the path relative to the running program 
 bltodo.py supports a subcommand for each of the 'Backlog Plugin Protocols'
 
 bltodo.py supports a load subcommand which takes a in-file argument, and writes the TODO file in 'Markdown GB Data Form' (MDGBDF)
+ - the load subcommand supports a --dryrun option that writes the staory and task data to stdout as MDGBDF.
 
 All command invocations reports the full absolute path for the TODO file it is using on stdout.
  
