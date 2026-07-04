@@ -39,6 +39,7 @@ parse_stories_from_markdown = mdgbdata.parse_stories_from_markdown
 parse_stories_from_markdown_file = mdgbdata.parse_stories_from_markdown_file
 strip_status_prefix = mdgbdata.strip_status_prefix
 convert_markdown_file_to_json_text = mdgbdata.convert_markdown_file_to_json_text
+stories_to_json_text = mdgbdata.stories_to_json_text
 stories_to_markdown_text = mdgbdata.stories_to_markdown_text
 
 
@@ -330,6 +331,44 @@ def test_stories_to_markdown_serializes_story_and_task_ids_after_headers():
     assert f"# Story: Build parser\nid: {stories[0].id}" in markdown
     assert stories[0].tasks is not None
     assert f"x - write tests\nid: {stories[0].tasks[0].id}" in markdown
+
+
+def test_stories_to_json_text_serializes_story_objects():
+    story = gbdata.Story(
+        id="story-1",
+        status=StoryStatus.DO,
+        name="Story One",
+        description="Summary",
+        maxTasks=None,
+        tasks=[
+            gbdata.Task(
+                id="task-1",
+                status=TaskStatus.DO,
+                name="Task One",
+                detail="Details",
+                attribs=None,
+            )
+        ],
+    )
+
+    payload = json.loads(stories_to_json_text([story]))
+
+    assert payload == [
+        {
+            "id": "story-1",
+            "status": "do",
+            "name": "Story One",
+            "description": "Summary",
+            "tasks": [
+                {
+                    "id": "task-1",
+                    "status": "do",
+                    "name": "Task One",
+                    "detail": "Details",
+                }
+            ],
+        }
+    ]
 
 
 def test_tojson_includes_story_description_without_warning(tmp_path: Path, capsys: pytest.CaptureFixture[str]):

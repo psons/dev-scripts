@@ -44,9 +44,15 @@ These plugin protocols are not to be implemented yet, but are enumerated here fo
 * Load implements load, which takes a required URL argument of which defaults to the protocol and syntax forms supported by the plugin.  Load defaults rto the file:: protocol and the bltodo.py plugin.    portion of the URL if no protocol is specified, and  
 
 ## subcommands of backlog.py 
+The subcommands output the data from the corresponding protocol methods according to the following options:
+    --mdgbdf: outputs data as MDBGDF using a public API method of mdgbdf.py.
+    --json: outputs data as JSON  using a public API method of mdgbdf.py.
+
 The sub command prioritized invokes the 'prioritized' method of the Prioritized protocol of the configured backlog plugin. 
 The sub command poptask invokes the 'pop_task' method of the PopTask protocol of the configured backlog plugin.
 The sub command popstory invokes the 'pop_story' method of the PopStory protocol of the configured backlog plugin.
+
+The help subcommand outputs a usage summary of subcommands and options.
 
 # plugins do not implement user command line parsing and options
 See docs/dev/spec/adr/relationship between CLI and plugin modules.md
@@ -57,12 +63,13 @@ bltodo.py should be created to implement the first plugin.
 
 bltodo.py will be a plugin that  
  - implements the 'Backlog Plugin Protocols'
- - uses gbdata.py to read (and in the future write) tasks and stories from (and in the future to) a markdown TODO.md file.
+ - uses mdgbdata.py to read (and in the future write) tasks and stories from (and in the future to) a markdown TODO.md file.
 
 The path to the todo file can be set using and environment variable BL_TODO_FILE
 
 If BL_TODO_FILE is not set, default to the path relative to the running program file ../docs/dev/work/TODO.md.
 
+unit tests should be provided that do not read or write the ocs/dev/work/TODO.md file in the source repository.
 
 bltodo.py provides an API function for each  of the 'Backlog Plugin Protocols' supported by backlog.py
 
@@ -72,11 +79,12 @@ bltodo.py when executed as a command:
 
 
 # Output Format -'Markdown GB Data Form' (MDGBDF)
-MDGBDF is described in docs/dev/spec/mdgbdata-spec.md.
+MDGBDF is implemented in mdgbdata.py and is described in docs/dev/spec/mdgbdata-spec.md.
+
 
 ## potential data loss from files not already in Markdown Story Form
 Markdown files may contain content that is not part of stories and tasks.
-Initial implementations of bltodo.py will not have the capability to update or recreate files that are not already in 'Markdown GB Data Form'.  Therefore the load subcommand can be used to create TODO.md, from stories in other files, but not write back to those files. 
+Initial implementations of bltodo.py will not have the capability to update or recreate files that are not already in 'Markdown GB Data Form'.  
 
 
  

@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
-"""Markdown parsing and status metadata utilities for gb-data."""
+"""Markdown parsing and serialization utilities for gb-data.
+
+Public API:
+- load_status_map: load status metadata from JSON files.
+- compile_status_patterns: compile status regexes for parsing.
+- detect_status / strip_status_prefix: status-line parsing helpers.
+- parse_stories_from_markdown / parse_stories_from_markdown_file: parse markdown into gbdata Story objects.
+- stories_to_json_text / stories_to_markdown_text: serialize Story objects to JSON or MDGBDF text.
+- convert_markdown_file_to_json_text / convert_json_file_to_markdown_text: file-based conversion helpers for the CLI.
+- parse_args / main: command-line entry points.
+"""
 
 from __future__ import annotations
 
@@ -462,7 +472,8 @@ def _task_to_dict(task: Task) -> dict[str, object]:
     return data
 
 
-def _stories_to_json_text(stories: list[Story]) -> str:
+def stories_to_json_text(stories: list[Story]) -> str:
+    """Serialize Story objects to pretty-printed JSON text."""
     return json.dumps([_story_to_dict(story) for story in stories], indent=2) + "\n"
 
 
@@ -639,6 +650,7 @@ def stories_to_markdown_text(
     story_status_map: StatusMap,
     task_status_map: StatusMap,
 ) -> str:
+    """Serialize Story objects to MDGBDF markdown text."""
     lines: list[str] = []
     for index, story in enumerate(stories):
         if index > 0:
@@ -653,6 +665,7 @@ def convert_markdown_file_to_json_text(
     task_status_map: StatusMap,
     encoding: str = "utf-8",
 ) -> str:
+    """Convert a Markdown GB Data file to JSON text."""
     markdown_text = Path(path).read_text(encoding=encoding)
     story_patterns = compile_status_patterns(story_status_map)
     task_patterns = compile_status_patterns(task_status_map)
@@ -661,7 +674,7 @@ def convert_markdown_file_to_json_text(
     if _contains_non_story_text(markdown_text, story_patterns, task_patterns):
         print("WARNING: some non story text will be ignored", file=sys.stderr)
     stories = parse_stories_from_markdown(markdown_text, story_status_map, task_status_map)
-    return _stories_to_json_text(stories)
+    return stories_to_json_text(stories)
 
 
 def convert_json_file_to_markdown_text(
@@ -670,11 +683,13 @@ def convert_json_file_to_markdown_text(
     task_status_map: StatusMap,
     encoding: str = "utf-8",
 ) -> str:
+    """Convert a JSON file of Story objects to MDGBDF markdown text."""
     stories = _stories_from_json_text(Path(path).read_text(encoding=encoding))
     return stories_to_markdown_text(stories, story_status_map, task_status_map)
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse mdgbdata command-line arguments."""
     parser = argparse.ArgumentParser(
         prog="mdgbdata",
         description="Convert Markdown GB Data Form to and from JSON",
@@ -692,6 +707,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the mdgbdata command-line interface."""
     args = parse_args(argv)
     repo_root = _repo_root()
     story_status_map = load_status_map(repo_root / "docs/dev/spec/story_status_metadata.json")
@@ -737,4 +753,10 @@ __all__ = [
     "strip_status_prefix",
     "parse_stories_from_markdown",
     "parse_stories_from_markdown_file",
+    "stories_to_json_text",
+    "stories_to_markdown_text",
+    "convert_markdown_file_to_json_text",
+    "convert_json_file_to_markdown_text",
+    "parse_args",
+    "main",
 ]

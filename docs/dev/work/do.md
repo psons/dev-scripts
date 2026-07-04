@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "keep the uid=502(paulsons) gid=20(staff) groups=20(staff),12(everyone),61(localaccounts),79(_appserverusr),80(admin),81(_appserveradm),98(_lpadmin),33(_appstore),100(_lpoperator),204(_developer),250(_analyticsusers),395(com.apple.access_ftp),398(com.apple.access_screensharing),399(com.apple.access_ssh),400(com.apple.access_remote_ae)\
-  \ property in story andtask parsing and serialization."
+"actualCommitMessage": "Refactor mdgbdata.py: expose API, enhance docs; update backlog-spec,\
+  \ refine ADR; add mdgbdata JSON serialization test"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "simple Filesystem based backlog implmentation using TODO.md"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "backlog-module"
 ---
+
 
 
 # / - story: Pilot a filesystem integration with TODO.md as a task store to start backlog.py and exercise interaction needed with do.md.
@@ -36,6 +37,13 @@ x - Update gb-data to include a status in the story type.
 # Work Summary
 
 
+## 2026-07-04 16:00
+
+---
+workHeadline: "Refactor mdgbdata.py: expose API, enhance docs; update backlog-spec, refine ADR; add mdgbdata JSON serialization test"
+---
+
+This update refactors `bin/mdgbdata.py` by exposing several internal helper functions as a public API, including `stories_to_json_text` and `stories_to_markdown_text`, and enhances the module's docstrings for clarity. Correspondingly, `docs/dev/spec/backlog-spec.md` is updated to specify output options (`--mdgbdf`, `--json`) for subcommands and to clarify that the `bltodo.py` plugin will now use the refactored `mdgbdata.py` for markdown operations. Additionally, the `docs/dev/spec/adr/relationship between CLI and plugin modules.md` is refined to better explain the design philosophy for backlog plugins. Finally, `tests/test_mdgbdata.py` includes a new unit test to validate the correct JSON serialization of `Story` objects using the newly exposed `stories_to_json_text` function.
 ## 2026-07-04 14:29
 
 ---
