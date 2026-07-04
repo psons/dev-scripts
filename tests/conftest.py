@@ -83,6 +83,7 @@ pytest_plugins = [
     "tests.steps.test_dtask_init_dirty_newdo",
     "tests.steps.test_dtask_commit_no_wsum",
     "tests.steps.test_wsum_steps",
+  "tests.steps.test_mdgbdata_steps",
     "tests.features.dtask_commit_wsum.steps",
 ]
 

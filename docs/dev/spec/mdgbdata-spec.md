@@ -3,8 +3,9 @@
 ## Purpose
 This document is the implementation source of truth for `bin/mdgbdata.py` in this repository.
 
-`bin/mdgbdata.py` must be generated from this document after review.
+`bin/mdgbdata.py` must be generated from this document.
 
+### Module Requirements
 The module must:
 - Provide status metadata loading and status detection utilities using repository metadata files.
 - Provide markdown parsing that builds `Story` objects containing `Task` objects.
@@ -12,6 +13,24 @@ The module must:
 
 The format described in this document that will be read and written by `bin/mdgbdata.py`
 will be referred to in other specifications as 'Markdown GB Data Form' (MDGBDF)
+
+### Command line Requirements
+Commandline support should be provided by `bin/mdgbdata.py`for the following sub commands:
+
+    tojson 
+        will read a file whose path is given as a command line argument and is presumed to be 'Markdown GB Data Form' and output JSON text representing a list of stories possibly containing tasks conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json
+
+        if the input file is markdown and contains text that is not part of a story or task, a WARNING should be printed on stderr indicating that "some non story text will be ignored"
+
+        If the input file does not contain any markdown headers or tasks, raise an error 
+
+    tomd 
+        will read a file whose path is given as a command line argument and is  presumed to be json conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json and output 'Markdown GB Data Form'
+
+        if the input file is not valid json, raise an error.  
+
+    help
+        will print a command usage summary for all subcommands 
 
 ## Module Boundary
 `mdgbdata.py` owns markdown/text parsing behavior for MDGBDF.
@@ -99,7 +118,7 @@ Rules are aligned with [docs/dev/spec/usecases/story-task-parsing-md.md](docs/de
 A line starts a new story when any of these are true:
 
 1. It is a markdown heading at level 1 through 6 and matches a story status pattern after heading markers.
-2. It is a markdown heading at level 1 through 6 and contains tasks below it (non-pattern matched stories are still stories).
+2. It is a markdown heading at level 1 through 6 and contains tasks below it (non-pattern matched headinggs a are still stories if they contain tasks).
 3. It is a markdown heading at level 1 through 6 whose heading text starts with `Story:` (case-insensitive, with optional surrounding whitespace).
 
 Interpretation details:
@@ -111,12 +130,14 @@ Interpretation details:
 For status-pattern stories:
 - Evaluate status patterns against heading text content (after removing `#` markers and leading spaces).
 - If matched, set and persist `Story.status` on the output dataclass.
-- Story `name` is heading content with status prefix removed.
+- Story `name` is heading content with status prefix and `Story:` string removed.
 
 For non-pattern stories:
 - `name` is normalized heading text (trimmed; preserve internal spacing).
 - If no status pattern is detected, default `status` to `TaskStatus.DO`.
 - This includes the corner case where a heading is promoted to a story only because it contains task lines.
+
+When serializing stories to MDGBDF, include the string `Story:` after the status and before the name.
 
 #### Task Header Detection
 A line starts a new task when all are true:
@@ -140,9 +161,8 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 - Parsed markdown tasks default `attribs` to `None` in this phase.
 
 #### Story Description Handling
-- Lines after a story header that are not task headers and not a closing heading boundary are story description context.
-- Since `Story` has no `description` field, story description is not serialized into dataclass output.
-- Story description still contributes to detecting boundaries and preventing false story/task starts.
+- `description` consists of Lines after a story header that are not task headers and not a closing heading boundary are story description context.
+- Story description contributes to detecting boundaries and preventing false story/task starts.
 
 ### Bare Task Behavior
 Per use-case text, bare tasks can exist without explicit story context, but parser output must be `list[Story]`.
@@ -166,7 +186,7 @@ Use deterministic, stable IDs based on source order and text:
 - Task id format: `{UUIDV7}-{hash8}`
 
 Where:
-- `UUIDV7` is the fully approved standard implementation for UUID7 genereted for each id.
+- `UUIDV7` is the fully approved standard implementation for UUID7 generated for each id.
 - `hash8` is first 8 hex chars of SHA-1 of normalized name text.
 
 Normalization for hash input:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 import re
 import sys
@@ -37,6 +38,7 @@ load_status_map = mdgbdata.load_status_map
 parse_stories_from_markdown = mdgbdata.parse_stories_from_markdown
 parse_stories_from_markdown_file = mdgbdata.parse_stories_from_markdown_file
 strip_status_prefix = mdgbdata.strip_status_prefix
+convert_markdown_file_to_json_text = mdgbdata.convert_markdown_file_to_json_text
 
 
 def _status_maps() -> tuple[dict[TaskStatus, object], dict[TaskStatus, object]]:
@@ -118,6 +120,27 @@ def test_story_prefix_heading_creates_story_without_tasks():
     assert stories[0].name == "Parser Boundary Behavior"
     assert stories[0].status == StoryStatus.DO
     assert stories[0].tasks is None
+
+
+def test_story_description_is_parsed_and_preserved():
+    story_map, task_map = _status_maps()
+    text = "# d - Build parser\nContext line one\n\nContext line two\nx - write tests\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].description == "Context line one\n\nContext line two"
+
+
+def test_non_pattern_heading_description_before_tasks_is_preserved():
+    story_map, task_map = _status_maps()
+    text = "# Planning\nStory context\nx - decide approach\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].name == "Planning"
+    assert stories[0].description == "Story context"
 
 
 def test_nested_heading_does_not_create_nested_story():
@@ -243,3 +266,16 @@ def test_task_attribs_default_to_none_from_parsing():
 
     assert stories[0].tasks is not None
     assert stories[0].tasks[0].attribs is None
+
+
+def test_tojson_includes_story_description_without_warning(tmp_path: Path, capsys: pytest.CaptureFixture[str]):
+    story_map, task_map = _status_maps()
+    md = tmp_path / "sample.md"
+    md.write_text("# d - Story\ncontext line\nx - task\n", encoding="utf-8")
+
+    out = convert_markdown_file_to_json_text(md, story_map, task_map)
+    payload = json.loads(out)
+    stderr = capsys.readouterr().err
+
+    assert payload[0]["description"] == "context line"
+    assert "some non story text will be ignored" not in stderr

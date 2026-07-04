@@ -14,6 +14,8 @@ tests/
 │   │   ├── init_workbranch.feature
 │   │   ├── init_dirty_newdo.feature
 │   │   └── commit_no_wsum.feature
+│   ├── mdgbdata/
+│   │   └── mdgbdata.feature
 │   ├── dtask_commit_wsum/
 │   │   ├── dtask_commit_wsum.feature
 │   │   ├── conftest.py
@@ -27,6 +29,7 @@ tests/
 │   ├── test_dtask_init_dirty_newdo.py
 │   ├── test_dtask_commit_no_wsum.py
 │   ├── test_dtask_commit_wsum_steps.py
+│   ├── test_mdgbdata_steps.py
 │   └── test_wsum_steps.py
 └── README.md                                    # This file
 ```
@@ -65,6 +68,7 @@ pytest tests/features/dtask/test_init_workbranch.py
 pytest tests/features/dtask/test_init_dirty_newdo.py
 pytest tests/features/dtask/test_commit_no_wsum.py
 pytest tests/features/wsum/test_wsum.py
+pytest tests/features/mdgbdata/test_mdgbdata.py
 ```
 
 ### Run with Verbose Output
@@ -225,6 +229,22 @@ Tests `wsum.py` as a standalone CLI utility (explicitly excluding dtask integrat
   - Verifies unsupported extra git diff args are rejected with an error
 - **Scenario 8**: markdown formatting compatibility
   - Verifies timestamp heading and `workHeadline` frontmatter structure
+
+### mdgbdata.feature
+
+Tests the `mdgbdata.py` command-line converters:
+
+- **Scenario 1**: `tojson` converts markdown and warns about ignored prose
+  - Verifies markdown input becomes JSON output
+  - Verifies ignored prose emits the expected warning on stderr
+- **Scenario 2**: `tojson` rejects files with no markdown structure
+  - Verifies the command fails when the file has no headings or task markers
+- **Scenario 3**: `tomd` converts JSON into markdown
+  - Verifies JSON input produces Markdown GB Data Form output
+- **Scenario 4**: `tomd` rejects invalid JSON
+  - Verifies parse errors are surfaced on stderr
+- **Scenario 5**: `help` prints the command usage summary
+  - Verifies the subcommand list is shown in help output
 
 ## Unit Tests
 

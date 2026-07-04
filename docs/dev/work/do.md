@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Refactor: Split `gbdata` into domain model and `mdgbdata`\
-  \ for parsing; update status enums and tests for clarity"
+"actualCommitMessage": "feat(mdgbdata): Add MDGBDF-JSON conversion CLI with `tojson`,\
+  \ `tomd` subcommands, extensive tests, and updated docs"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "build out backlog.py and bltodo plugin"
@@ -11,12 +11,13 @@
 
 
 
+
 x - improve the gb-data model to include an attribs dictionary that can hold unvalidated key-value data such as 'prompt: ' frontmatter like attributes for Goals, tasks, and stories.
  source: project: dev-scripts
  file: docs/dev/work/TODO.md
  - the attribs will be useful for holding data to be passed back from apps using backlog interfaces to the underlying implementation of the backlog when updating, such as a source file, or a story name if the underlying interface does not support stories as a first class object.  (This may be true of taskwarrior)
 
-/ - update the gbdata module to separate the gb-data types from the parsing capabilities so that backlog.py and plugins such as bltodo.py can import the same gb-data classes. 
+x - update the gbdata module to separate the gb-data types from the parsing capabilities so that backlog.py and plugins such as bltodo.py can import the same gb-data classes. 
 
     x - realign the specs to streamline maintenance.
     prompt: audit the information in docs/dev/spec/gbdata-spec-ready.md to determine if there is any background information in source documets docs/dev/spec/backlog-spec.md and docs/dev/spec/usecases/story-task-parsing-md.md that is pertinant to gbdata.py but not in gbdata-spec-ready.md include any missing information in a document  docs/dev/spec/md-gb-data-background.md 
@@ -30,7 +31,7 @@ x - improve the gb-data model to include an attribs dictionary that can hold unv
 
         x - prompt: rename docs/dev/spec/gbdata-spec-ready.md to docs/dev/spec/gbdata-spec-2.md and updat all markdown references to it.
 
-    / - split mdgbdata-spec.md out of docs/dev/spec/gbdata-spec-2.md.  Update 
+    x - split mdgbdata-spec.md out of docs/dev/spec/gbdata-spec-2.md.  Update 
     - parsing is existing spec, but the code ready spec will be impacted too.
     - it should describe serializing and deserializing the GB model as markdown
     - it should import gbdata.
@@ -43,21 +44,16 @@ x - improve the gb-data model to include an attribs dictionary that can hold unv
             The spec for mdgbdata.py is in docs/dev/spec/mdgbdata-spec.md
             The updated spec for gbdata.py is in docs/dev/spec/gbdata-spec-2.md
 
-        d - review and test the functionality of mdgbdata.py
-            d - add command line subcommand support to mdgbdata to do conversion between markdown and json. 
 
-        d - ... resolve. needed? ...            As a first step. separate 
-            
-            Also separate the unit tests for mdgbdata from gbdata.py.  It is expected that the types gbdata defines will be imported by mdgbdata.py.  The  
 
-        d - This is prompt 1 of 2 to migrate gbdata.py markdown parsing capabilities to a new module.  This first prompt is to create the new module and the new capabilities. prompt 1 of 2 to duplicate gbdata.py markdown parsing capabilities in a new module called mdgbdata.py:
-            generate docs/dev/spec/mdgbdata-spec.md as a spec for mdgbdata.py with the parsing capabilities of gbdata.py. mdgbdata.py will replace gbdata.py as a parser, so create unit tests for mdgbdata.py to match the tests for gbdata.py to match  
-        d - prompt 2 of 2 to remove markdown parsing capabilities from gbdata.py:
-            remove the markdown parsing capabilities from docs/dev/spec/gbdata-spec.md that have been migrated to mdgbdata-spec.md.
-                - regenerate docs/dev/spec/gbdata-spec-2.md and gbdata.py (Actually should enhance gbdata-spec.md to eliminate need for code-ready directory)
-                - regenerate gbdata.py (determine if it still needs ay unit testing, ad adapt as appropriate)
+    x - fully describe MGBDF serialization docs/dev/spec/mdgbdata-spec.md
 
-    d - fully describe MGBDF serialization docs/dev/spec/mdgbdata-spec.md
+/ - review and test the functionality of mdgbdata.py
+    x - add command line subcommand support to mdgbdata to do conversion between markdown and json. 
+        prompt: 
+            Implement the '### Command line Requirements' that have been added to mdgbdata-spec.md.
+            Also generate BDD tests for the command line support.  
+    x - update mdgbdata.py to include the story description attribute in the json schema and MDGBDF parsing per the updated docs/dev/spec/mdgbdata-spec.md.
 
 
 # / story: Pilot a filesystem integration with TODO.md as a task store to start backlog.py and exercise interaction needed with do.md.
@@ -83,6 +79,13 @@ d - update dtask with a pop subcommand that pops a story by default from backlog
 
 # Work Summary
 
+## 2026-07-04 12:14
+
+---
+workHeadline: "feat(mdgbdata): Add MDGBDF-JSON conversion CLI with `tojson`, `tomd` subcommands, extensive tests, and updated docs"
+---
+
+This update significantly enhances `bin/mdgbdata.py` by introducing command-line functionality to convert between Markdown GB Data Form (MDGBDF) and JSON representations of stories and tasks. The module now supports `tojson`, `tomd`, and `help` subcommands, providing robust serialization and deserialization that includes story descriptions and task details. This new functionality is thoroughly documented in `docs/dev/spec/mdgbdata-spec.md`, outlining module and command-line requirements, including expected warning and error conditions for malformed inputs. Comprehensive BDD tests in `tests/features/mdgbdata/mdgbdata.feature` and `tests/steps/test_mdgbdata_steps.py` validate the command-line behavior, ensuring the tool correctly processes various input scenarios and provides appropriate feedback.
 ## 2026-07-04 09:55
 
 ---
