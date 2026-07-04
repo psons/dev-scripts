@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "update spec md-gb-data-background.md and referred docs to\
-  \ Refactor gbdata.py"
+"actualCommitMessage": "Refactor: Split `gbdata` into domain model and `mdgbdata`\
+  \ for parsing; update status enums and tests for clarity"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "build out backlog.py and bltodo plugin"
@@ -34,12 +34,17 @@ x - improve the gb-data model to include an attribs dictionary that can hold unv
     - parsing is existing spec, but the code ready spec will be impacted too.
     - it should describe serializing and deserializing the GB model as markdown
     - it should import gbdata.
-       / - prompt: create a spec mdgbdata-spec.md from the markdown parsing related capabilities described in docs/dev/spec/gbdata-spec-2.md so that the classes in the resulting gbdata module could be imported into other modules to provide a unified data model for plugins to backlog.py.  Remove the markdown parsing specs from gbdata-spec-2.md.  Update the md-gb-data-background.md document to explain the separation.   
+       / - prompt: create a spec mdgbdata-spec.md from the markdown parsing related capabilities described in docs/dev/spec/gbdata-spec-2.md so that the classes in the resulting gbdata module could be imported into other modules to provide a unified data domain model for plugins to backlog.py.  Remove the markdown parsing specs from gbdata-spec-2.md.  Update the md-gb-data-background.md document to explain the separation.   
 
         x - update docs/dev/spec/mdgbdata-spec.md at 'Revision needed: ' marker to indicate how ids are to be generated (as they are for goal blotter or the task POC.)
 
-        d- prompt:
-            There is a need to refactor gbdata.py to separate the markdown parsing capabilities per the updated specs (mention them) into a new module called mdgbdata.py.  Also update the unit tests..
+        x - prompt:
+            Refactor gbdata.py to separate the markdown parsing capabilities As described in docs/dev/spec/md-gb-data-background.md and the updated specs mentioned in that document.  A new module called mdgbdata.py will be created.  Also separate and update the unit tests so that tests for parsing functionality provide coverage for mdgbdata.py.
+            The spec for mdgbdata.py is in docs/dev/spec/mdgbdata-spec.md
+            The updated spec for gbdata.py is in docs/dev/spec/gbdata-spec-2.md
+
+        d - review and test the functionality of mdgbdata.py
+            d - add command line subcommand support to mdgbdata to do conversion between markdown and json. 
 
         d - ... resolve. needed? ...            As a first step. separate 
             
@@ -78,14 +83,15 @@ d - update dtask with a pop subcommand that pops a story by default from backlog
 
 # Work Summary
 
-
-## 2026-07-03 21:11
+## 2026-07-04 09:55
 
 ---
-workHeadline: "Refactor GB data spec: separate domain from parsing, introduce StoryStatus enum, and enhance documentation and modularity"
+workHeadline: "Refactor: Split `gbdata` into domain model and `mdgbdata` for parsing; update status enums and tests for clarity"
 ---
 
-This set of changes significantly refactors the project's specification for handling Goal Blotter (GB) data, primarily by separating the domain model from markdown parsing logic. The `docs/dev/spec/gbdata-spec-2.md` document was updated to focus solely on the `gbdata.py` domain model, introducing a `StoryStatus` enum and clarifying dataclass structures, while all markdown parsing and status metadata handling requirements were moved to a new `docs/dev/spec/mdgbdata-spec.md` for a new `mdgbdata.py` module. This architectural shift, explained in the revised `docs/dev/spec/md-gb-data-background.md`, aims to improve modularity and reusability, with `backlog.py` now consuming types directly from `gbdata.py`. Additionally, new architectural decision record files and a module summary diagram were introduced to document the relationship between CLI and plugin modules, and provide an overview of task-related scripts.
+The `gbdata.py` module was refactored to serve exclusively as a shared domain model, with all markdown parsing and status metadata utilities extracted into a new `mdgbdata.py` module. This change introduces a distinct`StoryStatus` enum in `gbdata.py` and updates the `Task` and `Story` dataclasses to use non-optional status fields and more flexible attribute types. Correspondingly, unit tests were reorganized, with `test_gbdata.py`focusing on the domain model and a new `test_mdgbdata.py` covering the markdown parsing logic, including deterministic UUID generation for parsed stories and tasks. The `do.md` file was also updated to reflect this refactoring and clarify the new module responsibilities.
+
+
 ## 2026-06-11 09:34
 
 ---
