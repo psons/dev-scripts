@@ -258,6 +258,30 @@ def test_ids_are_deterministic_and_match_format():
     assert re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-[0-9a-f]{8}$", first[0].tasks[0].id)
 
 
+def test_immediate_left_margin_id_lines_override_generated_ids():
+    story_map, task_map = _status_maps()
+    text = "# d - Alpha Story\nid: story-123\nx - Build\nid: task-456\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert stories[0].id == "story-123"
+    assert stories[0].tasks is not None
+    assert stories[0].tasks[0].id == "task-456"
+
+
+def test_non_immediate_or_indented_id_lines_are_not_parsed_as_ids():
+    story_map, task_map = _status_maps()
+    text = "# d - Alpha Story\n\nid: ignored-story-id\nx - Build\n  id: ignored-task-id\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert stories[0].id != "ignored-story-id"
+    assert stories[0].description == "id: ignored-story-id"
+    assert stories[0].tasks is not None
+    assert stories[0].tasks[0].id != "ignored-task-id"
+    assert stories[0].tasks[0].detail == "  id: ignored-task-id"
+
+
 def test_parse_stories_from_markdown_file_reads_and_parses(tmp_path: Path):
     story_map, task_map = _status_maps()
     md = tmp_path / "sample.md"
@@ -295,6 +319,17 @@ def test_stories_to_markdown_keeps_status_marker_for_non_do_story_status():
     markdown = stories_to_markdown_text(stories, story_map, task_map)
 
     assert "# x - Story: Done Story" in markdown
+
+
+def test_stories_to_markdown_serializes_story_and_task_ids_after_headers():
+    story_map, task_map = _status_maps()
+    stories = parse_stories_from_markdown("# d - Story: Build parser\nx - write tests\n", story_map, task_map)
+
+    markdown = stories_to_markdown_text(stories, story_map, task_map)
+
+    assert f"# Story: Build parser\nid: {stories[0].id}" in markdown
+    assert stories[0].tasks is not None
+    assert f"x - write tests\nid: {stories[0].tasks[0].id}" in markdown
 
 
 def test_tojson_includes_story_description_without_warning(tmp_path: Path, capsys: pytest.CaptureFixture[str]):

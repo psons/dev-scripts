@@ -5,13 +5,12 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
-# Misc tasks
+# d - story: dtask integration with backlog.py
+d - update dtask with a pop subcommand that pops a story by default from backlog.py and inserts it at the top of do.md, below the frontmatter.
+    d - add a --task option to pop just 1 task instead of a whole story.
 
-# Story: keep id and description in story parsing and serialization.
-
-# mdgbdata JSON support
-mdgbdata.py should be able to express the gbdata model as json text or 'Markdown GB Data Form' (MDGBDF)
-
-d - enhance gbdata to serialize structures as json according to the gb-data schema.
-
- 
+ # d - Story - bugfix: dtask should allow existing branch with -b
+error when backlog-command branch already exists.
+ $ dtask init -b backlog-command -i "simple Filesystem based backlog implmentation using TODO.md" --dirty
+fatal: a branch named 'backlog-command' already exists
+Error: git checkout -b backlog-command failed.

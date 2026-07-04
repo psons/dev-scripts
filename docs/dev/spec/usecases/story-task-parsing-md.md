@@ -26,7 +26,7 @@ Lines following a task header that are not part of a a new task, story, or non-s
 
 Task objects may not be nested in other task objects.
 
-Tasks can be written bare without stories, but it makes organizing them hard, and they end up in some default collection. If they really don't have a story, users should open and unnamed section with ^#, ^##, ^###, ^####, ^#####, ^###### corresponding to the 6 heading levels supported by markdown.
+Tasks can be written bare without stories, but it makes organizing them hard, and they end up in some default collection. If they really don't have a story, users should open an unnamed section with ^#, ^##, ^###, ^####, ^#####, ^###### corresponding to the 6 heading levels supported by markdown.
 
 The task header contains a task status and a task name.
 
@@ -41,4 +41,9 @@ If the heading text does not match a story status pattern, the story still exist
 
 A heading has '[Ss]tory: ' as the the first or second non-white space string after '^#' is a story even id it doesn't have any tasks under it.
 
-The next heading after the heading that begins a story that is the same level as a story is the beginning of something else, and is not part of te same story.
+The next heading after the heading that begins a story that is the same level as a story is the beginning of something else, and is not part of the same story.
+
+# the `id` property.
+if the string `id:` appears at the left margin immediately after a story or task header, then the next non-whitespace strring after the `:` charachter should be treated as he `id` property for the story or task.
+
+users should not set the `id`, and should allow mdgbdata.py to assign the ID.

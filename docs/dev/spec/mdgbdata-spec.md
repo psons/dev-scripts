@@ -162,6 +162,12 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 - Preserve newlines in detail text; trim outer blank lines.
 - Parsed markdown tasks default `attribs` to `None` in this phase.
 
+#### Explicit `id` Property
+- If a left-margin line beginning with `id:` appears immediately after a story header, the first non-whitespace token after `:` must be parsed as `Story.id`.
+- If a left-margin line beginning with `id:` appears immediately after a task header, the first non-whitespace token after `:` must be parsed as `Task.id`.
+- `id:` lines that are indented, or that do not appear immediately after the related header line, are not treated as ids and remain normal description/detail text.
+- When no explicit `id:` line is present, deterministic id generation rules still apply.
+
 #### Story Description Handling
 - `description` consists of Lines after a story header that are not task headers and not a closing heading boundary are story description context.
 - Story description contributes to detecting boundaries and preventing false story/task starts.
@@ -186,6 +192,10 @@ IDs are required fields for `Task` and `Story`.
 Use deterministic, stable IDs based on source order and text:
 - Story id format: `{UUIDV7}-{hash8}`
 - Task id format: `{UUIDV7}-{hash8}`
+
+When serializing stories back to MDGBDF:
+- Emit `id: <story.id>` immediately after each story header.
+- Emit `id: <task.id>` immediately after each task header.
 
 Where:
 - `UUIDV7` is the fully approved standard implementation for UUID7 generated for each id.

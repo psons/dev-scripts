@@ -134,6 +134,17 @@ def _trim_outer_blank_lines(lines: list[str]) -> list[str]:
     return lines[start:end]
 
 
+def _parse_explicit_id_line(line: str) -> str | None:
+    if line.startswith((" ", "\t")) or not line.startswith("id:"):
+        return None
+
+    value = line[3:].lstrip()
+    if not value:
+        return None
+
+    return value.split(None, 1)[0]
+
+
 def _is_story_prefixed_heading(text: str) -> bool:
     tokens = text.strip().split()
     if not tokens:
@@ -199,13 +210,17 @@ def parse_stories_from_markdown(
     current_story_name: str | None = None
     current_story_status: StoryStatus | None = None
     current_story_level: int | None = None
+    current_story_id: str | None = None
     current_story_description_lines: list[str] = []
     current_story_tasks: list[Task] = []
+    current_story_expects_id_line = False
 
     current_task_index = 0
     current_task_name: str | None = None
     current_task_status: TaskStatus | None = None
+    current_task_id: str | None = None
     current_task_detail_lines: list[str] = []
+    current_task_expects_id_line = False
 
     pending_heading_level: int | None = None
     pending_heading_text: str | None = None
@@ -219,7 +234,7 @@ def parse_stories_from_markdown(
     ) -> None:
         nonlocal story_counter, current_story_index, current_story_name
         nonlocal current_story_status, current_story_level, current_story_description_lines
-        nonlocal current_story_tasks
+        nonlocal current_story_id, current_story_tasks, current_story_expects_id_line
         nonlocal current_task_index
 
         story_counter += 1
@@ -227,13 +242,15 @@ def parse_stories_from_markdown(
         current_story_name = _normalize_name(name, "(unnamed story)")
         current_story_status = _to_story_status(status)
         current_story_level = level
+        current_story_id = None
         current_story_description_lines = [] if initial_description_lines is None else list(initial_description_lines)
         current_story_tasks = []
+        current_story_expects_id_line = not current_story_description_lines
         current_task_index = 0
 
     def finalize_task() -> None:
-        nonlocal current_task_name, current_task_status, current_task_detail_lines
-        nonlocal current_task_index
+        nonlocal current_task_name, current_task_status, current_task_id, current_task_detail_lines
+        nonlocal current_task_index, current_task_expects_id_line
 
         if current_task_name is None or current_task_status is None:
             return
@@ -245,7 +262,7 @@ def parse_stories_from_markdown(
         task_name = _normalize_name(current_task_name, "(unnamed task)")
         detail_lines = _trim_outer_blank_lines(current_task_detail_lines)
         detail = "\n".join(detail_lines) if detail_lines else None
-        task_id = _make_id("task", task_name, current_task_index, parent_order=current_story_index)
+        task_id = current_task_id or _make_id("task", task_name, current_task_index, parent_order=current_story_index)
         current_story_tasks.append(
             Task(
                 id=task_id,
@@ -258,12 +275,15 @@ def parse_stories_from_markdown(
 
         current_task_name = None
         current_task_status = None
+        current_task_id = None
         current_task_detail_lines = []
+        current_task_expects_id_line = False
 
     def finalize_story() -> None:
         nonlocal current_story_index, current_story_name, current_story_status
-        nonlocal current_story_level, current_story_tasks
+        nonlocal current_story_level, current_story_id, current_story_tasks
         nonlocal current_story_description_lines
+        nonlocal current_story_expects_id_line
 
         if current_story_name is None or current_story_status is None:
             return
@@ -276,7 +296,7 @@ def parse_stories_from_markdown(
         story_name = _normalize_name(current_story_name, "(unnamed story)")
         description_lines = _trim_outer_blank_lines(current_story_description_lines)
         story_description = "\n".join(description_lines) if description_lines else None
-        story_id = _make_id("story", story_name, current_story_index)
+        story_id = current_story_id or _make_id("story", story_name, current_story_index)
         stories.append(
             Story(
                 id=story_id,
@@ -291,8 +311,10 @@ def parse_stories_from_markdown(
         current_story_name = None
         current_story_status = None
         current_story_level = None
+        current_story_id = None
         current_story_description_lines = []
         current_story_tasks = []
+        current_story_expects_id_line = False
 
     for line in text.splitlines():
         heading_match = _HEADING_RE.match(line)
@@ -331,6 +353,20 @@ def parse_stories_from_markdown(
             pending_heading_description_lines = []
             continue
 
+        if current_task_expects_id_line:
+            explicit_task_id = _parse_explicit_id_line(line)
+            current_task_expects_id_line = False
+            if explicit_task_id is not None:
+                current_task_id = explicit_task_id
+                continue
+
+        if current_story_expects_id_line:
+            explicit_story_id = _parse_explicit_id_line(line)
+            current_story_expects_id_line = False
+            if explicit_story_id is not None:
+                current_story_id = explicit_story_id
+                continue
+
         task_status = _task_header_status(line, task_patterns)
         if task_status is not None:
             if current_story_name is None:
@@ -353,7 +389,9 @@ def parse_stories_from_markdown(
             task_name = strip_status_prefix(line, task_status, task_patterns)
             current_task_name = _normalize_name(task_name, "(unnamed task)")
             current_task_status = task_status
+            current_task_id = None
             current_task_detail_lines = []
+            current_task_expects_id_line = True
             continue
 
         if current_task_name is not None:
@@ -583,12 +621,14 @@ def _render_markdown_story(story: Story, story_status_map: StatusMap, task_statu
     else:
         story_entry = _story_status_entry(story.status, story_status_map)
         lines = [f"# {story_entry.val} - Story: {story.name}"]
+    lines.append(f"id: {story.id}")
     if story.description:
         lines.extend(story.description.splitlines())
     if story.tasks:
         for task in story.tasks:
             task_entry = _task_status_entry(task.status, task_status_map)
             lines.append(f"{task_entry.val} - {task.name}")
+            lines.append(f"id: {task.id}")
             if task.detail:
                 lines.extend(task.detail.splitlines())
     return lines
