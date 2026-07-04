@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Refactor gbdata spec: new gbdata-spec-2.md, obsolete old spec,\
-  \ update background doc for gbdata.py generation"
+"actualCommitMessage": "update spec md-gb-data-background.md and referred docs to\
+  \ Refactor gbdata.py"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "build out backlog.py and bltodo plugin"
@@ -8,7 +8,6 @@
 "title": "do.md"
 "workBranch": "backlog-command"
 ---
-
 
 
 
@@ -20,26 +19,29 @@ x - improve the gb-data model to include an attribs dictionary that can hold unv
 / - update the gbdata module to separate the gb-data types from the parsing capabilities so that backlog.py and plugins such as bltodo.py can import the same gb-data classes. 
 
     x - realign the specs to streamline maintenance.
-    prompt: audit the information in docs/dev/spec/gbdata-spec-2.md to determine if there is any background information in source documets docs/dev/spec/backlog-spec.md and docs/dev/spec/usecases/story-task-parsing-md.md that is pertinant to gbdata.py but not in gbdata-spec-2.md include any missing information in a document  docs/dev/spec/md-gb-data-background.md 
+    prompt: audit the information in docs/dev/spec/gbdata-spec-ready.md to determine if there is any background information in source documets docs/dev/spec/backlog-spec.md and docs/dev/spec/usecases/story-task-parsing-md.md that is pertinant to gbdata.py but not in gbdata-spec-ready.md include any missing information in a document  docs/dev/spec/md-gb-data-background.md 
 
 
-    prompt: Please update the background doc to include any information that from docs/dev/spec/gbdata-spec.md that is not included in docs/dev/spec/gbdata-spec-2.md.
+        x - prompt: Please update the background doc to include any information that from docs/dev/spec/gbdata-spec.md that is not included in docs/dev/spec/gbdata-spec-ready.md.
 
-    prompt: update the tone and perspective of docs/dev/spec/md-gb-data-background.md  to read as an authoritative source of reasoning for the specification in docs/dev/spec/gbdata-spec-2.md.  The specs are to be streamlined so that docs/dev/spec/gbdata-spec.md can be treated as obsolete and moved to docs/dev/spec/obsolete, and later deleted.  It should be possible to regenerate gbdata.py from md-gb-data-background.md and gbdata-spec-2.md without gbdata-spec.md. story-task-parsing-md.md will be retained for future user documentation, and may be referenced from md-gb-data-background.md, but should not be required for future revisions to gbdata.py.  The background file will be the foundation for a future refactor to separate markdown parsing from the gb types.
+        x - prompt: update the tone and perspective of docs/dev/spec/md-gb-data-background.md  to read as an authoritative source of reasoning for the specification in docs/dev/spec/gbdata-spec-ready.md.  The specs are to be streamlined so that docs/dev/spec/gbdata-spec.md can be treated as obsolete and moved to docs/dev/spec/obsolete, and later deleted.  It should be possible to regenerate gbdata.py from md-gb-data-background.md and gbdata-spec-ready.md without gbdata-spec.md. story-task-parsing-md.md will be retained for future user documentation, and may be referenced from md-gb-data-background.md, but should not be required for future revisions to gbdata.py.  The background file will be the foundation for a future refactor to separate markdown parsing from the gb types.
 
-    prompt: move gbdata-spec-2.md to docs/dev/spec and update any markdown links to its location.
+        x - prompt: move gbdata-spec-ready.md to docs/dev/spec and update any markdown links to its location.
 
-    d - split mdgbdata-spec.md out of docs/dev/spec/gbdata-spec.md
+        x - prompt: rename docs/dev/spec/gbdata-spec-ready.md to docs/dev/spec/gbdata-spec-2.md and updat all markdown references to it.
+
+    / - split mdgbdata-spec.md out of docs/dev/spec/gbdata-spec-2.md.  Update 
     - parsing is existing spec, but the code ready spec will be impacted too.
     - it should describe serializing and deserializing the GB model as markdown
     - it should import gbdata.
-        prompt:
-            There is a need to refactor gbdata.py to separate the markdown parsing capabilities into a new module called mdgbdata.py.  Unit tests wil also need to be updated.
+       / - prompt: create a spec mdgbdata-spec.md from the markdown parsing related capabilities described in docs/dev/spec/gbdata-spec-2.md so that the classes in the resulting gbdata module could be imported into other modules to provide a unified data model for plugins to backlog.py.  Remove the markdown parsing specs from gbdata-spec-2.md.  Update the md-gb-data-background.md document to explain the separation.   
 
-            As a first step. separate 
+        x - update docs/dev/spec/mdgbdata-spec.md at 'Revision needed: ' marker to indicate how ids are to be generated (as they are for goal blotter or the task POC.)
 
+        d- prompt:
+            There is a need to refactor gbdata.py to separate the markdown parsing capabilities per the updated specs (mention them) into a new module called mdgbdata.py.  Also update the unit tests..
 
-
+        d - ... resolve. needed? ...            As a first step. separate 
             
             Also separate the unit tests for mdgbdata from gbdata.py.  It is expected that the types gbdata defines will be imported by mdgbdata.py.  The  
 
@@ -53,8 +55,6 @@ x - improve the gb-data model to include an attribs dictionary that can hold unv
     d - fully describe MGBDF serialization docs/dev/spec/mdgbdata-spec.md
 
 
-
-
 # / story: Pilot a filesystem integration with TODO.md as a task store to start backlog.py and exercise interaction needed with do.md.
 x - Update gb-data to include a status in the story type.
 / - write a version of backlog that parses stories and tasks out of a file and loads them into the GB domain model in memory
@@ -65,6 +65,11 @@ x - Update gb-data to include a status in the story type.
  - docs/dev/spec/backlog-spec.md 
  - [backlog-spec.md](../spec/backlog-spec.md)
 
+/ - finish bltodo.py spec which was started in the backlog spec.
+    x - decide if the plugin should have command like capabilities, such as might support more specific behaviors than backlog.py.
+        - No. see docs/dev/spec/adr/relationship between CLI and plugin modules.md   
+        - refer to the section '# bltodo.py - The default plugin.' in the docs/dev/spec/backlog-spec.md
+
 d - update dtask with a pop subcommand that pops a story by default from backlog.py and inserts it at the top of do.md, below the frontmatter.
     d - add a --task option to pop just 1 task instead of a whole story.
     
@@ -74,6 +79,13 @@ d - update dtask with a pop subcommand that pops a story by default from backlog
 # Work Summary
 
 
+## 2026-07-03 21:11
+
+---
+workHeadline: "Refactor GB data spec: separate domain from parsing, introduce StoryStatus enum, and enhance documentation and modularity"
+---
+
+This set of changes significantly refactors the project's specification for handling Goal Blotter (GB) data, primarily by separating the domain model from markdown parsing logic. The `docs/dev/spec/gbdata-spec-2.md` document was updated to focus solely on the `gbdata.py` domain model, introducing a `StoryStatus` enum and clarifying dataclass structures, while all markdown parsing and status metadata handling requirements were moved to a new `docs/dev/spec/mdgbdata-spec.md` for a new `mdgbdata.py` module. This architectural shift, explained in the revised `docs/dev/spec/md-gb-data-background.md`, aims to improve modularity and reusability, with `backlog.py` now consuming types directly from `gbdata.py`. Additionally, new architectural decision record files and a module summary diagram were introduced to document the relationship between CLI and plugin modules, and provide an overview of task-related scripts.
 ## 2026-06-11 09:34
 
 ---
