@@ -137,7 +137,9 @@ For non-pattern stories:
 - If no status pattern is detected, default `status` to `TaskStatus.DO`.
 - This includes the corner case where a heading is promoted to a story only because it contains task lines.
 
-When serializing stories to MDGBDF, include the string `Story:` after the status and before the name.
+When serializing stories to MDGBDF:
+ - include the string `Story:` after the status and before the name.
+ - include the string `Story:` after the '#' characters indicating the heading leval and before the name.
 
 #### Task Header Detection
 A line starts a new task when all are true:

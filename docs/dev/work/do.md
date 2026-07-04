@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat(mdgbdata): Add MDGBDF-JSON conversion CLI with `tojson`,\
-  \ `tomd` subcommands, extensive tests, and updated docs"
+"actualCommitMessage": "feat(mdgbdata): Parse and serialize 'Markdown GB Data Form' (MDGBDF) and JSON conversion CLI with `tojson`,\
+  \ `tomd` subcommands, tests, docs"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "build out backlog.py and bltodo plugin"
@@ -48,37 +48,33 @@ x - update the gbdata module to separate the gb-data types from the parsing capa
 
     x - fully describe MGBDF serialization docs/dev/spec/mdgbdata-spec.md
 
-/ - review and test the functionality of mdgbdata.py
+x - review and test the functionality of mdgbdata.py
     x - add command line subcommand support to mdgbdata to do conversion between markdown and json. 
         prompt: 
             Implement the '### Command line Requirements' that have been added to mdgbdata-spec.md.
             Also generate BDD tests for the command line support.  
     x - update mdgbdata.py to include the story description attribute in the json schema and MDGBDF parsing per the updated docs/dev/spec/mdgbdata-spec.md.
 
+    x - update mdgbdata.py to write MDGBDF story headers with the string 'Story:' before the name and ignore it when parsing the story name in MDGBDF text per the updated docs/dev/spec/mdgbdata-spec.md.
 
-# / story: Pilot a filesystem integration with TODO.md as a task store to start backlog.py and exercise interaction needed with do.md.
-x - Update gb-data to include a status in the story type.
-/ - write a version of backlog that parses stories and tasks out of a file and loads them into the GB domain model in memory
-    x - write a spec to support a building python apps as the command module pattern based on wsum.py.
-        - [python-command-module-skill.md](../spec/python-command-module-pattern.md)
+    x - update mdgbdata.py to write MDGBDF story headers with the string 'Story:' before the name and ignore it when parsing the story name in MDGBDF text per the *further* updated docs/dev/spec/mdgbdata-spec.md, to now also include it for stories without status.
 
-/ - define the interface needed for plugins that backlog.py
- - docs/dev/spec/backlog-spec.md 
- - [backlog-spec.md](../spec/backlog-spec.md)
+# x - mdgbdata JSON support
+mdgbdata.py should be able to express the gbdata model as json text or 'Markdown GB Data Form' (MDGBDF)
 
-/ - finish bltodo.py spec which was started in the backlog spec.
-    x - decide if the plugin should have command like capabilities, such as might support more specific behaviors than backlog.py.
-        - No. see docs/dev/spec/adr/relationship between CLI and plugin modules.md   
-        - refer to the section '# bltodo.py - The default plugin.' in the docs/dev/spec/backlog-spec.md
-
-d - update dtask with a pop subcommand that pops a story by default from backlog.py and inserts it at the top of do.md, below the frontmatter.
-    d - add a --task option to pop just 1 task instead of a whole story.
-    
+x - enhance gbdata to serialize structures as json according to the gb-data schema.
 
 
 
 # Work Summary
 
+## 2026-07-04 13:31
+
+---
+workHeadline: "feat(mdgbdata): Standardize 'Story:' heading prefix, improve parsing, update docs, and add tests for story handling"
+---
+
+The `mdgbdata.py` script was updated to standardize the format of story headings in Markdown GB Data Form (MDGBDF). Specifically, it now always includes "Story:" in serialized story headings, regardless of whether a status prefix is present, and improves parsing to correctly extract the story name by stripping this prefix. The `mdgbdata-spec.md` documentation was updated to reflect these changes in serialization and parsing rules, and new unit and BDD tests were added in `test_mdgbdata.py` and `mdgbdata.feature` to ensure the correct handling of story prefixes during both parsing and serialization. Task tracking files `TODO.md` and `do.md` were also updated to reflect the completion of these related development items.
 ## 2026-07-04 12:14
 
 ---

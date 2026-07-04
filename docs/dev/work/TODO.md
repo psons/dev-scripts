@@ -9,7 +9,7 @@
 
 # Story: keep id and description in story parsing and serialization.
 
-## mdgbdata JSON support
+# mdgbdata JSON support
 mdgbdata.py should be able to express the gbdata model as json text or 'Markdown GB Data Form' (MDGBDF)
 
 d - enhance gbdata to serialize structures as json according to the gb-data schema.

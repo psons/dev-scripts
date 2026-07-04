@@ -39,6 +39,7 @@ parse_stories_from_markdown = mdgbdata.parse_stories_from_markdown
 parse_stories_from_markdown_file = mdgbdata.parse_stories_from_markdown_file
 strip_status_prefix = mdgbdata.strip_status_prefix
 convert_markdown_file_to_json_text = mdgbdata.convert_markdown_file_to_json_text
+stories_to_markdown_text = mdgbdata.stories_to_markdown_text
 
 
 def _status_maps() -> tuple[dict[TaskStatus, object], dict[TaskStatus, object]]:
@@ -88,7 +89,7 @@ def test_strip_status_prefix_removes_only_leading_marker():
 
 def test_status_matched_heading_creates_story_and_persists_status():
     story_map, task_map = _status_maps()
-    text = "# d - Build parser\nx - write tests\n"
+    text = "# d - Story: Build parser\nx - write tests\n"
 
     stories = parse_stories_from_markdown(text, story_map, task_map)
 
@@ -108,6 +109,16 @@ def test_non_pattern_heading_with_tasks_still_creates_story_default_do():
     assert len(stories) == 1
     assert stories[0].name == "Planning"
     assert stories[0].status == StoryStatus.DO
+
+
+def test_status_matched_heading_strips_story_prefix_from_story_name():
+    story_map, task_map = _status_maps()
+    text = "# d - Story: Build parser\nx - write tests\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].name == "Build parser"
 
 
 def test_story_prefix_heading_creates_story_without_tasks():
@@ -266,6 +277,24 @@ def test_task_attribs_default_to_none_from_parsing():
 
     assert stories[0].tasks is not None
     assert stories[0].tasks[0].attribs is None
+
+
+def test_stories_to_markdown_writes_story_prefix_in_story_header():
+    story_map, task_map = _status_maps()
+    stories = parse_stories_from_markdown("# d - Story: Build parser\nx - write tests\n", story_map, task_map)
+
+    markdown = stories_to_markdown_text(stories, story_map, task_map)
+
+    assert "# Story: Build parser" in markdown
+
+
+def test_stories_to_markdown_keeps_status_marker_for_non_do_story_status():
+    story_map, task_map = _status_maps()
+    stories = parse_stories_from_markdown("# x - Story: Done Story\n", story_map, task_map)
+
+    markdown = stories_to_markdown_text(stories, story_map, task_map)
+
+    assert "# x - Story: Done Story" in markdown
 
 
 def test_tojson_includes_story_description_without_warning(tmp_path: Path, capsys: pytest.CaptureFixture[str]):

@@ -145,7 +145,7 @@ def _is_story_prefixed_heading(text: str) -> bool:
 
 
 def _strip_story_prefix(text: str) -> str:
-    match = re.match(r"^\s*(?:\S+\s+)?(?i:story:)\s*(.*)$", text)
+    match = re.match(r"^\s*(?:[^\s-]+\s*-\s*)?(?i:story:)\s*(.*)$", text)
     if match is None:
         return text.strip()
     return match.group(1).strip()
@@ -316,7 +316,8 @@ def parse_stories_from_markdown(
 
             story_status = detect_status(heading_text, story_patterns)
             if story_status is not None:
-                story_name = strip_status_prefix(heading_text, story_status, story_patterns)
+                stripped_heading = strip_status_prefix(heading_text, story_status, story_patterns)
+                story_name = _strip_story_prefix(stripped_heading)
                 start_story(story_name, story_status, heading_level)
                 continue
 
@@ -577,8 +578,11 @@ def _contains_markdown_structure(text: str, task_patterns: dict[TaskStatus, re.P
 
 
 def _render_markdown_story(story: Story, story_status_map: StatusMap, task_status_map: StatusMap) -> list[str]:
-    story_entry = _story_status_entry(story.status, story_status_map)
-    lines = [f"# {story_entry.val} - {story.name}"]
+    if story.status == StoryStatus.DO:
+        lines = [f"# Story: {story.name}"]
+    else:
+        story_entry = _story_status_entry(story.status, story_status_map)
+        lines = [f"# {story_entry.val} - Story: {story.name}"]
     if story.description:
         lines.extend(story.description.splitlines())
     if story.tasks:

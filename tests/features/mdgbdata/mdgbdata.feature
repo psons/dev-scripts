@@ -8,7 +8,7 @@ Feature: mdgbdata command line support
       """
       Intro prose that should be ignored.
 
-      # d - Build parser
+      # d - Story: Build parser
       Story context line
       x - write tests
         review this later
@@ -50,7 +50,7 @@ Feature: mdgbdata command line support
       """
     When I run mdgbdata command "tomd stories.json"
     Then the mdgbdata command succeeds
-    And the mdgbdata stdout contains "# d - Build parser"
+    And the mdgbdata stdout contains "# Story: Build parser"
     And the mdgbdata stdout contains "Parser context"
     And the mdgbdata stdout contains "x - write tests"
     And the mdgbdata stdout contains "cover the happy path"
