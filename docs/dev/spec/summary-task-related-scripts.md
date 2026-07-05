@@ -2,8 +2,8 @@
 dtask 
  - has a top level user CLI
  - own update of do.md
- - calls wsum.py 
- - calles backlog.py to pop task from backlog 
+ - calls wsum.py to generate work summaries
+ - calls backlog.py to pop task from backlog 
 
 backlog.py
  - has a top level user CLI 
@@ -14,7 +14,13 @@ backlog.py
 bltodo.py
  - implements a module API for callers.
  - implements the 'Backlog Plugin Protocols' for backlog.py.
+ - returns types defined in gbdata.py to callers of the 'Backlog Plugin Protocols'.  
  - is the plugin for a simple TODO.md file backlog
+
+bl*.py plugins
+ - implements a module API for callers.
+ - implements the 'Backlog Plugin Protocols' for backlog.py.
+ - returns types defined in gbdata.py to callers of the 'Backlog Plugin Protocols'.  
 
 gbdata.py
  - implements goal, story, and task related domain model types used bt the API contract between backlog.py and its plugins.
