@@ -187,11 +187,15 @@ When inside a story with heading level `L`:
 - Heading level `<= L`: closes current story and all active task/detail accumulation.
 
 ### ID Generation
-IDs are required fields for `Task` and `Story`.
+Unique IDs are required fields for `Task` and `Story`.
 
-Use deterministic, stable IDs based on source order and text:
+Generate IDs where possible based on source order and text:
 - Story id format: `{UUIDV7}-{hash8}`
 - Task id format: `{UUIDV7}-{hash8}`
+- If a transient or synthetic story is promoted to a real story to hold tasks, generate a unique story id using these same rules.
+
+Once an ID is created for a non transient or synthiteic Story or Task objects, it should be retained through all parsing and serialization
+operations, even of the content of the Object changes.
 
 When serializing stories back to MDGBDF:
 - Emit `id: <story.id>` immediately after each story header.
@@ -200,6 +204,8 @@ When serializing stories back to MDGBDF:
 Where:
 - `UUIDV7` is the fully approved standard implementation for UUID7 generated for each id.
 - `hash8` is first 8 hex chars of SHA-1 of normalized name text.
+    If a story or task has no name, temporarily generate a 20 character random string 
+    to use in the  hash8 computation, and discard the temporary name.
 
 Normalization for hash input:
 - Strip outer whitespace.

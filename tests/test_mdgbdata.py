@@ -110,6 +110,7 @@ def test_non_pattern_heading_with_tasks_still_creates_story_default_do():
     assert len(stories) == 1
     assert stories[0].name == "Planning"
     assert stories[0].status == StoryStatus.DO
+    assert re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-[0-9a-f]{8}$", stories[0].id)
 
 
 def test_status_matched_heading_strips_story_prefix_from_story_name():
@@ -244,6 +245,7 @@ def test_bare_tasks_before_first_heading_go_to_unscoped_story():
     assert stories[0].status == StoryStatus.DO
     assert stories[0].tasks is not None
     assert len(stories[0].tasks) == 2
+    assert re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-[0-9a-f]{8}$", stories[0].id)
 
 
 def test_ids_are_deterministic_and_match_format():

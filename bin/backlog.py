@@ -161,7 +161,7 @@ def _build_parser() -> argparse.ArgumentParser:
         epilog=(
             "Environment variables:\n"
             "  BACKLOG_PROVIDER  Provider module name to use when --provider is not set.\n"
-            "                    If unset, backlog defaults to: bltodo"
+            "                    If unset, the backlog provider defaults to: bltodo"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

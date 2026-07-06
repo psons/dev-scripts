@@ -201,6 +201,21 @@ def _make_id(kind: str, name: str, order: int, parent_order: int | None = None) 
     return f"{_deterministic_uuid7(seed)}-{_hash8(name)}"
 
 
+def _make_story_id(name: str, order: int, explicit_id: str | None = None) -> str:
+    """Return a stable story id, preserving explicit ids when present."""
+    return explicit_id or _make_id("story", name, order)
+
+
+def _make_task_id(
+    name: str,
+    order: int,
+    parent_order: int,
+    explicit_id: str | None = None,
+) -> str:
+    """Return a stable task id, preserving explicit ids when present."""
+    return explicit_id or _make_id("task", name, order, parent_order=parent_order)
+
+
 def parse_stories_from_markdown(
     text: str,
     story_status_map: StatusMap,
@@ -272,7 +287,12 @@ def parse_stories_from_markdown(
         task_name = _normalize_name(current_task_name, "(unnamed task)")
         detail_lines = _trim_outer_blank_lines(current_task_detail_lines)
         detail = "\n".join(detail_lines) if detail_lines else None
-        task_id = current_task_id or _make_id("task", task_name, current_task_index, parent_order=current_story_index)
+        task_id = _make_task_id(
+            task_name,
+            current_task_index,
+            current_story_index,
+            explicit_id=current_task_id,
+        )
         current_story_tasks.append(
             Task(
                 id=task_id,
@@ -306,7 +326,7 @@ def parse_stories_from_markdown(
         story_name = _normalize_name(current_story_name, "(unnamed story)")
         description_lines = _trim_outer_blank_lines(current_story_description_lines)
         story_description = "\n".join(description_lines) if description_lines else None
-        story_id = current_story_id or _make_id("story", story_name, current_story_index)
+        story_id = _make_story_id(story_name, current_story_index, explicit_id=current_story_id)
         stories.append(
             Story(
                 id=story_id,
