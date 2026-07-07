@@ -25,10 +25,4 @@ A big philosophical question come in as to how to deal with those original docum
 A big benefit of Markdown Dev Description Format is that AI friendly markdown documents evol;ve into a format where scripts that are cheaper to run and faster shoulder a lot of load, and bring efficiency to development processes.
 
 # Action from this
-Allow simple to type attributes in stories and tasks in MDGBDF without forcing them to use Section front-matter.
-
-Serializing the gbdata model will write more formal MDGBDF pulling all the attribute definitions into section front-matter.
-
-An extension of mdgbdata.py (Same script with more functionality and maybe a new name like Mdddf.py) should be built that treats top level sections as a simple Markdown "DOM" that
-    - Also keeps the sections that are not stories
-    - adds link objects with title and link to th IDs of stories and task (sort of like the google doc chips)
+See: docs/dev/spec/adr/dev-description-format.md 

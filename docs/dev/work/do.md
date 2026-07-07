@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "docs(mdgbdf): Enhance MDGBDF with ad hoc attributes for AI-friendly\
-  \ task management; refactor dtask pop to top; improve docs"
+"actualCommitMessage": "feat: Introduce DDF spec, enhance `mdgbdata` with tasklist\
+  \ support and formal attribute parsing rules"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -10,20 +10,46 @@
 ---
 
 
-d - avoid anonymous-story as an id
+x - avoid anonymous-story as an id
  - assure that Story objects always have IDS that exist for their life time.
  x - update the spec
  x - prompt: update mdgbdata.py and tests to conform with the update in the '### ID Generation' section of docs/dev/spec/mdgbdata-spec.md.
 
-d - rework `backlog prioritized` to put the story title and story ID as attributes under the task
+
+# d - Story: backlog and mdgbdata support tasks lists
+backlog.py and mdgbdata.py should support lists of tasks that are not wrapped in Stories.   This will simplify the vision for the backlog prioritized and backlog top command.   Pop will be deprecated because it implies that the thing that is popped would be removed from the list.  Top is just a listing command.  removing (by pop) causes the backlog to not show tasks that are in progress
+
+The need for this rethinking comes from the situation where 
+
+## stages of work to implement:
+d - spec support reading informal mark down attributes
+    d - generate it 
+    d - check it out with test it with tojson
+
+d - support writing attributes in formal markdown as YAML
+    - per '#### MDGBDF Front-matter for Section, Story, or Task'
+    in docs/dev/spec/mdgbdata-spec.md
+
+d - verify / support reading the form frontmatter
+
+d - rework mdgbdata.py to put the story title and story ID as attributes under the task
     - which is pretty useful if I pop just a task task into do.md. 
     - which might be needed to integrate with taskwarrior.
 
  prompt: update mdgbdata.py to support new features of the spec , especially in sections
-  - '### Ad hoc attributes'            
+  - to populate attribs in the domain model:'### Ad hoc attributes'
+  - to add the story attribute when serializing for task listing: '### Module Requirements' and '#### Task Lists'     
+
 
 # Work Summary
 
+## 2026-07-07 13:19
+
+---
+workHeadline: "feat: Introduce DDF spec, enhance `mdgbdata` with tasklist support and formal attribute parsing rules"
+---
+
+The project introduces a new "Development Description Format" (DDF) specification, centralizing attribute handling for stories and tasks in Markdown. This expands `mdgbdata.py`'s capabilities to include serialization and a new `--tasklist` option, allowing tasks to be output individually with their parent story's ID and name. The `mdgbdata-spec.md` now details both informal (single-line) and formal (YAML front-matter) rules for attribute parsing and writing, replacing prior ad-hoc definitions. The `do.md` work log reflects progress on formalizing story IDs and outlines a new story to enable `backlog` and `mdgbdata` to support task lists, improving overall task management workflows.
 ## 2026-07-07 12:58
 
 ---

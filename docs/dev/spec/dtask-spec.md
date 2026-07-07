@@ -28,7 +28,7 @@ actualCommitMessage: add login page with OAuth support
 Task notes go here.
 ```
 
-## section frontmatter
+## Section Front-matter
 YAML key/value pairs embedded in a block of text inside a markdown section body, delimited by a `---` line before and after the block.  Unlike file frontmatter, section frontmatter appears after a markdown heading anywhere in the file and is not required to be at the start of the file.
 
 Pattern:

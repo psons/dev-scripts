@@ -9,6 +9,7 @@ This document is the implementation source of truth for `bin/mdgbdata.py` in thi
 The module must:
 - Provide status metadata loading and status detection utilities using repository metadata files.
 - Provide markdown parsing that builds `Story` objects containing `Task` objects.
+- Provide serialization that outputs markdown text from `Story` objects containing `Task` objects or Tasks attributed with their containing stories. 
 - Import domain classes from `bin/gbdata.py` so parsing output uses the shared gb-data model.
 
 The format described in this document that will be read and written by `bin/mdgbdata.py`
@@ -32,8 +33,16 @@ Commandline support should be provided by `bin/mdgbdata.py`for the following sub
     help
         will print a command usage summary for all subcommands 
 
+#### Task List option
+A --tasklist or -t option should be supported with the tojson and tomd options that cause the objects output to be a list of Tasks instead of Stories.
+
+When output as tasks, the tasks should include attributes
+ - storyId with a value that is the 'id' of the story that contains the task.
+ - storyName with a value that is the 'name' of the story that contains the task.
+
+
 ## Module Boundary
-`mdgbdata.py` owns markdown/text parsing behavior for MDGBDF.
+`mdgbdata.py` owns markdown/text parsing and serialization behavior for MDGBDF.
 
 `gbdata.py` owns domain types and the shared status enum.
 
@@ -169,11 +178,45 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 - When no explicit `id:` line is present, deterministic id generation rules still apply.
 
 ### Ad hoc attributes
-attributes may be included following the header line for a task, and if the key is not an  explicitly supported property of the task object, they are to be stored in the Task attribs key value list.  
+### Informal Markdown input rules
+The informal input rules support quick entry of attributes on a single line.
 
-Any non-white space line that is part of the task begins the description and ends the attributes section.
+Attributes may be included within a task anywhere after the headerline.
+An attribute is defined if there is a string of non-whitespace text starting from the left margin and ending with a character before a colon.  That non whitespace text defines a key for the attribute.  
 
-attributes are lines where the key is any non whitespace text starting at the left margin, and ending with the first colon.
+The value for the attribute is any text after the colon up to the end of the line.
+
+If the key is not an explicitly supported property of the Task object, it is to  be stored in the Task attribs key value list.  
+
+### Formal Markdown input rules
+The formal input rules support more possibilities of quoting and escaping text accoring the YAML rules, as specified for '#### Section Story Task Front-matter' in docs/dev/spec/dtask-spec.md attribute input as can be specified in YAML
+
+#### MDGBDF Front-matter for Section, Story, or Task
+YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or in a task , delimited by a `---` line before and after the block.  Unlike conventional file front-matter, MDGBDF frontmatter appears after for any Task, Story, or Sectionh eading that is not enclosed within a Story.
+
+Pattern:
+```
+## Section Heading
+
+---
+key: value
+key2: value2
+---
+
+Section body text.
+```
+
+Example (a work summary entry inside `# Work Summary`):
+```markdown
+## 2026-05-19 12:26
+
+---
+"workHeadline": "refactor(dtask): simplify do.md work summary insertion"
+---
+
+This update streamlines the dtask script's handling of work summary insertions.
+```
+
 
 
 #### Story Description Handling
