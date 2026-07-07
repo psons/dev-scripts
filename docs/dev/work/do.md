@@ -1,5 +1,6 @@
 ---
-"actualCommitMessage": "Improve story/task ID generation and preservation in mdgbdata, update spec and tests"
+"actualCommitMessage": "docs(mdgbdf): Enhance MDGBDF with ad hoc attributes for AI-friendly\
+  \ task management; refactor dtask pop to top; improve docs"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,14 +9,28 @@
 "workBranch": "dtask-pop"
 ---
 
+
 d - avoid anonymous-story as an id
  - assure that Story objects always have IDS that exist for their life time.
  x - update the spec
- d - prompt: update mdgbdata.py and tests to conform with the update in the '### ID Generation' section of docs/dev/spec/mdgbdata-spec.md.
-             
+ x - prompt: update mdgbdata.py and tests to conform with the update in the '### ID Generation' section of docs/dev/spec/mdgbdata-spec.md.
+
+d - rework `backlog prioritized` to put the story title and story ID as attributes under the task
+    - which is pretty useful if I pop just a task task into do.md. 
+    - which might be needed to integrate with taskwarrior.
+
+ prompt: update mdgbdata.py to support new features of the spec , especially in sections
+  - '### Ad hoc attributes'            
 
 # Work Summary
 
+## 2026-07-07 12:58
+
+---
+workHeadline: "docs(mdgbdf): Enhance MDGBDF with ad hoc attributes for AI-friendly task management; refactor dtask pop to top; improve docs"
+---
+
+This update primarily refines the Markdown-driven Great Big Data Format (MDGBDF) specification, notably in `docs/dev/spec/mdgbdata-spec.md`, by introducing support for "ad hoc attributes" in story and task headers. This enhancement, detailed further in the new `script-ai-friendly-texts.md` proposal, aims to make text conventions more AI-friendly and streamline task management. Corresponding `TODO.md` and `do.md` entries reflect these changes, including a rework of `dtask`'s `pop` subcommand to `top` with new options for integrating stories and tasks. Additionally, new documentation directories (`docs/dev/spec/adr/proposals` and `docs/dev/spec/obsolete`) are introduced for better organization of architectural decision records and obsolete specifications.
 ## 2026-07-06 07:39
 
 ---

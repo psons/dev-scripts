@@ -139,7 +139,7 @@ For non-pattern stories:
 
 When serializing stories to MDGBDF:
  - include the string `Story:` after the status and before the name.
- - include the string `Story:` after the '#' characters indicating the heading leval and before the name.
+ - include the string `Story:` after the '#' characters indicating the heading level and before the name.
 
 #### Task Header Detection
 A line starts a new task when all are true:
@@ -168,6 +168,14 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 - `id:` lines that are indented, or that do not appear immediately after the related header line, are not treated as ids and remain normal description/detail text.
 - When no explicit `id:` line is present, deterministic id generation rules still apply.
 
+### Ad hoc attributes
+attributes may be included following the header line for a task, and if the key is not an  explicitly supported property of the task object, they are to be stored in the Task attribs key value list.  
+
+Any non-white space line that is part of the task begins the description and ends the attributes section.
+
+attributes are lines where the key is any non whitespace text starting at the left margin, and ending with the first colon.
+
+
 #### Story Description Handling
 - `description` consists of Lines after a story header that are not task headers and not a closing heading boundary are story description context.
 - Story description contributes to detecting boundaries and preventing false story/task starts.
@@ -194,8 +202,8 @@ Generate IDs where possible based on source order and text:
 - Task id format: `{UUIDV7}-{hash8}`
 - If a transient or synthetic story is promoted to a real story to hold tasks, generate a unique story id using these same rules.
 
-Once an ID is created for a non transient or synthiteic Story or Task objects, it should be retained through all parsing and serialization
-operations, even of the content of the Object changes.
+Once an ID is created for a non transient or synthetic Story or Task objects, it should be retained through all parsing and serialization
+operations, even if the content of the Object changes.
 
 When serializing stories back to MDGBDF:
 - Emit `id: <story.id>` immediately after each story header.
@@ -211,6 +219,8 @@ Normalization for hash input:
 - Strip outer whitespace.
 - Collapse internal whitespace runs to a single space.
 - Keep case as-is.
+
+
 
 ## API Surface
 

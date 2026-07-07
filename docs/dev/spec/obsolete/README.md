@@ -1,0 +1,1 @@
+This directory is for obsolete spec documents that should dissappear from the source tree at some point, and be relegated to git histories if a detailed branch is kept.
