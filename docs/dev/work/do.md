@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Docs: Improve `dtask` README for AI-driven workflow, prune\
-  \ obsolete docs, add `TODO.md` caveats & simplify task lists"
+"actualCommitMessage": "Add gshove.sh: automate backing up uncommitted changes to\
+  \ a new branch, push, and restore original state"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 
 
@@ -49,6 +50,13 @@ d - rework mdgbdata.py to put the story title and story ID as attributes under t
 
 # Work Summary
 
+## 2026-07-08 17:46
+
+---
+workHeadline: "Add gshove.sh: automate backing up uncommitted changes to a new branch, push, and restore original state"
+---
+
+A new shell script, `gshove.sh`, has been added to the `bin` directory. This script automates the process of taking all uncommitted changes from the current branch, moving them to a newly created `shove-<original_branch_name>` branch, committing them with a user-provided message, and pushing that branch to the remote. This functionality is crucial for preventing data loss by ensuring unpushed work is safely backed up. After pushing, the script meticulously restores the original branch to its exact previous state, including staged, unstaged, and untracked files, while also providing instructions for branch cleanup.
 ## 2026-07-08 17:41
 
 ---
