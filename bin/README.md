@@ -44,12 +44,15 @@ Used to make sure there is a package-lock.json file and delete the node_modules 
 As long as there is a package-lock.json, then the npm install command cand re-download the node_modules.
 
 ### dtask
+dtask adds script automation to a work flow to connect work tasks to completed git commits.
 
-dtask helps users maintain a file called do.md to keep focus on help a single 'top of queue' task and assure the commit history and work record connected to the task, feature, and story.
+dtask helps you maintain a 'do.md' file with a definition of the current work task, and author prompts referring to specs to drive AI work.
+
+The do.md file helps keep focus on a single 'top of queue' task and assure the commit history and work record connected to the task, feature, and story.
 
 It is a Python utility that manages git branches and commit messages for the current task by administering YAML frontmatter in `docs/dev/work/do.md`.   
 
-The dtask script supports a work flow where a top task is popped off of a TODO.md into the do.md file.  Engineers add elaboration about the task that may for example suffice an AI prompt.  When complete, the do.md for the task gets committed into git history and then removed to make way for the next task.  It is purpise built to support a bigger 
+The dtask script supports a work flow where a top task is popped off of a TODO.md into the do.md file.  When work is each task is complete, dtask providea work summary and a commit message.  When the story is complete, the do.md gets committed into git history and then removed to make way for the next body of work.  It is purpose built to support a bigger 
 picture workflow described in [specification-workflow.md](docs/dev/spec/usecases/specification-workflow.md)
 
 **Features:**

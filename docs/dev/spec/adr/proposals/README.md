@@ -1,1 +1,0 @@
-This directory is for PEP like proposals and gogitation that may not yet be accepted as and architecturel decisions worth of the parent ADR project.
