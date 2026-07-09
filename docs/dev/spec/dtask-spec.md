@@ -5,7 +5,7 @@ The dtask command manages the current git branch and commit messages for the cur
 
 # Terminology
 
-## file frontmatter
+## file front-matter
 YAML key/value pairs that appear at the very start of a file, delimited by a `---` line before and after the block.  The file must begin with the opening `---` at column 0 with no leading whitespace.
 
 Pattern:
@@ -29,7 +29,7 @@ Task notes go here.
 ```
 
 ## Section Front-matter
-YAML key/value pairs embedded in a block of text inside a markdown section body, delimited by a `---` line before and after the block.  Unlike file frontmatter, section frontmatter appears after a markdown heading anywhere in the file and is not required to be at the start of the file.
+YAML key/value pairs embedded in a block of text inside a markdown section body, delimited by a `---` line before and after the block.  Unlike file front-matter, section front-matter appears after a markdown heading anywhere in the file and is not required to be at the start of the file.
 
 Pattern:
 ```
@@ -151,7 +151,7 @@ dtask commit --final should remove the do.md file and then commit even if the wo
 
 # improve the --final help text and commit message.
 Some update is needed.
-helptext for the --final option should be as follows:
+help text for the --final option should be as follows:
  
 ```
 --final                 Signal task complete. Performs two commits:
@@ -179,7 +179,7 @@ Add integration between `dtask commit` and `bin/wsum.py` so work summaries and c
 ## new option
 - Add the `--wsum` option to `dtask commit`.
 - When `--wsum` is provided, `dtask` must call the wsum python module function summarize_work and add the the WorkSummaryResult.markdown to `docs/dev/work/do.md`.
-- The added markdown will include frontmatter key `workHeadline:` and the generated work summary content in the body.
+- The added markdown will include front-matter key `workHeadline:` and the generated work summary content in the body.
 
 ## do.md summary insertion rules
 - If this is the first generated summary being added to `docs/dev/work/do.md`, `dtask` must add a markdown header `# Work Summary` before adding the summary text.
@@ -187,7 +187,7 @@ Add integration between `dtask commit` and `bin/wsum.py` so work summaries and c
 
 ### Clarification 2026-05-18 17:21
 dtask should not provide any headings under the # Work Summary header.  The required headings will be part of the WorkSummaryResult.markdown.
-Verified assumption: in the current `bin/wsum.py` implementation, every successful `summarize_work` return includes `WorkSummaryResult.markdown` containing frontmatter with `workHeadline:`.
+Verified assumption: in the current `bin/wsum.py` implementation, every successful `summarize_work` return includes `WorkSummaryResult.markdown` containing front-matter with `workHeadline:`.
 The new subsections under '# Work Summary' should be inserted into do.md at the top of the '# Work Summary' immediately after the '# Work Summary' heading, before any older subsections under '# Work Summary'.
 
 ### Clarification 2026-05-19 08:58
@@ -199,7 +199,7 @@ When wsum.summarize_work is invoked by dtask, the scope of the commit from --upd
 - Existing `--actual` / `-a` behavior remains unchanged and applies as already implemented for `actualCommitMessage`.
 
 ### Clarification 2026-05-19 11:14
-dtask commits without --final or --actual should assure that the frontmatter workHeadline is used to update the actualCommitMessage into the do.md file and used as the commit message. 
+dtask commits without --final or --actual should assure that the front-matter workHeadline is used to update the actualCommitMessage into the do.md file and used as the commit message. 
 
 ## Clarification 2026-05-19 12:14
 work summaries should be inserted into do.md immediately after the heading '# Work Summary', before any existing summary subsection content.
@@ -213,20 +213,20 @@ then insert the new '## YYYY-MM-DD hh:mm' subsection
  When dtask init is run and a new do.md file is created, always include the '# Work Summary' heading in do.md, so that it is already there if a user wants to manually write work summaries.
 
 ## Enhancements for workHeadline in do.md work summaries and commit messages 2026-06-04
-workHeadline should not be a file frontmatter attribute.
+workHeadline should not be a file front-matter attribute.
 
 definition: topmost means earliest in file order, where file order is from the first line in the file to the last line in the file.
 
 for commit message candidate selection, scan only the Work Summary region.
 the Work Summary region starts at the line matching '# Work Summary' and ends at the next level-1 heading ('# ...') or end of file.
-within that region, the commit message workHeadline is the first parse-valid section frontmatter value for key workHeadline encountered during a top-to-bottom scan.
+within that region, the commit message workHeadline is the first parse-valid section front-matter value for key workHeadline encountered during a top-to-bottom scan.
 parse-valid means a non-empty YAML scalar value for key workHeadline.
-only section frontmatter blocks inside the Work Summary region are eligible for commit message workHeadline selection.
-section frontmatter outside the Work Summary region is ignored.
-if a section frontmatter block is malformed YAML, ignore that block and continue scanning.
-if key workHeadline appears more than once in a single section frontmatter block, treat that block as invalid and continue scanning.
+only section front-matter blocks inside the Work Summary region are eligible for commit message workHeadline selection.
+section front-matter outside the Work Summary region is ignored.
+if a section front-matter block is malformed YAML, ignore that block and continue scanning.
+if key workHeadline appears more than once in a single section front-matter block, treat that block as invalid and continue scanning.
 
-workHeadline should never be read or written as file frontmatter as defined in the terminology section of this spec.
+workHeadline should never be read or written as file front-matter as defined in the terminology section of this spec.
 
 for the commit message, dtask commit without --final must use this precedence order:
  - commit message workHeadline

@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "Add gshove.sh: automate backing up uncommitted changes to\
-  \ a new branch, push, and restore original state"
+"actualCommitMessage": "spelling updates"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -10,8 +9,32 @@
 ---
 
 
+# story: support story attributes in tasks
+Proceed with work to support attributes in tasks, such as the story id and title.
+This is in a state of partial specification, and specs need to be cleaned up with respect 
+to abandoned work to support task level popping from backlog.py -> bltodo.py
+
+## stages of work to implement:
+/ - spec support reading informal mark down attributes
+    d - generate it 
+    d - check it out with test it with tojson
+
+d - support writing attributes in formal markdown as YAML
+    - per '#### MDGBDF Front-matter for Section, Story, or Task'
+    in docs/dev/spec/mdgbdata-spec.md
+
+d - verify / support reading the form front-matter
+
+d - rework mdgbdata.py to put the story title and story ID as attributes under the task
+    - which is pretty useful if I pop just a task task into do.md. 
+    - which might be needed to integrate with taskwarrior.
+
+prompt: update mdgbdata.py to support new features of the spec , especially in sections
+- to populate attribs in the domain model:'### Ad hoc attributes'
+- to add the story attribute when serializing for task listing: '### Module Requirements' and '#### Task Lists'     
 
 
+# Completed work
 x - avoid anonymous-story as an id
  - assure that Story objects always have IDS that exist for their life time.
  x - update the spec
@@ -26,37 +49,18 @@ x - avoid anonymous-story as an id
 backlog.py and mdgbdata.py should support lists of tasks that are not wrapped in Stories.   This will simplify the vision for the backlog prioritized and backlog top command.  
 The need for this rethinking comes from the situation where 
 
-
-
-## stages of work to implement:
-d - spec support reading informal mark down attributes
-    d - generate it 
-    d - check it out with test it with tojson
-
-d - support writing attributes in formal markdown as YAML
-    - per '#### MDGBDF Front-matter for Section, Story, or Task'
-    in docs/dev/spec/mdgbdata-spec.md
-
-d - verify / support reading the form frontmatter
-
-d - rework mdgbdata.py to put the story title and story ID as attributes under the task
-    - which is pretty useful if I pop just a task task into do.md. 
-    - which might be needed to integrate with taskwarrior.
-
- prompt: update mdgbdata.py to support new features of the spec , especially in sections
-  - to populate attribs in the domain model:'### Ad hoc attributes'
-  - to add the story attribute when serializing for task listing: '### Module Requirements' and '#### Task Lists'     
+Abandoned per dev-scripts-backlog/
 
 
 # Work Summary
 
 ## 2026-07-08 17:46
-
+"
 ---
 workHeadline: "Add gshove.sh: automate backing up uncommitted changes to a new branch, push, and restore original state"
 ---
 
-A new shell script, `gshove.sh`, has been added to the `bin` directory. This script automates the process of taking all uncommitted changes from the current branch, moving them to a newly created `shove-<original_branch_name>` branch, committing them with a user-provided message, and pushing that branch to the remote. This functionality is crucial for preventing data loss by ensuring unpushed work is safely backed up. After pushing, the script meticulously restores the original branch to its exact previous state, including staged, unstaged, and untracked files, while also providing instructions for branch cleanup.
+A new shell script, `gshove.sh`, has been added to the `bin` directory. This script automates the process of taking all uncommitted changes from the current branch, moving them to a newly created `shove-<original_branch_name>` branch, committing them with a user-provided message, and pushing that branch to the remote. This functionality is crucial for preventing data loss by ensuring un-pushed work is safely backed up. After pushing, the script meticulously restores the original branch to its exact previous state, including staged, unstaged, and untracked files, while also providing instructions for branch cleanup.
 ## 2026-07-08 17:41
 
 ---
@@ -86,4 +90,4 @@ This update primarily refines the Markdown-driven Great Big Data Format (MDGBDF)
 workHeadline: "Improve story/task ID generation and preservation in mdgbdata, update spec and tests"
 ---
 
-The diff primarily focuses on enhancing ID generation and preservation for stories and tasks within `mdgbdata.py`. New helper functions, `_make_story_id` and `_make_task_id`, were introduced to ensure that explicit IDs are retained during markdown parsing and to generatestable, deterministic IDs when none are provided. The `mdgbdata-spec.md` was updated to document these new ID generation rules, emphasizing the UUIDv7 and hash8 format and the handling of unnamed items. Corresponding tests in `test_mdgbdata.py` were extended to validate the format of these newly generated story IDs. A minor clarification was also made in the `backlog.py` help message.
+The diff primarily focuses on enhancing ID generation and preservation for stories and tasks within `mdgbdata.py`. New helper functions, `_make_story_id` and `_make_task_id`, were introduced to ensure that explicit IDs are retained during markdown parsing and to generate stable, deterministic IDs when none are provided. The `mdgbdata-spec.md` was updated to document these new ID generation rules, emphasizing the UUIDv7 and hash8 format and the handling of unnamed items. Corresponding tests in `test_mdgbdata.py` were extended to validate the format of these newly generated story IDs. A minor clarification was also made in the `backlog.py` help message.

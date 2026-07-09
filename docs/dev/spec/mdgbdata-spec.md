@@ -127,7 +127,7 @@ Rules are aligned with [docs/dev/spec/usecases/story-task-parsing-md.md](docs/de
 A line starts a new story when any of these are true:
 
 1. It is a markdown heading at level 1 through 6 and matches a story status pattern after heading markers.
-2. It is a markdown heading at level 1 through 6 and contains tasks below it (non-pattern matched headinggs a are still stories if they contain tasks).
+2. It is a markdown heading at level 1 through 6 and contains tasks below it (non-pattern matched headings a are still stories if they contain tasks).
 3. It is a markdown heading at level 1 through 6 whose heading text starts with `Story:` (case-insensitive, with optional surrounding whitespace).
 
 Interpretation details:
@@ -181,7 +181,7 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 ### Informal Markdown input rules
 The informal input rules support quick entry of attributes on a single line.
 
-Attributes may be included within a task anywhere after the headerline.
+Attributes may be included within a task anywhere after the header line.
 An attribute is defined if there is a string of non-whitespace text starting from the left margin and ending with a character before a colon.  That non whitespace text defines a key for the attribute.  
 
 The value for the attribute is any text after the colon up to the end of the line.
@@ -189,10 +189,10 @@ The value for the attribute is any text after the colon up to the end of the lin
 If the key is not an explicitly supported property of the Task object, it is to  be stored in the Task attribs key value list.  
 
 ### Formal Markdown input rules
-The formal input rules support more possibilities of quoting and escaping text accoring the YAML rules, as specified for '#### Section Story Task Front-matter' in docs/dev/spec/dtask-spec.md attribute input as can be specified in YAML
+The formal input rules support more possibilities of quoting and escaping text according the YAML rules, as specified for '#### Section Story Task Front-matter' in docs/dev/spec/dtask-spec.md attribute input as can be specified in YAML
 
 #### MDGBDF Front-matter for Section, Story, or Task
-YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or in a task , delimited by a `---` line before and after the block.  Unlike conventional file front-matter, MDGBDF frontmatter appears after for any Task, Story, or Sectionh eading that is not enclosed within a Story.
+YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or in a task , delimited by a `---` line before and after the block.  Unlike conventional file front-matter, MDGBDF front-matter appears after for any Task, Story, or Section heading that is not enclosed within a Story.
 
 Pattern:
 ```

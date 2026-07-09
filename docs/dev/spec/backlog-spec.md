@@ -19,11 +19,15 @@ If the --provider flag is not present, use a string value from the environment s
 
 If BACKLOG_PROVIDER is not set, default to bltodo.
 
-#### Future Plugins
+#### Planning Roadmap:
+The default plugin 
+##### Future Plugins
 Other possible future plugins are to implement the backlog protocols against:
  - Taskwarrior as bltw.py
  - Jira as bljira.py
  - Goal Blotter as blgb.py
+
+
 
 ## Backlog Plugin Protocols
 
@@ -45,7 +49,7 @@ These plugin protocols are not to be implemented yet, but are enumerated here fo
 
 ## subcommands of backlog.py 
 The subcommands output the data from the corresponding protocol methods according to the following options:
-    --mdgbdf: outputs data as MDBGDF using a public API method of mdgbdf.py.
+    --mdgbdf: outputs data as MDGBDF using a public API method of mdgbdf.py.
     --json: outputs data as JSON  using a public API method of mdgbdf.py.
 
 The sub command prioritized invokes the 'prioritized' method of the Prioritized protocol of the configured backlog plugin. 

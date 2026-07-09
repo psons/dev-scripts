@@ -41,7 +41,7 @@ See [../docs/spec/list-spec.md](../spec/list-spec.md) and [../spec/list-fileset-
 - (See [../docs/spec/clean-node-modules-spec.md](../docs/dev/spec/clean-node-modules-spec.md)
 Run with no args to show the help message.
 Used to make sure there is a package-lock.json file and delete the node_modules directory to save space.
-As long as there is a package-lock.json, then the npm install command cand re-download the node_modules.
+As long as there is a package-lock.json, then the npm install command and re-download the node_modules.
 
 ### dtask
 dtask adds script automation to a work flow to connect work tasks to completed git commits.
@@ -50,9 +50,9 @@ dtask helps you maintain a 'do.md' file with a definition of the current work ta
 
 The do.md file helps keep focus on a single 'top of queue' task and assure the commit history and work record connected to the task, feature, and story.
 
-It is a Python utility that manages git branches and commit messages for the current task by administering YAML frontmatter in `docs/dev/work/do.md`.   
+It is a Python utility that manages git branches and commit messages for the current task by administering YAML front-matter in `docs/dev/work/do.md`.   
 
-The dtask script supports a work flow where a top task is popped off of a TODO.md into the do.md file.  When work is each task is complete, dtask providea work summary and a commit message.  When the story is complete, the do.md gets committed into git history and then removed to make way for the next body of work.  It is purpose built to support a bigger 
+The dtask script supports a work flow where a top task is popped off of a TODO.md into the do.md file.  When work is each task is complete, dtask provider work summary and a commit message.  When the story is complete, the do.md gets committed into git history and then removed to make way for the next body of work.  It is purpose built to support a bigger 
 picture workflow described in [specification-workflow.md](docs/dev/spec/usecases/specification-workflow.md)
 
 **Features:**

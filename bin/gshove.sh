@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # gshove.sh: A Git helper script to move uncommitted changes to a new branch and push it.
-# The purpose is to reduce the risk that you might lose unpushed work if your workstation 
+# The purpose is to reduce the risk that you might lose un-pushed work if your workstation 
 # breaks or gets lost.
 
 # If the START_BRANCH has uncommitted work, this script leaves git in a state where 
@@ -55,7 +55,7 @@ fi
 echo "Moving uncommitted work to '$NEW_BRANCH'..."
 
 # 1. Stash everything, keeping track of what was staged vs unstaged
-git stash push --include-untracked -m "gpush_temporary_holder"
+git stash push --include-untracked -m "gshove_temporary_holder"
 
 # 2. Create the new branch from the clean starting point
 git checkout -b "$NEW_BRANCH"

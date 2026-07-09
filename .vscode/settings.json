@@ -1,8 +1,30 @@
 {
     "cSpell.words": [
+        "blgb",
+        "bljira",
+        "bltodo",
+        "bltw",
+        "dataclass",
         "dtask",
+        "fileset",
         "gbdata",
+        "gshove",
+        "hashlib",
+        "isinstance",
+        "mdgbdata",
+        "mdgbdf",
         "newdo",
+        "pathlib",
+        "popstory",
+        "poptask",
+        "pytest",
+        "stdlib",
+        "Taskwarrior",
+        "tojson",
+        "tomd",
+        "usecases",
+        "UUIDV",
+        "workbranch",
         "wsum"
     ]
 }
