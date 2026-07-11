@@ -5,7 +5,7 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
-
+d - update the gbdata model property name "attribs" to "attributes"
 
 # d - story: dtask integration with backlog.py
 ## limitations and assumptions 

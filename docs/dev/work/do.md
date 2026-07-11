@@ -1,5 +1,6 @@
 ---
-"actualCommitMessage": "spelling updates"
+"actualCommitMessage": "Refactor `mdgbdata` docs; move ad-hoc attribute rules; clarify\
+  \ JSON parsing; split story/task docs; update TODOs"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -9,6 +10,7 @@
 ---
 
 
+
 # story: support story attributes in tasks
 Proceed with work to support attributes in tasks, such as the story id and title.
 This is in a state of partial specification, and specs need to be cleaned up with respect 
@@ -16,7 +18,13 @@ to abandoned work to support task level popping from backlog.py -> bltodo.py
 
 ## stages of work to implement:
 / - spec support reading informal mark down attributes
-    d - generate it 
+The mdgbdata-spec.md
+    / - generate / update spec from user documentation
+    prompt: update the docs/dev/spec/mdgbdata-spec.md per the '# Ad hoc attributes' section of docs/dev/spec/usecases/story-task-parsing-md.md.
+    
+    d - generate / update code from software spec
+
+    prompt: update mdgbdata.py from the updated docs/dev/spec/mdgbdata-spec.md
     d - check it out with test it with tojson
 
 d - support writing attributes in formal markdown as YAML
@@ -54,6 +62,13 @@ Abandoned per dev-scripts-backlog/
 
 # Work Summary
 
+## 2026-07-11 09:52
+
+---
+workHeadline: "Refactor `mdgbdata` docs; move ad-hoc attribute rules; clarify JSON parsing; split story/task docs; update TODOs"
+---
+
+This diff primarily refactors documentation related to markdown parsing and attribute handling for `mdgbdata.py`. Key changes include migrating detailed 'Ad hoc attribute' rules from `mdgbdata-spec.md` to `story-task-parsing-md.md` for better organization, while also clarifying the `mdgbdata.py`'s parsing scope and adding a requirement for JSON parsing. The `story-task-parsing.md` file was split, with task status parsing rules moved to a new, dedicated `story-task-status-parsing.md` file. Furthermore, the `TODO.md` and `do.md` files were updated to reflect future work, including a planned refactoring of the 'attribs' property to 'attributes' in the `gbdata` model and explicit steps for updating the `mdgbdata-spec.md` to incorporate the new attribute handling definitions.
 ## 2026-07-08 17:46
 "
 ---

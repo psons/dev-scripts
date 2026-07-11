@@ -44,6 +44,25 @@ A heading has '[Ss]tory: ' as the the first or second non-white space string aft
 The next heading after the heading that begins a story that is the same level as a story is the beginning of something else, and is not part of the same story.
 
 # the `id` property.
-if the string `id:` appears at the left margin immediately after a story or task header, then the next non-whitespace strring after the `:` charachter should be treated as he `id` property for the story or task.
+if the string `id:` appears at the left margin immediately after a story or task header, then the next non-whitespace string after the `:` charachter should be treated as he `id` property for the story or task.
 
 users should not set the `id`, and should allow mdgbdata.py to assign the ID.
+
+# Ad hoc attributes
+Users can make up new attribute keys ad set values that will be saved in the 'attribs' key value list
+If the key is not an explicitly supported property of the Task object, it is to  be stored in the Task attribs key value list.  
+
+## Informal Markdown input rules
+Users should be able to input attributes quickly as a single line.
+
+Attributes may be included within a task anywhere after the header line.
+An attribute is defined if there is a string of non-whitespace text starting from the left margin and ending with a character before a colon.  That non whitespace text defines a key for the attribute.  
+
+The value for the attribute is any text after the colon up to the end of the line.
+
+## Formal Markdown input rules
+
+The formal input rules support more possibilities of quoting and escaping text according the YAML rules, as specified for '#### Section Story Task Front-matter' in docs/dev/spec/dtask-spec.md attribute input as can be specified in YAML
+
+## Formal Markdown output rules
+When attributes are serialized as markdown, they will be written as YAML per #### Section Story Task Front-matter' in docs/dev/spec/dtask-spec.md 

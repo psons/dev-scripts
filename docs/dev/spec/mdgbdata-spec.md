@@ -9,7 +9,7 @@ This document is the implementation source of truth for `bin/mdgbdata.py` in thi
 The module must:
 - Provide status metadata loading and status detection utilities using repository metadata files.
 - Provide markdown parsing that builds `Story` objects containing `Task` objects.
-- Provide serialization that outputs markdown text from `Story` objects containing `Task` objects or Tasks attributed with their containing stories. 
+- Provide serialization that outputs markdown text from `Story` objects containing `Task` objects. 
 - Import domain classes from `bin/gbdata.py` so parsing output uses the shared gb-data model.
 
 The format described in this document that will be read and written by `bin/mdgbdata.py`
@@ -26,19 +26,12 @@ Commandline support should be provided by `bin/mdgbdata.py`for the following sub
         If the input file does not contain any markdown headers or tasks, raise an error 
 
     tomd 
-        will read a file whose path is given as a command line argument and is  presumed to be json conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json and output 'Markdown GB Data Form'
+        will read a file whose path is given as a command line argument and is presumed to be json conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json and output 'Markdown GB Data Form'
 
         if the input file is not valid json, raise an error.  
 
     help
         will print a command usage summary for all subcommands 
-
-#### Task List option
-A --tasklist or -t option should be supported with the tojson and tomd options that cause the objects output to be a list of Tasks instead of Stories.
-
-When output as tasks, the tasks should include attributes
- - storyId with a value that is the 'id' of the story that contains the task.
- - storyName with a value that is the 'name' of the story that contains the task.
 
 
 ## Module Boundary
@@ -120,6 +113,8 @@ Required entry points:
 
 The file variant reads text then delegates to the text variant.
 
+`mdgbdata.py` must include a parser to load and validate json text to produce story/task structures.
+
 ### Markdown Interpretation Rules
 Rules are aligned with [docs/dev/spec/usecases/story-task-parsing-md.md](docs/dev/spec/usecases/story-task-parsing-md.md) for behavior and examples.
 
@@ -169,7 +164,7 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
   - a new story boundary,
   - a heading at same or higher level than current story.
 - Preserve newlines in detail text; trim outer blank lines.
-- Parsed markdown tasks default `attribs` to `None` in this phase.
+- Parsed markdown tasks default `attribs` to `None` if no Ad hoc attributes are found.
 
 #### Explicit `id` Property
 - If a left-margin line beginning with `id:` appears immediately after a story header, the first non-whitespace token after `:` must be parsed as `Story.id`.
@@ -177,19 +172,7 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 - `id:` lines that are indented, or that do not appear immediately after the related header line, are not treated as ids and remain normal description/detail text.
 - When no explicit `id:` line is present, deterministic id generation rules still apply.
 
-### Ad hoc attributes
-### Informal Markdown input rules
-The informal input rules support quick entry of attributes on a single line.
 
-Attributes may be included within a task anywhere after the header line.
-An attribute is defined if there is a string of non-whitespace text starting from the left margin and ending with a character before a colon.  That non whitespace text defines a key for the attribute.  
-
-The value for the attribute is any text after the colon up to the end of the line.
-
-If the key is not an explicitly supported property of the Task object, it is to  be stored in the Task attribs key value list.  
-
-### Formal Markdown input rules
-The formal input rules support more possibilities of quoting and escaping text according the YAML rules, as specified for '#### Section Story Task Front-matter' in docs/dev/spec/dtask-spec.md attribute input as can be specified in YAML
 
 #### MDGBDF Front-matter for Section, Story, or Task
 YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or in a task , delimited by a `---` line before and after the block.  Unlike conventional file front-matter, MDGBDF front-matter appears after for any Task, Story, or Section heading that is not enclosed within a Story.
@@ -336,7 +319,7 @@ At minimum, include tests for:
    - id format matches spec
 
 ## Non-Goals
-- Parsing full markdown AST.
+- Parsing full markdown documents with non Story and Task content in this phase.
 - Parsing `Goal` and `TimePriorityBlock` from markdown in this phase.
 - Auto-mutating metadata JSON files.
 
