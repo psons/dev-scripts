@@ -306,6 +306,17 @@ def test_task_attribs_default_to_none_from_parsing():
     assert stories[0].tasks[0].attribs is None
 
 
+def test_task_ad_hoc_attributes_are_parsed_from_markdown():
+    story_map, task_map = _status_maps()
+    text = "# d - Story\nx - parser task\nprompt: build parser\npriority: high\nDetails line\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert stories[0].tasks is not None
+    assert stories[0].tasks[0].attribs == {"prompt": "build parser", "priority": "high"}
+    assert stories[0].tasks[0].detail == "Details line"
+
+
 def test_stories_to_markdown_writes_story_prefix_in_story_header():
     story_map, task_map = _status_maps()
     stories = parse_stories_from_markdown("# d - Story: Build parser\nx - write tests\n", story_map, task_map)
@@ -333,6 +344,36 @@ def test_stories_to_markdown_serializes_story_and_task_ids_after_headers():
     assert f"# Story: Build parser\nid: {stories[0].id}" in markdown
     assert stories[0].tasks is not None
     assert f"x - write tests\nid: {stories[0].tasks[0].id}" in markdown
+
+
+def test_stories_to_markdown_serializes_task_attribs_as_frontmatter_and_roundtrips():
+    story_map, task_map = _status_maps()
+    story = gbdata.Story(
+        id="story-1",
+        status=StoryStatus.DO,
+        name="Story One",
+        description=None,
+        maxTasks=None,
+        tasks=[
+            gbdata.Task(
+                id="task-1",
+                status=TaskStatus.DO,
+                name="Task One",
+                detail="Details",
+                attribs={"prompt": "build parser", "priority": "high"},
+            )
+        ],
+    )
+
+    markdown = stories_to_markdown_text([story], story_map, task_map)
+
+    assert "---\nprompt: build parser\npriority: high\n---" in markdown
+
+    roundtrip = parse_stories_from_markdown(markdown, story_map, task_map)
+
+    assert roundtrip[0].tasks is not None
+    assert roundtrip[0].tasks[0].attribs == {"prompt": "build parser", "priority": "high"}
+    assert roundtrip[0].tasks[0].detail == "Details"
 
 
 def test_stories_to_json_text_serializes_story_objects():
@@ -371,6 +412,29 @@ def test_stories_to_json_text_serializes_story_objects():
             ],
         }
     ]
+
+
+def test_stories_to_json_text_includes_task_attribs_when_present():
+    story = gbdata.Story(
+        id="story-1",
+        status=StoryStatus.DO,
+        name="Story One",
+        description=None,
+        maxTasks=None,
+        tasks=[
+            gbdata.Task(
+                id="task-1",
+                status=TaskStatus.DO,
+                name="Task One",
+                detail=None,
+                attribs={"prompt": "build parser"},
+            )
+        ],
+    )
+
+    payload = json.loads(stories_to_json_text([story]))
+
+    assert payload[0]["tasks"][0]["attribs"] == {"prompt": "build parser"}
 
 
 def test_tojson_includes_story_description_without_warning(tmp_path: Path, capsys: pytest.CaptureFixture[str]):

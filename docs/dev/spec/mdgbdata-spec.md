@@ -5,11 +5,14 @@ This document is the implementation source of truth for `bin/mdgbdata.py` in thi
 
 `bin/mdgbdata.py` must be generated from this document.
 
+`bin/mdgbdata.py` owns the implementation of MDGBDF parsing and serialization, and JSON parsing and serialization for the shared gb-data model.
+
 ### Module Requirements
 The module must:
 - Provide status metadata loading and status detection utilities using repository metadata files.
 - Provide markdown parsing that builds `Story` objects containing `Task` objects.
-- Provide serialization that outputs markdown text from `Story` objects containing `Task` objects. 
+- Provide serialization that outputs markdown text from `Story` objects containing `Task` objects.
+- Provide JSON parsing and serialization for the gb-data schema representation of those objects.
 - Import domain classes from `bin/gbdata.py` so parsing output uses the shared gb-data model.
 
 The format described in this document that will be read and written by `bin/mdgbdata.py`
@@ -172,10 +175,19 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 - `id:` lines that are indented, or that do not appear immediately after the related header line, are not treated as ids and remain normal description/detail text.
 - When no explicit `id:` line is present, deterministic id generation rules still apply.
 
+#### Ad hoc Attributes
+Users can add ad hoc attributes to tasks without changing the core schema.
 
+- Any attribute key that is not an explicitly supported property of the `Task` object must be stored in `Task.attribs`.
+- Informal Markdown input must support a single-line `key: value` form.
+- An attribute line is recognized when non-whitespace text begins at the left margin and is followed by a colon.
+- The attribute value is the text after the colon up to the end of the line.
+- Attributes may appear anywhere after the relevant task header line within the task scope.
 
 #### MDGBDF Front-matter for Section, Story, or Task
-YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or in a task , delimited by a `---` line before and after the block.  Unlike conventional file front-matter, MDGBDF front-matter appears after for any Task, Story, or Section heading that is not enclosed within a Story.
+YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or task, delimited by a `---` line before and after the block. Unlike conventional file front-matter, MDGBDF front-matter appears after any Task, Story, or Section heading that is not enclosed within a Story.
+
+Formal Markdown input rules support the richer quoting and escaping behavior provided by YAML, as described in the use-case documentation for story/task parsing.
 
 Pattern:
 ```
@@ -199,6 +211,9 @@ Example (a work summary entry inside `# Work Summary`):
 
 This update streamlines the dtask script's handling of work summary insertions.
 ```
+
+#### Formal Markdown Output Rules
+When attributes are serialized as markdown, they must be written as YAML front-matter using the MDGBDF front-matter rules above.
 
 
 

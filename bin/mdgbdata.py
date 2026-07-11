@@ -14,6 +14,7 @@ Public API:
 from __future__ import annotations
 
 import argparse
+import ast
 from dataclasses import dataclass
 from hashlib import sha1
 import json
@@ -47,6 +48,9 @@ class MdgbdataCommandResult:
 
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
 _WS_RE = re.compile(r"\s+")
+_ATTRIBUTE_RE = re.compile(r"^(\S+):\s*(.*)$")
+_FRONTMATTER_DELIM = "---"
+_TASK_ATTR_RESERVED_KEYS = {"id", "status", "name", "detail", "attribs"}
 
 
 def load_status_map(path: str | Path) -> StatusMap:
@@ -155,6 +159,57 @@ def _parse_explicit_id_line(line: str) -> str | None:
     return value.split(None, 1)[0]
 
 
+def _parse_attribute_line(line: str) -> tuple[str, object] | None:
+    if line.startswith((" ", "\t")):
+        return None
+
+    match = _ATTRIBUTE_RE.match(line)
+    if match is None:
+        return None
+
+    key = match.group(1)
+    if key in _TASK_ATTR_RESERVED_KEYS:
+        return None
+
+    value_text = match.group(2)
+    if value_text and value_text[:1] in {"\"", "'"} and value_text[-1:] == value_text[:1]:
+        try:
+            value: object = ast.literal_eval(value_text)
+        except (SyntaxError, ValueError):
+            value = value_text[1:-1]
+    else:
+        value = value_text
+
+    return key, value
+
+
+def _parse_frontmatter_block(lines: list[str]) -> dict[str, object]:
+    attribs: dict[str, object] = {}
+    for line in lines:
+        parsed = _parse_attribute_line(line)
+        if parsed is None:
+            continue
+        key, value = parsed
+        attribs[key] = value
+    return attribs
+
+
+def _format_frontmatter_value(value: object) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if value is None:
+        return "null"
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, str):
+        if not value:
+            return '""'
+        if value != value.strip() or any(char in value for char in (":", "#", "\n", "\r", '"')):
+            return json.dumps(value)
+        return value
+    return json.dumps(str(value))
+
+
 def _is_story_prefixed_heading(text: str) -> bool:
     tokens = text.strip().split()
     if not tokens:
@@ -245,7 +300,10 @@ def parse_stories_from_markdown(
     current_task_status: TaskStatus | None = None
     current_task_id: str | None = None
     current_task_detail_lines: list[str] = []
+    current_task_attribs: dict[str, object] | None = None
     current_task_expects_id_line = False
+    current_task_frontmatter_active = False
+    current_task_frontmatter_lines: list[str] = []
 
     pending_heading_level: int | None = None
     pending_heading_text: str | None = None
@@ -275,7 +333,8 @@ def parse_stories_from_markdown(
 
     def finalize_task() -> None:
         nonlocal current_task_name, current_task_status, current_task_id, current_task_detail_lines
-        nonlocal current_task_index, current_task_expects_id_line
+        nonlocal current_task_index, current_task_expects_id_line, current_task_attribs
+        nonlocal current_task_frontmatter_active, current_task_frontmatter_lines
 
         if current_task_name is None or current_task_status is None:
             return
@@ -299,7 +358,7 @@ def parse_stories_from_markdown(
                 name=task_name,
                 status=current_task_status,
                 detail=detail,
-                attribs=None,
+                attribs=current_task_attribs,
             )
         )
 
@@ -307,7 +366,10 @@ def parse_stories_from_markdown(
         current_task_status = None
         current_task_id = None
         current_task_detail_lines = []
+        current_task_attribs = None
         current_task_expects_id_line = False
+        current_task_frontmatter_active = False
+        current_task_frontmatter_lines = []
 
     def finalize_story() -> None:
         nonlocal current_story_index, current_story_name, current_story_status
@@ -390,6 +452,20 @@ def parse_stories_from_markdown(
                 current_task_id = explicit_task_id
                 continue
 
+        if current_task_frontmatter_active:
+            if line.strip() == _FRONTMATTER_DELIM and not line.startswith((" ", "\t")):
+                current_task_frontmatter_active = False
+                parsed_frontmatter = _parse_frontmatter_block(current_task_frontmatter_lines)
+                if parsed_frontmatter:
+                    if current_task_attribs is None:
+                        current_task_attribs = {}
+                    current_task_attribs.update(parsed_frontmatter)
+                current_task_frontmatter_lines = []
+                continue
+
+            current_task_frontmatter_lines.append(line)
+            continue
+
         if current_story_expects_id_line:
             explicit_story_id = _parse_explicit_id_line(line)
             current_story_expects_id_line = False
@@ -421,10 +497,24 @@ def parse_stories_from_markdown(
             current_task_status = task_status
             current_task_id = None
             current_task_detail_lines = []
+            current_task_attribs = None
             current_task_expects_id_line = True
             continue
 
         if current_task_name is not None:
+            if line.strip() == _FRONTMATTER_DELIM and not line.startswith((" ", "\t")):
+                current_task_frontmatter_active = True
+                current_task_frontmatter_lines = []
+                continue
+
+            parsed_attribute = _parse_attribute_line(line)
+            if parsed_attribute is not None:
+                key, value = parsed_attribute
+                if current_task_attribs is None:
+                    current_task_attribs = {}
+                current_task_attribs[key] = value
+                continue
+
             current_task_detail_lines.append(line)
             continue
 
@@ -660,6 +750,11 @@ def _render_markdown_story(story: Story, story_status_map: StatusMap, task_statu
             task_entry = _task_status_entry(task.status, task_status_map)
             lines.append(f"{task_entry.val} - {task.name}")
             lines.append(f"id: {task.id}")
+            if task.attribs:
+                lines.append(_FRONTMATTER_DELIM)
+                for key, value in task.attribs.items():
+                    lines.append(f"{key}: {_format_frontmatter_value(value)}")
+                lines.append(_FRONTMATTER_DELIM)
             if task.detail:
                 lines.extend(task.detail.splitlines())
     return lines

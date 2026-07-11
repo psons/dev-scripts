@@ -1,5 +1,6 @@
 ---
-"actualCommitMessage": "task prompt update"
+"actualCommitMessage": "feat: Implement ad-hoc task attributes in `mdgbdata.py` with\
+  \ Markdown frontmatter support, parsing, serialization, and tests"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -10,21 +11,21 @@
 
 
 
+
 # story: support story attributes in tasks
 Proceed with work to support attributes in tasks, such as the story id and title.
 This is in a state of partial specification, and specs need to be cleaned up with respect 
 to abandoned work to support task level popping from backlog.py -> bltodo.py
 
 ## stages of work to implement:
-/ - spec support reading informal mark down attributes
-The mdgbdata-spec.md
-    / - generate / update spec from user documentation
-    prompt: update the docs/dev/spec/mdgbdata-spec.md per the '# Ad hoc attributes' section of docs/dev/spec/usecases/story-task-parsing-md.md. Assure that other updates to describe that mdgbdata-spec.md accounts for scope and implementation of its responsibilities for serialization of MDGBDF and JSON are retained. 
-    
-    d - generate / update code from software spec
+### 1 - spec support reading informal mark down attributes
+x - generate / update spec from user documentation
+prompt: update the docs/dev/spec/mdgbdata-spec.md per the '# Ad hoc attributes' section of docs/dev/spec/usecases/story-task-parsing-md.md. Assure that other updates to describe that mdgbdata-spec.md accounts for scope and implementation of its responsibilities for serialization of MDGBDF and JSON are retained. 
 
-    prompt: update mdgbdata.py from the updated docs/dev/spec/mdgbdata-spec.md
-    d - check it out with test it with tojson
+/ - generate / update code from software spec
+prompt: update mdgbdata.py from the updated docs/dev/spec/mdgbdata-spec.md and also update tests.
+
+d - check it out with test it with tojson
 
 d - support writing attributes in formal markdown as YAML
     - per '#### MDGBDF Front-matter for Section, Story, or Task'
@@ -61,6 +62,13 @@ Abandoned per dev-scripts-backlog/
 
 # Work Summary
 
+## 2026-07-11 10:52
+
+---
+workHeadline: "feat: Implement ad-hoc task attributes in `mdgbdata.py` with Markdown frontmatter support, parsing, serialization, and tests"
+---
+
+The `mdgbdata.py` script has been significantly enhanced to support ad-hoc attributes for tasks, allowing users to define custom `key: value` pairs directly within Markdown. This update introduces parsing logic for both single-line attributes and multi-line frontmatter blocks delimited by `---`, integrating these new properties into the `Task.attribs` field. Furthermore, the script now serializes these attributes back into Markdown as YAML frontmatter and includes them in the JSON representation of stories and tasks. The `mdgbdata-spec.md` document was updated to formally describe these new parsing and serialization rules, while `test_mdgbdata.py` now includes comprehensive tests to ensure correct behavior and data round-tripping for the ad-hoc task attributes.
 ## 2026-07-11 09:52
 
 ---
