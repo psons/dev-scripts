@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "Refactor `mdgbdata` docs; move ad-hoc attribute rules; clarify\
-  \ JSON parsing; split story/task docs; update TODOs"
+"actualCommitMessage": "task prompt update"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -20,7 +19,7 @@ to abandoned work to support task level popping from backlog.py -> bltodo.py
 / - spec support reading informal mark down attributes
 The mdgbdata-spec.md
     / - generate / update spec from user documentation
-    prompt: update the docs/dev/spec/mdgbdata-spec.md per the '# Ad hoc attributes' section of docs/dev/spec/usecases/story-task-parsing-md.md.
+    prompt: update the docs/dev/spec/mdgbdata-spec.md per the '# Ad hoc attributes' section of docs/dev/spec/usecases/story-task-parsing-md.md. Assure that other updates to describe that mdgbdata-spec.md accounts for scope and implementation of its responsibilities for serialization of MDGBDF and JSON are retained. 
     
     d - generate / update code from software spec
 
