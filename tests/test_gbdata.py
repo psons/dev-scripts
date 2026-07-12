@@ -23,16 +23,16 @@ StoryStatus = gbdata.StoryStatus
 Task = gbdata.Task
 
 
-def test_task_attribs_defaults_to_none():
+def test_task_attributes_defaults_to_none():
     task = Task(id="t1", status=TaskStatus.DO, name="demo")
 
-    assert task.attribs is None
+    assert task.attributes is None
 
 
-def test_task_attribs_accepts_object_map():
-    task = Task(id="t1", status=TaskStatus.DO, name="demo", attribs={"prompt": "build parser"})
+def test_task_attributes_accepts_object_map():
+    task = Task(id="t1", status=TaskStatus.DO, name="demo", attributes={"prompt": "build parser"})
 
-    assert task.attribs == {"prompt": "build parser"}
+    assert task.attributes == {"prompt": "build parser"}
 
 
 def test_task_status_values_match_spec():

@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "feat: Implement ad-hoc task attributes in `mdgbdata.py` with\
-  \ Markdown frontmatter support, parsing, serialization, and tests"
+"actualCommitMessage": "refactor: Rename Task.attribs to Task.attributes across codebase, updating parsing, serialization, docs, and tests for consistency"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -9,58 +8,48 @@
 "workBranch": "dtask-pop"
 ---
 
+# Completed work
 
+x - update the gbdata model property name "attribs" to "attributes"
 
-
-# story: support story attributes in tasks
+## story: support story attributes in tasks
 Proceed with work to support attributes in tasks, such as the story id and title.
 This is in a state of partial specification, and specs need to be cleaned up with respect 
 to abandoned work to support task level popping from backlog.py -> bltodo.py
 
-## stages of work to implement:
-### 1 - spec support reading informal mark down attributes
+### stages of work to implement:
+#### 1 - spec support reading informal mark down attributes
 x - generate / update spec from user documentation
 prompt: update the docs/dev/spec/mdgbdata-spec.md per the '# Ad hoc attributes' section of docs/dev/spec/usecases/story-task-parsing-md.md. Assure that other updates to describe that mdgbdata-spec.md accounts for scope and implementation of its responsibilities for serialization of MDGBDF and JSON are retained. 
 
-/ - generate / update code from software spec
+x - generate / update code from software spec
 prompt: update mdgbdata.py from the updated docs/dev/spec/mdgbdata-spec.md and also update tests.
 
-d - check it out with test it with tojson
+x - check it out with test it with tojson
 
-d - support writing attributes in formal markdown as YAML
+x - support writing attributes in formal markdown as YAML
     - per '#### MDGBDF Front-matter for Section, Story, or Task'
     in docs/dev/spec/mdgbdata-spec.md
 
-d - verify / support reading the form front-matter
-
-d - rework mdgbdata.py to put the story title and story ID as attributes under the task
-    - which is pretty useful if I pop just a task task into do.md. 
-    - which might be needed to integrate with taskwarrior.
-
-prompt: update mdgbdata.py to support new features of the spec , especially in sections
-- to populate attribs in the domain model:'### Ad hoc attributes'
-- to add the story attribute when serializing for task listing: '### Module Requirements' and '#### Task Lists'     
+x - verify / support reading the form front-matter
 
 
-# Completed work
-x - avoid anonymous-story as an id
+# - avoid anonymous-story as an id
  - assure that Story objects always have IDS that exist for their life time.
  x - update the spec
  x - prompt: update mdgbdata.py and tests to conform with the update in the '### ID Generation' section of docs/dev/spec/mdgbdata-spec.md.
 
 
-# a - Story: backlog and mdgbdata support tasks lists
-    - To keep things simple, possibly don't do this.  Consider pop only supporting story level
-        - but if I don't do this, I have to deal with anonymous stories
-    - maybe at least for the first iteration
-
-backlog.py and mdgbdata.py should support lists of tasks that are not wrapped in Stories.   This will simplify the vision for the backlog prioritized and backlog top command.  
-The need for this rethinking comes from the situation where 
-
-Abandoned per dev-scripts-backlog/
-
 
 # Work Summary
+
+## 2026-07-12 11:50
+
+---
+workHeadline: "refactor: Rename Task.attribs to Task.attributes across codebase, updating parsing, serialization, docs, and tests for consistency"
+---
+
+The primary change in this diff is the renaming of the `attribs` field to `attributes` within the `Task` dataclass in `bin/gbdata.py` and `bin/mdgbdata.py`, affecting how ad-hoc task properties are stored and processed. This modification is propagated throughout the codebase, including updates to the parsing logic in `_parse_frontmatter_block` and `parse_stories_from_markdown`, and serialization functions like `_task_to_dict` and `_render_markdown_story` in `bin/mdgbdata.py`. Supporting documentation in `docs/dev/spec/gbdata-spec-2.md`, `docs/dev/spec/mdgbdata-spec.md`, and `docs/dev/spec/usecases/story-task-parsing-md.md` has been updated to reflect this new field name and its implications for user-defined attributes. Corresponding unit tests in `tests/test_gbdata.py` and `tests/test_mdgbdata.py` were also adjusted to validate the `attributes` field's default behavior, parsing, and serialization, ensuring consistency across the application. Additionally, minor updates were made to `docs/dev/spec/usecases/README.md`, `docs/dev/work/TODO.md`, and `docs/dev/work/do.md` to refine descriptions and reflect progress on related work items.
 
 ## 2026-07-11 10:52
 

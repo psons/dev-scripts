@@ -50,7 +50,7 @@ _HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
 _WS_RE = re.compile(r"\s+")
 _ATTRIBUTE_RE = re.compile(r"^(\S+):\s*(.*)$")
 _FRONTMATTER_DELIM = "---"
-_TASK_ATTR_RESERVED_KEYS = {"id", "status", "name", "detail", "attribs"}
+_TASK_ATTR_RESERVED_KEYS = {"id", "status", "name", "detail", "attributes", "attribs"}
 
 
 def load_status_map(path: str | Path) -> StatusMap:
@@ -184,14 +184,14 @@ def _parse_attribute_line(line: str) -> tuple[str, object] | None:
 
 
 def _parse_frontmatter_block(lines: list[str]) -> dict[str, object]:
-    attribs: dict[str, object] = {}
+    attributes: dict[str, object] = {}
     for line in lines:
         parsed = _parse_attribute_line(line)
         if parsed is None:
             continue
         key, value = parsed
-        attribs[key] = value
-    return attribs
+        attributes[key] = value
+    return attributes
 
 
 def _format_frontmatter_value(value: object) -> str:
@@ -300,7 +300,7 @@ def parse_stories_from_markdown(
     current_task_status: TaskStatus | None = None
     current_task_id: str | None = None
     current_task_detail_lines: list[str] = []
-    current_task_attribs: dict[str, object] | None = None
+    current_task_attributes: dict[str, object] | None = None
     current_task_expects_id_line = False
     current_task_frontmatter_active = False
     current_task_frontmatter_lines: list[str] = []
@@ -333,7 +333,7 @@ def parse_stories_from_markdown(
 
     def finalize_task() -> None:
         nonlocal current_task_name, current_task_status, current_task_id, current_task_detail_lines
-        nonlocal current_task_index, current_task_expects_id_line, current_task_attribs
+        nonlocal current_task_index, current_task_expects_id_line, current_task_attributes
         nonlocal current_task_frontmatter_active, current_task_frontmatter_lines
 
         if current_task_name is None or current_task_status is None:
@@ -358,7 +358,7 @@ def parse_stories_from_markdown(
                 name=task_name,
                 status=current_task_status,
                 detail=detail,
-                attribs=current_task_attribs,
+                attributes=current_task_attributes,
             )
         )
 
@@ -366,7 +366,7 @@ def parse_stories_from_markdown(
         current_task_status = None
         current_task_id = None
         current_task_detail_lines = []
-        current_task_attribs = None
+        current_task_attributes = None
         current_task_expects_id_line = False
         current_task_frontmatter_active = False
         current_task_frontmatter_lines = []
@@ -457,9 +457,9 @@ def parse_stories_from_markdown(
                 current_task_frontmatter_active = False
                 parsed_frontmatter = _parse_frontmatter_block(current_task_frontmatter_lines)
                 if parsed_frontmatter:
-                    if current_task_attribs is None:
-                        current_task_attribs = {}
-                    current_task_attribs.update(parsed_frontmatter)
+                    if current_task_attributes is None:
+                        current_task_attributes = {}
+                    current_task_attributes.update(parsed_frontmatter)
                 current_task_frontmatter_lines = []
                 continue
 
@@ -497,7 +497,7 @@ def parse_stories_from_markdown(
             current_task_status = task_status
             current_task_id = None
             current_task_detail_lines = []
-            current_task_attribs = None
+            current_task_attributes = None
             current_task_expects_id_line = True
             continue
 
@@ -510,9 +510,9 @@ def parse_stories_from_markdown(
             parsed_attribute = _parse_attribute_line(line)
             if parsed_attribute is not None:
                 key, value = parsed_attribute
-                if current_task_attribs is None:
-                    current_task_attribs = {}
-                current_task_attribs[key] = value
+                if current_task_attributes is None:
+                    current_task_attributes = {}
+                current_task_attributes[key] = value
                 continue
 
             current_task_detail_lines.append(line)
@@ -577,8 +577,8 @@ def _task_to_dict(task: Task) -> dict[str, object]:
     }
     if task.detail is not None:
         data["detail"] = task.detail
-    if task.attribs is not None:
-        data["attribs"] = task.attribs
+    if task.attributes is not None:
+        data["attributes"] = task.attributes
     return data
 
 
@@ -601,18 +601,20 @@ def _task_from_mapping(value: object) -> Task:
         raise ValueError(f"Task entry has invalid status: {exc}") from exc
 
     detail = value.get("detail")
-    attribs = value.get("attribs")
+    attributes = value.get("attributes")
+    if attributes is None and "attribs" in value:
+        attributes = value.get("attribs")
     if detail is not None and not isinstance(detail, str):
         raise ValueError("Task detail must be a string when present")
-    if attribs is not None and not isinstance(attribs, dict):
-        raise ValueError("Task attribs must be an object when present")
+    if attributes is not None and not isinstance(attributes, dict):
+        raise ValueError("Task attributes must be an object when present")
 
     return Task(
         id=task_id,
         status=task_status,
         name=task_name,
         detail=detail,
-        attribs=attribs,
+        attributes=attributes,
     )
 
 
@@ -750,9 +752,9 @@ def _render_markdown_story(story: Story, story_status_map: StatusMap, task_statu
             task_entry = _task_status_entry(task.status, task_status_map)
             lines.append(f"{task_entry.val} - {task.name}")
             lines.append(f"id: {task.id}")
-            if task.attribs:
+            if task.attributes:
                 lines.append(_FRONTMATTER_DELIM)
-                for key, value in task.attribs.items():
+                for key, value in task.attributes.items():
                     lines.append(f"{key}: {_format_frontmatter_value(value)}")
                 lines.append(_FRONTMATTER_DELIM)
             if task.detail:

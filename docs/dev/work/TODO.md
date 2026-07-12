@@ -5,7 +5,13 @@
   \ that will get merged to a trunk of archive branch."
 ---
 
-d - update the gbdata model property name "attribs" to "attributes"
+# Work Ordering Decisions
+
+The ability to serialize Markdown Sections to a model to preserve other documemt content will be addressed to prepare for popping stories out of TODO.md and into do.md.
+
+ - dev-scripts-backlog/stories/d-tlog-and-task-pop-in-dtask.md
+ - dev-scripts-backlog/stories/Specify-development-description-format.md
+    - references: analysis/proposals/script-ai-friendly-texts.md
 
 # d - story: dtask integration with backlog.py
 ## limitations and assumptions 

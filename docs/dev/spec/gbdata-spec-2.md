@@ -12,7 +12,11 @@ The module must:
 
 ## Model updates
 
-Update the domain model spec in this document per the gb-data repo file  https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json
+Aligned with the gb-data schema at:
+https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json
+
+Update applied:
+- `Task.attribs` has been renamed to `Task.attributes`.
 
 
 ## Module Boundary
@@ -58,7 +62,7 @@ Implement dataclasses with `frozen=True` and `slots=True`:
    - `status: TaskStatus`
    - `name: str`
    - `detail: str | None = None`
-   - `attribs: dict[str, object] | None = None`
+   - `attributes: dict[str, object] | None = None`
 
 2. `Story`
    - `id: str`
@@ -112,7 +116,7 @@ At minimum, include tests for:
 
 2. Dataclass structure and defaults
    - All fields exist with required defaults.
-   - `Task.attribs` defaults to `None` and supports unknown-valued metadata.
+   - `Task.attributes` defaults to `None` and supports unknown-valued metadata.
 
 3. Serialization compatibility shape
    - Type instances can be constructed with schema-compatible field values.

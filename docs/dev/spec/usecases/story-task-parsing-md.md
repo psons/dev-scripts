@@ -49,8 +49,8 @@ if the string `id:` appears at the left margin immediately after a story or task
 users should not set the `id`, and should allow mdgbdata.py to assign the ID.
 
 # Ad hoc attributes
-Users can make up new attribute keys ad set values that will be saved in the 'attribs' key value list
-If the key is not an explicitly supported property of the Task object, it is to  be stored in the Task attribs key value list.  
+Users can make up new attribute keys ad set values that will be saved in the 'attributes' key value list
+If the key is not an explicitly supported property of the Task object, it is to  be stored in the Task attributes key value list.  
 
 ## Informal Markdown input rules
 Users should be able to input attributes quickly as a single line.

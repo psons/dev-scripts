@@ -167,7 +167,7 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
   - a new story boundary,
   - a heading at same or higher level than current story.
 - Preserve newlines in detail text; trim outer blank lines.
-- Parsed markdown tasks default `attribs` to `None` if no Ad hoc attributes are found.
+- Parsed markdown tasks default `attributes` to `None` if no Ad hoc attributes are found.
 
 #### Explicit `id` Property
 - If a left-margin line beginning with `id:` appears immediately after a story header, the first non-whitespace token after `:` must be parsed as `Story.id`.
@@ -178,7 +178,7 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 #### Ad hoc Attributes
 Users can add ad hoc attributes to tasks without changing the core schema.
 
-- Any attribute key that is not an explicitly supported property of the `Task` object must be stored in `Task.attribs`.
+- Any attribute key that is not an explicitly supported property of the `Task` object must be stored in `Task.attributes`.
 - Informal Markdown input must support a single-line `key: value` form.
 - An attribute line is recognized when non-whitespace text begins at the left margin and is followed by a colon.
 - The attribute value is the text after the colon up to the end of the line.
@@ -214,7 +214,6 @@ This update streamlines the dtask script's handling of work summary insertions.
 
 #### Formal Markdown Output Rules
 When attributes are serialized as markdown, they must be written as YAML front-matter using the MDGBDF front-matter rules above.
-
 
 
 #### Story Description Handling
@@ -319,7 +318,7 @@ At minimum, include tests for:
    - indented task-like line not recognized
    - task detail accumulation until boundary
    - task names/defaults for empty headline
-   - task `attribs` default to `None`
+   - task `attributes` default to `None`
 
 5. Boundary behavior
    - same-level heading closes current story

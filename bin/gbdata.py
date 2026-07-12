@@ -38,7 +38,7 @@ class Task:
     status: TaskStatus
     name: str
     detail: str | None = None
-    attribs: dict[str, object] | None = None
+    attributes: dict[str, object] | None = None
 
 
 @dataclass(frozen=True, slots=True)
