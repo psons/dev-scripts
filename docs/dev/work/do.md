@@ -1,5 +1,5 @@
 ---
-"actualCommitMessage": "refactor: Allow Story.status to be None to allow for usage of the Story object to hold markdown DDF H1 sections"
+"actualCommitMessage": "human update of sources for docs/dev/spec/mdgbdata-spec.md"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,13 +8,20 @@
 "workBranch": "dtask-pop"
 ---
 
+
 # Completed work
 
 x - update the gbdata Story object to allow status to be None.
  - A Section is simply a story with no status or tasks. 
  - update gbdata.py to allow status to be None in Story.
 
-d - update mdgbdata.py to support full DDF per   
+x - update the DDF specs to eliminate Section objects mentions in favor of informational stories.
+ - docs/dev/spec/adr/script-ai-friendly-texts-development-description-format.md
+ - docs/dev/spec/usecases/development-description-format-uses.md
+
+/ - update docs/dev/spec/mdgbdata-spec.md to support DDF according to updates and new source specifications mentioned under '### Sources'
+
+d - update mdgbdata.py to support full DDF per updated docs/dev/spec/mdgbdata-spec.md  
 
 x - update the gbdata model property name "attribs" to "attributes"
 

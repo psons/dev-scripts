@@ -1,14 +1,13 @@
 # Context / Background
-That module also contains domain data model for the gb-data schema.
 
-Stories and tasks authored within markdown files per this doc should be available vis the bin/gbdata.py module to a backlog.py plugin implementation that will provide abilities to read and possibly write tasks.
+Stories and tasks authored within markdown files per this doc should be available via the bin/gbdata.py module to a backlog.py plugin implementation that will provide abilities to read and possibly write stories and tasks.
 
 # Stories
 Users should quickly begin to enumerate tasks in a markdown file to begin analyzing and executing work.
 
 Tasks should be easy to group into stories.
 
-Some times in writing a a spec, a user begins to write stories inside the spec because sometimes there is little or no distinction between the wording of a use case, and the wording of the same idea written as a story description. For small focused efforts, it can be nice to keep them in the same file.
+Some times in writing a a spec, a user begins to write stories inside the spec because sometimes there is little or no distinction between the wording of a use case, and the wording of the same idea written as a story description. For small focused efforts, it can be nice to keep them in the same file.  (Development Description Format (DDF) extends this idea in separate specifications.)
 
 Story headers are the ^# text lines that match the patterns based on the gb-data enums.
 
@@ -16,13 +15,13 @@ Lines following a story header that are not part of a story or new mark down sec
 
 Stories objects may not be nested in other story objects, so a story header found at a lower heading level within a story should be treated as part of the story description, not a new story.
 
-The story header contains a story status and a story name.
+The story header contains a story status and a story name. (Per the new extension DDF extended rules,the status may be absent)
 
 
 # tasks
 Tasks headers are text than matches the task status metadata pattern enums.
 
-Lines following a task header that are not part of a a new task, story, or non-story mark down section at the same level or higher than te current story constitute the description of the task.
+Lines following a task header that are not part of a a new task, story, or non-story mark down section at the same level or higher than the current story constitute the description of the task.
 
 Task objects may not be nested in other task objects.
 
@@ -30,12 +29,11 @@ Tasks can be written bare without stories, but it makes organizing them hard, an
 
 The task header contains a task status and a task name.
 
-
 ## non tasks
 Tasks are part of the heading section they are in, and always are anchored at the left margin.   Task-like leaders that are not at the left margin are microsected parts of a task, or possibly a preliminary breakdown of story definition work.
 
 # Non pattern matched stories 
-A heading that is not part of a previous story that contains tasks is a story even if it does not match a pattern. This is a corner case where a story must be created to hold tasks under that heading. The heading line should be used for the name of the story.
+A heading that is not part of a previous story that contains tasks is a story even if it does not match a pattern. This is a corner case where a story must be created to hold tasks under that heading. The heading line should be used for the name of the story.  See the updated DDF specs for handling the status for these stories.
 
 If the heading text does not match a story status pattern, the story still exists and a default story status of 'do' must be applied.
 

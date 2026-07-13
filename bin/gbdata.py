@@ -51,6 +51,7 @@ class Story:
     description: str | None = None
     maxTasks: int | None = None
     tasks: list[Task] | None = None
+    attributes: dict[str, object] | None = None
 
 
 @dataclass(frozen=True, slots=True)

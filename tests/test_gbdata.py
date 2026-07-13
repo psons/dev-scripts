@@ -50,6 +50,18 @@ def test_story_status_accepts_enum_or_none():
     assert without_status.status is None
 
 
+def test_story_attributes_defaults_to_none():
+    story = Story(id="s1", name="demo")
+
+    assert story.attributes is None
+
+
+def test_story_attributes_accepts_object_map():
+    story = Story(id="s1", name="demo", attributes={"source": "external-planner"})
+
+    assert story.attributes == {"source": "external-planner"}
+
+
 def test_task_status_values_match_spec():
     assert [status.value for status in TaskStatus] == [
         "abandoned",

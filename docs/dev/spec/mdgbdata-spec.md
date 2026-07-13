@@ -1,11 +1,19 @@
 # mdgbdata.py Code-Ready Specification (Markdown Parsing)
 
 ## Purpose
-This document is the implementation source of truth for `bin/mdgbdata.py` in this repository.
 
+### Sources 
+This document uses the following sources and is to be maintained as the single source of truth for implementation of `bin/mdgbdata.py` in this repository.:
+ - [docs/dev/spec/usecases/story-task-parsing-md.md](./usecases/story-task-parsing-md.md)
+ - [development-description-format-uses.md](docs/dev/spec/usecases/development-description-format-uses.md)
+ - [docs/dev/spec/adr/script-ai-friendly-texts-development-description-format.md](./adr/script-ai-friendly-texts-development-description-format.md)
+
+
+### Output
 `bin/mdgbdata.py` must be generated from this document.
 
 `bin/mdgbdata.py` owns the implementation of MDGBDF parsing and serialization, and JSON parsing and serialization for the shared gb-data model.
+
 
 ### Module Requirements
 The module must:
@@ -16,7 +24,7 @@ The module must:
 - Import domain classes from `bin/gbdata.py` so parsing output uses the shared gb-data model.
 
 The format described in this document that will be read and written by `bin/mdgbdata.py`
-will be referred to in other specifications as 'Markdown GB Data Form' (MDGBDF)
+will be referred to in other specifications as 'Markdown GB Data Form' (MDGBDF) or Development Description Format (DDF).
 
 ### Command line Requirements
 Commandline support should be provided by `bin/mdgbdata.py`for the following sub commands:
@@ -29,7 +37,7 @@ Commandline support should be provided by `bin/mdgbdata.py`for the following sub
         If the input file does not contain any markdown headers or tasks, raise an error 
 
     tomd 
-        will read a file whose path is given as a command line argument and is presumed to be json conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json and output 'Markdown GB Data Form'
+        will read a file whose path is given as a command line argument and is presumed to be json conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json and output 'Development Description Format (DDF)'
 
         if the input file is not valid json, raise an error.  
 
