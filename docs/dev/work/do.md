@@ -1,5 +1,6 @@
 ---
-"actualCommitMessage": "human update of sources for docs/dev/spec/mdgbdata-spec.md"
+"actualCommitMessage": "AI update docs/dev/spec/mdgbdata-spec.md to freestanding single\
+  \ source"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -7,6 +8,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 
 # Completed work
@@ -19,7 +21,11 @@ x - update the DDF specs to eliminate Section objects mentions in favor of infor
  - docs/dev/spec/adr/script-ai-friendly-texts-development-description-format.md
  - docs/dev/spec/usecases/development-description-format-uses.md
 
-/ - update docs/dev/spec/mdgbdata-spec.md to support DDF according to updates and new source specifications mentioned under '### Sources'
+x - update docs/dev/spec/mdgbdata-spec.md to support DDF according to updates and new source specifications mentioned under '### Sources'
+
+x - ask AI for an audit to:
+prompt: update the docs/dev/spec/mdgbdata-spec.md to assure that it is sufficient as a free standing document to update mdgbdata.py and tests without having to read source documents. 
+
 
 d - update mdgbdata.py to support full DDF per updated docs/dev/spec/mdgbdata-spec.md  
 

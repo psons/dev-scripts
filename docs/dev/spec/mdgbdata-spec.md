@@ -5,8 +5,11 @@
 ### Sources 
 This document uses the following sources and is to be maintained as the single source of truth for implementation of `bin/mdgbdata.py` in this repository.:
  - [docs/dev/spec/usecases/story-task-parsing-md.md](./usecases/story-task-parsing-md.md)
- - [development-description-format-uses.md](docs/dev/spec/usecases/development-description-format-uses.md)
+ - [docs/dev/spec/usecases/development-description-format-uses.md](./usecases/development-description-format-uses.md)
  - [docs/dev/spec/adr/script-ai-friendly-texts-development-description-format.md](./adr/script-ai-friendly-texts-development-description-format.md)
+ - [docs/dev/spec/gbdata-spec-2.md](./gbdata-spec-2.md)
+
+Source files above are background context only. This document is normative and intentionally self-contained for implementation and test work.
 
 
 ### Output
@@ -18,8 +21,8 @@ This document uses the following sources and is to be maintained as the single s
 ### Module Requirements
 The module must:
 - Provide status metadata loading and status detection utilities using repository metadata files.
-- Provide markdown parsing that builds `Story` objects containing `Task` objects.
-- Provide serialization that outputs markdown text from `Story` objects containing `Task` objects.
+- Provide DDF markdown parsing that builds ordered `Story` objects containing optional `Task` objects.
+- Provide DDF serialization that outputs markdown text from ordered `Story` objects and preserves non-task informational story content.
 - Provide JSON parsing and serialization for the gb-data schema representation of those objects.
 - Import domain classes from `bin/gbdata.py` so parsing output uses the shared gb-data model.
 
@@ -46,7 +49,7 @@ Commandline support should be provided by `bin/mdgbdata.py`for the following sub
 
 
 ## Module Boundary
-`mdgbdata.py` owns markdown/text parsing and serialization behavior for MDGBDF.
+`mdgbdata.py` owns markdown/text parsing and serialization behavior for MDGBDF/DDF.
 
 `gbdata.py` owns domain types and the shared status enum.
 
@@ -114,8 +117,12 @@ Implement utility functions:
 
 ## Markdown Parsing Requirements
 
+### Standalone Contract
+This section is sufficient to implement and test `bin/mdgbdata.py` without reading other documents.
+If any rule here differs from referenced source documents, this file takes precedence for this repository.
+
 ### Scope
-`mdgbdata.py` must include a parser focused on producing story/task structures from markdown content.
+`mdgbdata.py` must include a parser focused on producing full DDF story/task structures from markdown content.
 
 Required entry points:
 
@@ -124,17 +131,40 @@ Required entry points:
 
 The file variant reads text then delegates to the text variant.
 
+DDF parser/serializer scope must preserve whole-document information as an ordered list of stories:
+- If content exists before the first H1 heading, it is represented as a file-scope informational `Story`.
+- If no H1 headings exist, the whole file is represented as a single file-scope informational `Story`.
+- Every H1 heading starts a new non-file-scope `Story`.
+- Informational stories may have `status=None` and no tasks.
+
 `mdgbdata.py` must include a parser to load and validate json text to produce story/task structures.
 
+### JSON Mapping Contract
+JSON serialization and parsing must use the following field mapping:
+- Story required fields: `id`, `name`
+- Story optional fields: `status`, `description`, `maxTasks`, `tasks`, `attributes`
+- Task required fields: `id`, `status`, `name`
+- Task optional fields: `detail`, `attributes`
+
+Validation rules:
+- When present, `Story.status` and `Task.status` must be enum-compatible status strings.
+- When present, `Story.attributes` and `Task.attributes` must be JSON objects.
+- When present, `Story.tasks` must be an array of task objects.
+
+Compatibility rule for legacy task payloads:
+- JSON input with `task.attribs` must be accepted and mapped to `Task.attributes` when `attributes` is absent.
+
 ### Markdown Interpretation Rules
-Rules are aligned with [docs/dev/spec/usecases/story-task-parsing-md.md](docs/dev/spec/usecases/story-task-parsing-md.md) for behavior and examples.
+All markdown behavior required for implementation is specified below.
 
 #### Story Header Detection
 A line starts a new story when any of these are true:
 
 1. It is a markdown heading at level 1 through 6 and matches a story status pattern after heading markers.
-2. It is a markdown heading at level 1 through 6 and contains tasks below it (non-pattern matched headings a are still stories if they contain tasks).
+2. It is a markdown heading at level 1 through 6 and contains tasks below it (non-pattern matched headings are still stories if they contain tasks).
 3. It is a markdown heading at level 1 through 6 whose heading text starts with `Story:` (case-insensitive, with optional surrounding whitespace).
+
+For full DDF document boundaries, every H1 heading (`^# `) must start a new `Story` even when no status pattern or tasks are present.
 
 Interpretation details:
 - Heading marker must be at left margin to be considered a heading (`^#{1,6}\\s+`).
@@ -149,12 +179,22 @@ For status-pattern stories:
 
 For non-pattern stories:
 - `name` is normalized heading text (trimmed; preserve internal spacing).
-- If no status pattern is detected, default `status` to `TaskStatus.DO`.
+- If no status pattern is detected and tasks are present in the story, default `status` to `TaskStatus.DO`.
+- If no status pattern is detected and no tasks are present, `status` must remain `None` (informational story).
 - This includes the corner case where a heading is promoted to a story only because it contains task lines.
 
+Story-level ad hoc metadata must be supported:
+- Any attribute key not mapped to an explicit `Story` field is stored in `Story.attributes`.
+- Story attributes follow the same informal `key: value` and formal front-matter parsing rules used for task attributes, scoped to the current story.
+
 When serializing stories to MDGBDF:
- - include the string `Story:` after the status and before the name.
- - include the string `Story:` after the '#' characters indicating the heading level and before the name.
+- Use heading level 1 for each serialized story.
+- If `Story.status is None` or `Story.status == StoryStatus.DO`, write header as:
+   `# Story: <name>`
+- Otherwise write header as:
+   `# <status_val> - Story: <name>`
+   where `<status_val>` is the `val` shorthand from story status metadata.
+- Emit `id: <story.id>` immediately after each story header.
 
 #### Task Header Detection
 A line starts a new task when all are true:
@@ -192,10 +232,16 @@ Users can add ad hoc attributes to tasks without changing the core schema.
 - The attribute value is the text after the colon up to the end of the line.
 - Attributes may appear anywhere after the relevant task header line within the task scope.
 
+Users can add ad hoc attributes to stories without changing the core schema.
+
+- Any attribute key that is not an explicitly supported property of the `Story` object must be stored in `Story.attributes`.
+- Informal Markdown input must support a single-line `key: value` form for story scope.
+- Attributes may appear anywhere after the relevant story header line within the story scope when not inside task scope.
+
 #### MDGBDF Front-matter for Section, Story, or Task
 YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or task, delimited by a `---` line before and after the block. Unlike conventional file front-matter, MDGBDF front-matter appears after any Task, Story, or Section heading that is not enclosed within a Story.
 
-Formal Markdown input rules support the richer quoting and escaping behavior provided by YAML, as described in the use-case documentation for story/task parsing.
+Formal Markdown input rules support richer quoting and escaping behavior in YAML-like form. Implementations in this repository intentionally parse only simple key/value lines from this block.
 
 Pattern:
 ```
@@ -223,10 +269,17 @@ This update streamlines the dtask script's handling of work summary insertions.
 #### Formal Markdown Output Rules
 When attributes are serialized as markdown, they must be written as YAML front-matter using the MDGBDF front-matter rules above.
 
+Serialization behavior:
+- Task attributes are serialized inside a front-matter block immediately after `id: <task.id>`.
+- Story attributes are serialized inside a front-matter block immediately after `id: <story.id>`.
+- A front-matter block opens with `---` and closes with `---` on left margin.
+- Each attribute line is serialized as `key: value` with scalar value formatting compatible with current parser behavior.
+
 
 #### Story Description Handling
 - `description` consists of Lines after a story header that are not task headers and not a closing heading boundary are story description context.
 - Story description contributes to detecting boundaries and preventing false story/task starts.
+- In DDF, story description for informational stories is preserved as authored text and must round-trip through parse/serialize flows.
 
 ### Bare Task Behavior
 Per use-case text, bare tasks can exist without explicit story context, but parser output must be `list[Story]`.
@@ -236,6 +289,8 @@ Implement this rule:
 - If task headers appear before any active story, auto-create a synthetic story named `"Unscoped"` with deterministic id and attach those tasks.
 - The synthetic `"Unscoped"` story must use default status `TaskStatus.DO`.
 - Synthetic story must be first in output if encountered before first real story.
+
+For full DDF parsing, when file-scope informational story context already exists, bare tasks before the first H1 should be attached to that file-scope story and set its status to `TaskStatus.DO`.
 
 ### Heading Boundary Rules
 When inside a story with heading level `L`:
@@ -254,7 +309,6 @@ Once an ID is created for a non transient or synthetic Story or Task objects, it
 operations, even if the content of the Object changes.
 
 When serializing stories back to MDGBDF:
-- Emit `id: <story.id>` immediately after each story header.
 - Emit `id: <task.id>` immediately after each task header.
 
 Where:
@@ -281,6 +335,12 @@ Normalization for hash input:
 - `strip_status_prefix`
 - `parse_stories_from_markdown`
 - `parse_stories_from_markdown_file`
+- `stories_to_json_text`
+- `stories_to_markdown_text`
+- `convert_markdown_file_to_json_text`
+- `convert_json_file_to_markdown_text`
+- `parse_args`
+- `main`
 
 ## Error Handling
 - Invalid metadata key not in `TaskStatus`: raise `ValueError` naming invalid key.
@@ -316,8 +376,10 @@ At minimum, include tests for:
    - status-matched heading creates story with stripped name
    - status-matched heading persists `Story.status`
    - non-pattern heading with tasks still creates story
-   - non-pattern stories default `Story.status` to `TaskStatus.DO`
+   - non-pattern stories with tasks default `Story.status` to `TaskStatus.DO`
+   - non-pattern H1 stories without tasks produce informational stories with `Story.status is None`
    - `Story:` heading creates story without tasks
+   - story attributes parse to `Story.attributes`
    - nested heading does not create nested story
    - heading levels 1 through 6 are supported for story boundaries
 
@@ -339,6 +401,11 @@ At minimum, include tests for:
 7. Deterministic IDs
    - same input yields same ids across parses
    - id format matches spec
+
+8. DDF whole-document preservation
+   - content before first H1 is preserved in file-scope informational story
+   - file with no H1 is represented as a single informational story
+   - parsing then serializing preserves informational story description text
 
 ## Non-Goals
 - Parsing full markdown documents with non Story and Task content in this phase.
