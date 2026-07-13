@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "AI update docs/dev/spec/mdgbdata-spec.md to freestanding single\
-  \ source"
+"actualCommitMessage": "Tweaks of docs/dev/spec/mdgbdata-spec.md re file scope story\
+  \ name"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 
 

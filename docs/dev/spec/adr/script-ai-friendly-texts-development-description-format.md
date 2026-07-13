@@ -1,9 +1,11 @@
+# Development Description Format (DDF)
 Development Description Format (DDF) should be a human author friendly text convention on top of Markdown to synthesize what do.md is being used for and TODO.md is being used for (writing stories and tasks).
 
 The idea is that when writing markdown documents for specs and other things, stories and tasks can be included inline.
 
 DDF extends MDGBDF to include text that are not Stories, in that they have no tasks or status to track.
 
+## File Scoped Story
 Files should be viewed as containing the following structure, which can be structured as a list of section / story objects:
 
 '''
@@ -14,7 +16,7 @@ Files should be viewed as containing the following structure, which can be struc
 The File scope Story is different from the non file scope Stories as follows:
     It had no H1 at its beginning
     A front-matter section if found is the front-matter as will also be seen according to conventional front-matter rules.
-    It's title is the filename stripped of any directory elements or file extension.
+    It's name is the filename stripped of any directory elements or file extension.
 
 Tools parsing the DDF of a markdown file will yield an ordered list of Story objects matching the file order.
 

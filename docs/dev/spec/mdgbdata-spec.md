@@ -137,6 +137,12 @@ DDF parser/serializer scope must preserve whole-document information as an order
 - Every H1 heading starts a new non-file-scope `Story`.
 - Informational stories may have `status=None` and no tasks.
 
+File-scope story naming:
+- When parsing from a file path, the file-scope story `name` must be the filename stem (directory removed, extension removed).
+- File-scope tasks and description text are attached to that file-scope story.
+- If a file has no H1 headings, the single informational story must still use the filename stem as its `name`.
+- When parsing from raw text without a file path, implementations may use a stable placeholder name for the file-scope story, but file-based parsing must use the filename stem.
+
 `mdgbdata.py` must include a parser to load and validate json text to produce story/task structures.
 
 ### JSON Mapping Contract
@@ -291,6 +297,7 @@ Implement this rule:
 - Synthetic story must be first in output if encountered before first real story.
 
 For full DDF parsing, when file-scope informational story context already exists, bare tasks before the first H1 should be attached to that file-scope story and set its status to `TaskStatus.DO`.
+The file-scope story name for that case is the filename stem.
 
 ### Heading Boundary Rules
 When inside a story with heading level `L`:
@@ -405,6 +412,7 @@ At minimum, include tests for:
 8. DDF whole-document preservation
    - content before first H1 is preserved in file-scope informational story
    - file with no H1 is represented as a single informational story
+   - file-scope story name uses the filename stem
    - parsing then serializing preserves informational story description text
 
 ## Non-Goals
