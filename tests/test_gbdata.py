@@ -21,6 +21,7 @@ _spec.loader.exec_module(gbdata)
 TaskStatus = gbdata.TaskStatus
 StoryStatus = gbdata.StoryStatus
 Task = gbdata.Task
+Story = gbdata.Story
 
 
 def test_task_attributes_defaults_to_none():
@@ -33,6 +34,20 @@ def test_task_attributes_accepts_object_map():
     task = Task(id="t1", status=TaskStatus.DO, name="demo", attributes={"prompt": "build parser"})
 
     assert task.attributes == {"prompt": "build parser"}
+
+
+def test_story_status_defaults_to_none():
+    story = Story(id="s1", name="demo")
+
+    assert story.status is None
+
+
+def test_story_status_accepts_enum_or_none():
+    with_status = Story(id="s1", name="demo", status=StoryStatus.DO)
+    without_status = Story(id="s2", name="demo", status=None)
+
+    assert with_status.status == StoryStatus.DO
+    assert without_status.status is None
 
 
 def test_task_status_values_match_spec():

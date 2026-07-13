@@ -17,6 +17,7 @@ https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json
 
 Update applied:
 - `Task.attribs` has been renamed to `Task.attributes`.
+- `Story.status` is now optional (`None` allowed) to support informational stories.
 
 
 ## Module Boundary
@@ -66,7 +67,7 @@ Implement dataclasses with `frozen=True` and `slots=True`:
 
 2. `Story`
    - `id: str`
-   - `status: StoryStatus`
+   - `status: StoryStatus | None = None`
    - `name: str`
    - `description: str | None = None`
    - `maxTasks: int | None = None`
@@ -120,7 +121,8 @@ At minimum, include tests for:
 
 3. Serialization compatibility shape
    - Type instances can be constructed with schema-compatible field values.
-   - Required fields (`Task.status`, `Story.status`) are represented as non-optional in the model.
+   - `Task.status` is represented as non-optional in the model.
+   - `Story.status` is optional and supports `None` for informational stories.
 
 ## Non-Goals
 - Markdown parsing.

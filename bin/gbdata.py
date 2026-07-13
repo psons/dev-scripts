@@ -46,8 +46,8 @@ class Story:
     """A story that groups tasks."""
 
     id: str
-    status: StoryStatus
     name: str
+    status: StoryStatus | None = None
     description: str | None = None
     maxTasks: int | None = None
     tasks: list[Task] | None = None

@@ -1,5 +1,5 @@
 ---
-"actualCommitMessage": "refactor: Rename Task.attribs to Task.attributes across codebase, updating parsing, serialization, docs, and tests for consistency"
+"actualCommitMessage": "refactor: Allow Story.status to be None to allow for usage of the Story object to hold markdown DDF H1 sections"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -9,6 +9,12 @@
 ---
 
 # Completed work
+
+x - update the gbdata Story object to allow status to be None.
+ - A Section is simply a story with no status or tasks. 
+ - update gbdata.py to allow status to be None in Story.
+
+d - update mdgbdata.py to support full DDF per   
 
 x - update the gbdata model property name "attribs" to "attributes"
 
@@ -33,7 +39,6 @@ x - support writing attributes in formal markdown as YAML
 
 x - verify / support reading the form front-matter
 
-
 # - avoid anonymous-story as an id
  - assure that Story objects always have IDS that exist for their life time.
  x - update the spec
@@ -42,6 +47,15 @@ x - verify / support reading the form front-matter
 
 
 # Work Summary
+
+## 2026-07-13 11:45
+
+---
+workHeadline: "refactor: Allow Story.status to be None to allow for usage of the Story object to hold markdown DDF H1 sections"
+---
+
+Update spec, gbdata.py and tests per headline.
+
 
 ## 2026-07-12 11:50
 
