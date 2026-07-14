@@ -39,6 +39,7 @@ parse_stories_from_markdown = mdgbdata.parse_stories_from_markdown
 parse_stories_from_markdown_file = mdgbdata.parse_stories_from_markdown_file
 strip_status_prefix = mdgbdata.strip_status_prefix
 convert_markdown_file_to_json_text = mdgbdata.convert_markdown_file_to_json_text
+convert_json_file_to_markdown_text = mdgbdata.convert_json_file_to_markdown_text
 stories_to_json_text = mdgbdata.stories_to_json_text
 stories_to_markdown_text = mdgbdata.stories_to_markdown_text
 
@@ -241,11 +242,48 @@ def test_bare_tasks_before_first_heading_go_to_unscoped_story():
     stories = parse_stories_from_markdown(text, story_map, task_map)
 
     assert len(stories) == 2
-    assert stories[0].name == "Unscoped"
+    assert stories[0].name == "(file)"
     assert stories[0].status == StoryStatus.DO
     assert stories[0].tasks is not None
     assert len(stories[0].tasks) == 2
     assert re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-[0-9a-f]{8}$", stories[0].id)
+
+
+def test_non_pattern_h1_without_tasks_is_informational_story_with_none_status():
+    story_map, task_map = _status_maps()
+    stories = parse_stories_from_markdown("# Planning\nContext line\n", story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].name == "Planning"
+    assert stories[0].status is None
+    assert stories[0].tasks is None
+
+
+def test_parse_markdown_file_with_no_h1_uses_filename_stem_for_file_scope_story(tmp_path: Path):
+    story_map, task_map = _status_maps()
+    md = tmp_path / "alpha-plan.md"
+    md.write_text("Line one\nLine two\n", encoding="utf-8")
+
+    stories = parse_stories_from_markdown_file(md, story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].name == "alpha-plan"
+    assert stories[0].status is None
+    assert stories[0].description == "Line one\nLine two"
+
+
+def test_file_scope_tasks_before_first_h1_attach_to_filename_story(tmp_path: Path):
+    story_map, task_map = _status_maps()
+    md = tmp_path / "todo-source.md"
+    md.write_text("x - setup\n# Story: Next\nd - move\n", encoding="utf-8")
+
+    stories = parse_stories_from_markdown_file(md, story_map, task_map)
+
+    assert len(stories) == 2
+    assert stories[0].name == "todo-source"
+    assert stories[0].status == StoryStatus.DO
+    assert stories[0].tasks is not None
+    assert stories[0].tasks[0].name == "setup"
 
 
 def test_ids_are_deterministic_and_match_format():
@@ -346,6 +384,29 @@ def test_stories_to_markdown_serializes_story_and_task_ids_after_headers():
     assert f"x - write tests\nid: {stories[0].tasks[0].id}" in markdown
 
 
+def test_stories_to_markdown_uses_story_prefix_for_informational_story_with_none_status():
+    story_map, task_map = _status_maps()
+    story = gbdata.Story(id="story-1", name="Info Story", status=None, description="Context")
+
+    markdown = stories_to_markdown_text([story], story_map, task_map)
+
+    assert "# Story: Info Story" in markdown
+    assert "id: story-1" in markdown
+
+
+def test_story_attributes_are_parsed_and_roundtrip_in_markdown():
+    story_map, task_map = _status_maps()
+    text = "# Story: Plan\nid: story-1\n---\nowner: team-a\npriority: high\n---\nStory body\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].attributes == {"owner": "team-a", "priority": "high"}
+
+    markdown = stories_to_markdown_text(stories, story_map, task_map)
+    assert "---\nowner: team-a\npriority: high\n---" in markdown
+
+
 def test_stories_to_markdown_serializes_task_attributes_as_frontmatter_and_roundtrips():
     story_map, task_map = _status_maps()
     story = gbdata.Story(
@@ -412,6 +473,44 @@ def test_stories_to_json_text_serializes_story_objects():
             ],
         }
     ]
+
+
+def test_stories_to_json_text_omits_story_status_when_none_and_keeps_story_attributes():
+    story = gbdata.Story(
+        id="story-1",
+        name="Info Story",
+        status=None,
+        description="Summary",
+        maxTasks=None,
+        tasks=None,
+        attributes={"owner": "team-a"},
+    )
+
+    payload = json.loads(stories_to_json_text([story]))
+
+    assert "status" not in payload[0]
+    assert payload[0]["attributes"] == {"owner": "team-a"}
+
+
+def test_convert_json_file_to_markdown_accepts_story_without_status(tmp_path: Path):
+    story_map, task_map = _status_maps()
+    src = tmp_path / "input.json"
+    src.write_text(
+        json.dumps([
+            {
+                "id": "story-1",
+                "name": "Info Story",
+                "description": "Context",
+                "attributes": {"owner": "team-a"},
+            }
+        ]),
+        encoding="utf-8",
+    )
+
+    markdown = convert_json_file_to_markdown_text(src, story_map, task_map)
+
+    assert "# Story: Info Story" in markdown
+    assert "owner: team-a" in markdown
 
 
 def test_stories_to_json_text_includes_task_attributes_when_present():

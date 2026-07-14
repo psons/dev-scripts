@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "Tweaks of docs/dev/spec/mdgbdata-spec.md re file scope story\
-  \ name"
+"actualCommitMessage": "Bugghy first update of mdgbdata.py to support DDF"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,6 +7,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 
 
@@ -27,10 +27,19 @@ x - update docs/dev/spec/mdgbdata-spec.md to support DDF according to updates an
 x - ask AI for an audit to:
 prompt: update the docs/dev/spec/mdgbdata-spec.md to assure that it is sufficient as a free standing document to update mdgbdata.py and tests without having to read source documents. 
 
-
-d - update mdgbdata.py to support full DDF per updated docs/dev/spec/mdgbdata-spec.md  
+x - update mdgbdata.py to support full DDF per updated docs/dev/spec/mdgbdata-spec.md  
 
 x - update the gbdata model property name "attribs" to "attributes"
+
+/ - review the AI output from generating mdgbdata.py
+ - is 'id' part of te front-matter, or a separate thing when writing md?
+ - determine if support for legacy jsom attribs is present and good. 
+
+x - do some manual testing of mdgbdata.py
+
+d - fix excessive quoting of front-matter is keeping quotes in the key names and values. Use the sae YAML library as the dtask script.
+ 
+d - add blank lines between tasks in serialized output for cleaner viewing.
 
 ## story: support story attributes in tasks
 Proceed with work to support attributes in tasks, such as the story id and title.
