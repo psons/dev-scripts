@@ -24,6 +24,11 @@ import sys
 from typing import TypeAlias
 from uuid import UUID
 
+try:
+    import yaml
+except ImportError as exc:
+    raise ImportError("PyYAML is required. Install with: pip install pyyaml") from exc
+
 from gbdata import Story, StoryStatus, Task, TaskStatus
 
 
@@ -158,17 +163,6 @@ def _trim_outer_blank_lines(lines: list[str]) -> list[str]:
     return lines[start:end]
 
 
-def _parse_explicit_id_line(line: str) -> str | None:
-    if line.startswith((" ", "\t")) or not line.startswith("id:"):
-        return None
-
-    value = line[3:].lstrip()
-    if not value:
-        return None
-
-    return value.split(None, 1)[0]
-
-
 def _parse_attribute_line(line: str, reserved_keys: set[str]) -> tuple[str, object] | None:
     if line.startswith((" ", "\t")):
         return None
@@ -177,7 +171,15 @@ def _parse_attribute_line(line: str, reserved_keys: set[str]) -> tuple[str, obje
     if match is None:
         return None
 
-    key = match.group(1)
+    key_text = match.group(1)
+    if key_text and key_text[:1] in {'"', "'"} and key_text[-1:] == key_text[:1]:
+        try:
+            key = str(ast.literal_eval(key_text))
+        except (SyntaxError, ValueError):
+            key = key_text[1:-1]
+    else:
+        key = key_text
+
     if key in reserved_keys:
         return None
 
@@ -193,31 +195,51 @@ def _parse_attribute_line(line: str, reserved_keys: set[str]) -> tuple[str, obje
     return key, value
 
 
-def _parse_frontmatter_block(lines: list[str], reserved_keys: set[str]) -> dict[str, object]:
+def _parse_frontmatter_block(lines: list[str]) -> dict[str, object]:
+    text = "\n".join(lines)
+    try:
+        parsed = yaml.safe_load(text)
+    except yaml.YAMLError as exc:
+        raise ValueError(f"Invalid YAML frontmatter: {exc}") from exc
+
+    if parsed is None:
+        return {}
+    if not isinstance(parsed, dict):
+        raise ValueError("Invalid YAML frontmatter: expected object mapping")
+
+    return {str(key): value for key, value in parsed.items()}
+
+
+def _format_frontmatter_mapping(mapping: dict[str, object]) -> list[str]:
+    dumped = yaml.safe_dump(
+        mapping,
+        default_flow_style=False,
+        sort_keys=False,
+        allow_unicode=True,
+    ).strip()
+    return dumped.splitlines() if dumped else []
+
+
+def _apply_story_frontmatter(mapping: dict[str, object]) -> tuple[str | None, dict[str, object] | None]:
+    story_id: str | None = None
     attributes: dict[str, object] = {}
-    for line in lines:
-        parsed = _parse_attribute_line(line, reserved_keys)
-        if parsed is None:
-            continue
-        key, value = parsed
-        attributes[key] = value
-    return attributes
+    for key, value in mapping.items():
+        if key == "id":
+            story_id = str(value)
+        elif key not in _STORY_ATTR_RESERVED_KEYS:
+            attributes[key] = value
+    return story_id, (attributes or None)
 
 
-def _format_frontmatter_value(value: object) -> str:
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    if value is None:
-        return "null"
-    if isinstance(value, (int, float)):
-        return str(value)
-    if isinstance(value, str):
-        if not value:
-            return '""'
-        if value != value.strip() or any(char in value for char in (":", "#", "\n", "\r", '"')):
-            return json.dumps(value)
-        return value
-    return json.dumps(str(value))
+def _apply_task_frontmatter(mapping: dict[str, object]) -> tuple[str | None, dict[str, object] | None]:
+    task_id: str | None = None
+    attributes: dict[str, object] = {}
+    for key, value in mapping.items():
+        if key == "id":
+            task_id = str(value)
+        elif key not in _TASK_ATTR_RESERVED_KEYS:
+            attributes[key] = value
+    return task_id, (attributes or None)
 
 
 def _is_story_prefixed_heading(text: str) -> bool:
@@ -304,7 +326,6 @@ def parse_stories_from_markdown(
     current_story_description_lines: list[str] = []
     current_story_attributes: dict[str, object] | None = None
     current_story_tasks: list[Task] = []
-    current_story_expects_id_line = False
     current_story_frontmatter_active = False
     current_story_frontmatter_lines: list[str] = []
 
@@ -314,7 +335,6 @@ def parse_stories_from_markdown(
     current_task_id: str | None = None
     current_task_detail_lines: list[str] = []
     current_task_attributes: dict[str, object] | None = None
-    current_task_expects_id_line = False
     current_task_frontmatter_active = False
     current_task_frontmatter_lines: list[str] = []
 
@@ -322,7 +342,7 @@ def parse_stories_from_markdown(
     pending_heading_text: str | None = None
     pending_heading_description_lines: list[str] = []
 
-    file_scope_name = "(file)"
+    file_scope_name = "file-input"
 
     def start_story(
         name: str,
@@ -332,7 +352,7 @@ def parse_stories_from_markdown(
     ) -> None:
         nonlocal story_counter, current_story_index, current_story_name
         nonlocal current_story_status, current_story_level, current_story_description_lines, current_story_attributes
-        nonlocal current_story_id, current_story_tasks, current_story_expects_id_line
+        nonlocal current_story_id, current_story_tasks
         nonlocal current_task_index, current_story_frontmatter_active, current_story_frontmatter_lines
 
         story_counter += 1
@@ -344,7 +364,6 @@ def parse_stories_from_markdown(
         current_story_description_lines = [] if initial_description_lines is None else list(initial_description_lines)
         current_story_attributes = None
         current_story_tasks = []
-        current_story_expects_id_line = not current_story_description_lines
         current_task_index = 0
         current_story_frontmatter_active = False
         current_story_frontmatter_lines = []
@@ -355,7 +374,7 @@ def parse_stories_from_markdown(
 
     def finalize_task() -> None:
         nonlocal current_task_name, current_task_status, current_task_id, current_task_detail_lines
-        nonlocal current_task_index, current_task_expects_id_line, current_task_attributes
+        nonlocal current_task_index, current_task_attributes
         nonlocal current_task_frontmatter_active, current_task_frontmatter_lines
 
         if current_task_name is None or current_task_status is None:
@@ -389,7 +408,6 @@ def parse_stories_from_markdown(
         current_task_id = None
         current_task_detail_lines = []
         current_task_attributes = None
-        current_task_expects_id_line = False
         current_task_frontmatter_active = False
         current_task_frontmatter_lines = []
 
@@ -397,7 +415,7 @@ def parse_stories_from_markdown(
         nonlocal current_story_index, current_story_name, current_story_status
         nonlocal current_story_level, current_story_id, current_story_tasks
         nonlocal current_story_description_lines, current_story_attributes
-        nonlocal current_story_expects_id_line, current_story_frontmatter_active, current_story_frontmatter_lines
+        nonlocal current_story_frontmatter_active, current_story_frontmatter_lines
 
         if current_story_name is None:
             return
@@ -430,7 +448,6 @@ def parse_stories_from_markdown(
         current_story_description_lines = []
         current_story_attributes = None
         current_story_tasks = []
-        current_story_expects_id_line = False
         current_story_frontmatter_active = False
         current_story_frontmatter_lines = []
 
@@ -475,21 +492,17 @@ def parse_stories_from_markdown(
             pending_heading_description_lines = []
             continue
 
-        if current_task_expects_id_line:
-            explicit_task_id = _parse_explicit_id_line(line)
-            current_task_expects_id_line = False
-            if explicit_task_id is not None:
-                current_task_id = explicit_task_id
-                continue
-
         if current_task_frontmatter_active:
             if line.strip() == _FRONTMATTER_DELIM and not line.startswith((" ", "\t")):
                 current_task_frontmatter_active = False
-                parsed_frontmatter = _parse_frontmatter_block(current_task_frontmatter_lines, _TASK_ATTR_RESERVED_KEYS)
-                if parsed_frontmatter:
+                parsed_frontmatter = _parse_frontmatter_block(current_task_frontmatter_lines)
+                frontmatter_id, frontmatter_attributes = _apply_task_frontmatter(parsed_frontmatter)
+                if frontmatter_id is not None:
+                    current_task_id = frontmatter_id
+                if frontmatter_attributes:
                     if current_task_attributes is None:
                         current_task_attributes = {}
-                    current_task_attributes.update(parsed_frontmatter)
+                    current_task_attributes.update(frontmatter_attributes)
                 current_task_frontmatter_lines = []
                 continue
 
@@ -499,23 +512,19 @@ def parse_stories_from_markdown(
         if current_story_frontmatter_active:
             if line.strip() == _FRONTMATTER_DELIM and not line.startswith((" ", "\t")):
                 current_story_frontmatter_active = False
-                parsed_frontmatter = _parse_frontmatter_block(current_story_frontmatter_lines, _STORY_ATTR_RESERVED_KEYS)
-                if parsed_frontmatter:
+                parsed_frontmatter = _parse_frontmatter_block(current_story_frontmatter_lines)
+                frontmatter_id, frontmatter_attributes = _apply_story_frontmatter(parsed_frontmatter)
+                if frontmatter_id is not None:
+                    current_story_id = frontmatter_id
+                if frontmatter_attributes:
                     if current_story_attributes is None:
                         current_story_attributes = {}
-                    current_story_attributes.update(parsed_frontmatter)
+                    current_story_attributes.update(frontmatter_attributes)
                 current_story_frontmatter_lines = []
                 continue
 
             current_story_frontmatter_lines.append(line)
             continue
-
-        if current_story_expects_id_line:
-            explicit_story_id = _parse_explicit_id_line(line)
-            current_story_expects_id_line = False
-            if explicit_story_id is not None:
-                current_story_id = explicit_story_id
-                continue
 
         task_status = _task_header_status(line, task_patterns)
         if task_status is not None:
@@ -545,7 +554,6 @@ def parse_stories_from_markdown(
             current_task_id = None
             current_task_detail_lines = []
             current_task_attributes = None
-            current_task_expects_id_line = True
             continue
 
         if current_task_name is not None:
@@ -606,10 +614,10 @@ def parse_stories_from_markdown_file(
     md_path = Path(path)
     text = md_path.read_text(encoding=encoding)
     stories = parse_stories_from_markdown(text, story_status_map, task_status_map)
-    if stories and stories[0].name == "(file)":
+    if stories and stories[0].name == "file-input":
         stories[0] = Story(
             id=stories[0].id,
-            name=md_path.stem,
+            name=f"file-{md_path.name}",
             status=stories[0].status,
             description=stories[0].description,
             maxTasks=stories[0].maxTasks,
@@ -760,66 +768,25 @@ def _contains_non_story_text(
     story_patterns: dict[TaskStatus, re.Pattern[str]],
     task_patterns: dict[TaskStatus, re.Pattern[str]],
 ) -> bool:
-    # In DDF mode, all non-empty content is preserved as story content.
-    return False
-
-    # Legacy warning logic retained below for reference.
-    current_story_level: int | None = None
-    current_task_active = False
-    pending_heading_level: int | None = None
-    pending_heading_needs_story = False
+    # Warn only when prose appears before the first structural markdown item.
+    # File-scoped markdown content is still preserved by the parser, so this
+    # check is only for leading text that is not anchored by a heading or task.
+    saw_structure = False
 
     for line in text.splitlines():
-        heading_match = _HEADING_RE.match(line)
-        if heading_match is not None:
-            heading_level = len(heading_match.group(1))
-            heading_text = heading_match.group(2).strip()
-
-            if current_story_level is not None and heading_level > current_story_level:
-                continue
-
-            current_story_level = None
-            current_task_active = False
-
-            if pending_heading_level is not None and pending_heading_needs_story:
-                return True
-            pending_heading_level = None
-            pending_heading_needs_story = False
-
-            story_status = detect_status(heading_text, story_patterns)
-            if story_status is not None or _is_story_prefixed_heading(heading_text):
-                current_story_level = heading_level
-                continue
-
-            pending_heading_level = heading_level
-            pending_heading_needs_story = True
+        if _HEADING_RE.match(line) is not None:
+            saw_structure = True
             continue
 
-        task_status = _task_header_status(line, task_patterns)
-        if task_status is not None:
-            current_task_active = True
-            if pending_heading_level is not None:
-                current_story_level = pending_heading_level
-                pending_heading_level = None
-                pending_heading_needs_story = False
-            elif current_story_level is None:
-                current_story_level = 7
+        if _task_header_status(line, task_patterns) is not None:
+            saw_structure = True
             continue
 
         if not line.strip():
             continue
 
-        if current_task_active or current_story_level is not None:
-            continue
-
-        if pending_heading_level is not None:
-            pending_heading_needs_story = True
-            continue
-
-        return True
-
-    if pending_heading_level is not None and pending_heading_needs_story:
-        return True
+        if not saw_structure:
+            return True
 
     return False
 
@@ -839,11 +806,12 @@ def _render_markdown_story(story: Story, story_status_map: StatusMap, task_statu
     else:
         story_entry = _story_status_entry(story.status, story_status_map)
         lines = [f"# {story_entry.val} - Story: {story.name}"]
-    lines.append(f"id: {story.id}")
+    story_frontmatter: dict[str, object] = {"id": story.id}
     if story.attributes:
+        story_frontmatter.update(story.attributes)
+    if story_frontmatter:
         lines.append(_FRONTMATTER_DELIM)
-        for key, value in story.attributes.items():
-            lines.append(f"{key}: {_format_frontmatter_value(value)}")
+        lines.extend(_format_frontmatter_mapping(story_frontmatter))
         lines.append(_FRONTMATTER_DELIM)
     if story.description:
         lines.extend(story.description.splitlines())
@@ -851,11 +819,12 @@ def _render_markdown_story(story: Story, story_status_map: StatusMap, task_statu
         for task in story.tasks:
             task_entry = _task_status_entry(task.status, task_status_map)
             lines.append(f"{task_entry.val} - {task.name}")
-            lines.append(f"id: {task.id}")
+            task_frontmatter: dict[str, object] = {"id": task.id}
             if task.attributes:
+                task_frontmatter.update(task.attributes)
+            if task_frontmatter:
                 lines.append(_FRONTMATTER_DELIM)
-                for key, value in task.attributes.items():
-                    lines.append(f"{key}: {_format_frontmatter_value(value)}")
+                lines.extend(_format_frontmatter_mapping(task_frontmatter))
                 lines.append(_FRONTMATTER_DELIM)
             if task.detail:
                 lines.extend(task.detail.splitlines())

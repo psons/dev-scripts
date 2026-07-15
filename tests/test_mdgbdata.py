@@ -242,7 +242,7 @@ def test_bare_tasks_before_first_heading_go_to_unscoped_story():
     stories = parse_stories_from_markdown(text, story_map, task_map)
 
     assert len(stories) == 2
-    assert stories[0].name == "(file)"
+    assert stories[0].name == "file-input"
     assert stories[0].status == StoryStatus.DO
     assert stories[0].tasks is not None
     assert len(stories[0].tasks) == 2
@@ -259,7 +259,7 @@ def test_non_pattern_h1_without_tasks_is_informational_story_with_none_status():
     assert stories[0].tasks is None
 
 
-def test_parse_markdown_file_with_no_h1_uses_filename_stem_for_file_scope_story(tmp_path: Path):
+def test_parse_markdown_file_with_no_h1_uses_file_prefixed_filename_for_file_scope_story(tmp_path: Path):
     story_map, task_map = _status_maps()
     md = tmp_path / "alpha-plan.md"
     md.write_text("Line one\nLine two\n", encoding="utf-8")
@@ -267,7 +267,7 @@ def test_parse_markdown_file_with_no_h1_uses_filename_stem_for_file_scope_story(
     stories = parse_stories_from_markdown_file(md, story_map, task_map)
 
     assert len(stories) == 1
-    assert stories[0].name == "alpha-plan"
+    assert stories[0].name == "file-alpha-plan.md"
     assert stories[0].status is None
     assert stories[0].description == "Line one\nLine two"
 
@@ -280,7 +280,7 @@ def test_file_scope_tasks_before_first_h1_attach_to_filename_story(tmp_path: Pat
     stories = parse_stories_from_markdown_file(md, story_map, task_map)
 
     assert len(stories) == 2
-    assert stories[0].name == "todo-source"
+    assert stories[0].name == "file-todo-source.md"
     assert stories[0].status == StoryStatus.DO
     assert stories[0].tasks is not None
     assert stories[0].tasks[0].name == "setup"
@@ -299,9 +299,18 @@ def test_ids_are_deterministic_and_match_format():
     assert re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-[0-9a-f]{8}$", first[0].tasks[0].id)
 
 
-def test_immediate_left_margin_id_lines_override_generated_ids():
+def test_frontmatter_id_properties_override_generated_ids():
     story_map, task_map = _status_maps()
-    text = "# d - Alpha Story\nid: story-123\nx - Build\nid: task-456\n"
+    text = (
+        "# d - Alpha Story\n"
+        "---\n"
+        "id: story-123\n"
+        "---\n"
+        "x - Build\n"
+        "---\n"
+        "id: task-456\n"
+        "---\n"
+    )
 
     stories = parse_stories_from_markdown(text, story_map, task_map)
 
@@ -310,9 +319,9 @@ def test_immediate_left_margin_id_lines_override_generated_ids():
     assert stories[0].tasks[0].id == "task-456"
 
 
-def test_non_immediate_or_indented_id_lines_are_not_parsed_as_ids():
+def test_plain_id_lines_are_not_parsed_as_ids():
     story_map, task_map = _status_maps()
-    text = "# d - Alpha Story\n\nid: ignored-story-id\nx - Build\n  id: ignored-task-id\n"
+    text = "# d - Alpha Story\nid: ignored-story-id\nx - Build\nid: ignored-task-id\n"
 
     stories = parse_stories_from_markdown(text, story_map, task_map)
 
@@ -320,7 +329,7 @@ def test_non_immediate_or_indented_id_lines_are_not_parsed_as_ids():
     assert stories[0].description == "id: ignored-story-id"
     assert stories[0].tasks is not None
     assert stories[0].tasks[0].id != "ignored-task-id"
-    assert stories[0].tasks[0].detail == "  id: ignored-task-id"
+    assert stories[0].tasks[0].detail == "id: ignored-task-id"
 
 
 def test_parse_stories_from_markdown_file_reads_and_parses(tmp_path: Path):
@@ -373,15 +382,15 @@ def test_stories_to_markdown_keeps_status_marker_for_non_do_story_status():
     assert "# x - Story: Done Story" in markdown
 
 
-def test_stories_to_markdown_serializes_story_and_task_ids_after_headers():
+def test_stories_to_markdown_serializes_story_and_task_ids_in_frontmatter():
     story_map, task_map = _status_maps()
     stories = parse_stories_from_markdown("# d - Story: Build parser\nx - write tests\n", story_map, task_map)
 
     markdown = stories_to_markdown_text(stories, story_map, task_map)
 
-    assert f"# Story: Build parser\nid: {stories[0].id}" in markdown
+    assert f"# Story: Build parser\n---\nid: {stories[0].id}\n---" in markdown
     assert stories[0].tasks is not None
-    assert f"x - write tests\nid: {stories[0].tasks[0].id}" in markdown
+    assert f"x - write tests\n---\nid: {stories[0].tasks[0].id}\n---" in markdown
 
 
 def test_stories_to_markdown_uses_story_prefix_for_informational_story_with_none_status():
@@ -391,12 +400,12 @@ def test_stories_to_markdown_uses_story_prefix_for_informational_story_with_none
     markdown = stories_to_markdown_text([story], story_map, task_map)
 
     assert "# Story: Info Story" in markdown
-    assert "id: story-1" in markdown
+    assert "---\nid: story-1\n---" in markdown
 
 
 def test_story_attributes_are_parsed_and_roundtrip_in_markdown():
     story_map, task_map = _status_maps()
-    text = "# Story: Plan\nid: story-1\n---\nowner: team-a\npriority: high\n---\nStory body\n"
+    text = "# Story: Plan\n---\nid: story-1\nowner: team-a\npriority: high\n---\nStory body\n"
 
     stories = parse_stories_from_markdown(text, story_map, task_map)
 
@@ -404,7 +413,80 @@ def test_story_attributes_are_parsed_and_roundtrip_in_markdown():
     assert stories[0].attributes == {"owner": "team-a", "priority": "high"}
 
     markdown = stories_to_markdown_text(stories, story_map, task_map)
-    assert "---\nowner: team-a\npriority: high\n---" in markdown
+    assert "---\nid: story-1\nowner: team-a\npriority: high\n---" in markdown
+
+
+def test_story_frontmatter_yaml_dequotes_keys_and_values():
+    story_map, task_map = _status_maps()
+    text = (
+        "# Story: Plan\n"
+        "---\n"
+        '"id": "story-1"\n'
+        '"owner": "team-a"\n'
+        '"priority": "high"\n'
+        "---\n"
+    )
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert stories[0].attributes == {"owner": "team-a", "priority": "high"}
+
+
+def test_quoted_informal_story_attribute_keys_are_normalized():
+    story_map, task_map = _status_maps()
+    text = '# Story: Plan\n"workHeadline": "refactor(dtask): simplify do.md work summary insertion"\n'
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert stories[0].attributes == {
+        "workHeadline": "refactor(dtask): simplify do.md work summary insertion"
+    }
+
+    markdown = stories_to_markdown_text(stories, story_map, task_map)
+    assert '"workHeadline"' not in markdown
+    assert 'workHeadline:' in markdown
+
+
+def test_parse_markdown_file_uses_filename_for_file_scope_story_name_with_frontmatter_and_leading_text(tmp_path: Path):
+    story_map, task_map = _status_maps()
+    md = tmp_path / "some-work.md"
+    md.write_text(
+        '---\n'
+        '"actualCommitMessage": "Buggy first update of mdgbdata.py to support DDF"\n'
+        '"description": "A list of small, focused tasks guiding the current commit with detailed microsected activities."\n'
+        '"title": "some-work.md"\n'
+        '---\n'
+        '\n'
+        'This text is part of the file-scoped story description\n'
+        '\n'
+        '# Completed work\n'
+        '\n'
+        'x - update the gbdata Story object to allow status to be None.\n',
+        encoding="utf-8",
+    )
+
+    stories = parse_stories_from_markdown_file(md, story_map, task_map)
+
+    assert stories[0].name == "file-some-work.md"
+
+
+def test_task_frontmatter_yaml_dequotes_and_preserves_scalar_types():
+    story_map, task_map = _status_maps()
+    text = (
+        "# Story: Plan\n"
+        "x - build parser\n"
+        "---\n"
+        '"id": "task-1"\n'
+        '"effort": 3\n'
+        '"enabled": true\n'
+        '"owner": "team-a"\n'
+        "---\n"
+    )
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert stories[0].tasks is not None
+    assert stories[0].tasks[0].attributes == {"effort": 3, "enabled": True, "owner": "team-a"}
 
 
 def test_stories_to_markdown_serializes_task_attributes_as_frontmatter_and_roundtrips():
@@ -428,7 +510,7 @@ def test_stories_to_markdown_serializes_task_attributes_as_frontmatter_and_round
 
     markdown = stories_to_markdown_text([story], story_map, task_map)
 
-    assert "---\nprompt: build parser\npriority: high\n---" in markdown
+    assert "---\nid: task-1\nprompt: build parser\npriority: high\n---" in markdown
 
     roundtrip = parse_stories_from_markdown(markdown, story_map, task_map)
 

@@ -27,7 +27,7 @@ Story objects that do not have any status or tasks are informational Story objec
 Once parsed from the originally authored text format, DDF will be serialized in a more formal format.  MDGBDF describes a more formal treatment of Task Attributes.
 
 Sections in DDF in can have key value attributes handled as Task.attributes are handled.
-Informal DDF input can have task objects interspersed within the description.  When parsed, DDF will place task markers in the text of the decription propert where the tasks should be inserted when re-serializing the DDF document. 
+Informal DDF input can have task objects interspersed within the description.  When parsed, DDF will place task markers in the text of the description property where the tasks should be inserted when re-serializing the DDF document. 
 
 ## Task Markers 
 Task Markers consist of a line matching:
@@ -53,7 +53,7 @@ When a markdown document is read as DDF not text information will bew lost becau
 # Symmetry of parsing and serialization.
 Attributes read in according to the Informal rules of MDGBDF will not be serialized according to the formal rules, so parsing and serializing in this case is not symmetrical.
 
-Once a file is converted to formal MDGBDF / DDF, its serialized markdown will be the same as the formal fomat that was read.
+Once a file is converted to formal MDGBDF / DDF, its serialized markdown will be the same as the formal format that was read.
 
 If a markdown document is saved as JSON, and then converted back to markdown the ordering of tasks and attributes must be the same, so json libraries ad methods that preserve object ordering must be used.
 

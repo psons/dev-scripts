@@ -7,11 +7,17 @@ Feature: backlog command line support
     Given a backlog TODO file named "todo.md" with content:
       """
       # d - Story: Alpha
+      ---
       id: story-a
+      ---
       d - first task
+      ---
       id: task-1
+      ---
       x - second task
+      ---
       id: task-2
+      ---
       """
     And BL_TODO_FILE points to that backlog TODO file
     When I run backlog command "backlog prioritized"
@@ -23,9 +29,13 @@ Feature: backlog command line support
     Given a backlog TODO file named "todo.md" with content:
       """
       # d - Story: Alpha
+      ---
       id: story-a
+      ---
       d - first task
+      ---
       id: task-1
+      ---
       """
     And BL_TODO_FILE points to that backlog TODO file
     When I run backlog command "backlog prioritized --json"
@@ -36,13 +46,21 @@ Feature: backlog command line support
     Given a backlog TODO file named "todo.md" with content:
       """
       # d - Story: Alpha
+      ---
       id: story-a
+      ---
       d - first task
+      ---
       id: task-1
+      ---
       # d - Story: Beta
+      ---
       id: story-b
+      ---
       d - second task
+      ---
       id: task-2
+      ---
       """
     And BL_TODO_FILE points to that backlog TODO file
     When I run backlog command "backlog poptask"

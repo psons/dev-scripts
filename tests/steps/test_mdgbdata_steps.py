@@ -124,11 +124,12 @@ def then_mdgbdata_stdout_json_contains_story_and_task(
     data = json.loads(result.stdout)
     assert isinstance(data, list)
     assert data, "Expected at least one story in JSON output"
-    story = data[0]
-    assert story["name"] == story_name
-    assert story["status"] == story_status
+    story = next((item for item in data if item.get("name") == story_name), None)
+    assert story is not None, f"Expected story named {story_name!r} in JSON output"
+    assert story.get("status") == story_status
     assert story.get("tasks"), "Expected at least one task in story output"
-    task = story["tasks"][0]
+    task = next((item for item in story["tasks"] if item.get("name") == task_name), None)
+    assert task is not None, f"Expected task named {task_name!r} in story output"
     assert task["name"] == task_name
     assert task["status"] == task_status
 
@@ -140,4 +141,6 @@ def then_mdgbdata_stdout_json_story_description(mdgbdata_cli: MdgbdataCliState, 
     data = json.loads(result.stdout)
     assert isinstance(data, list)
     assert data, "Expected at least one story in JSON output"
-    assert data[0].get("description") == description
+    assert any(item.get("description") == description for item in data), (
+        f"Expected a story with description {description!r} in JSON output\n{result.stdout}"
+    )

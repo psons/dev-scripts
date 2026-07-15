@@ -63,10 +63,10 @@ Commandline support should be provided by `bin/mdgbdata.py`for the following sub
 
 ### Python Version and Libraries
 - Target Python: 3.11+
-- Standard library only.
+- Required libraries include: `PyYAML` (same library used by `bin/dtask`).
 - Required stdlib modules include: `typing`, `pathlib`, `json`, `re`, `hashlib`.
 
-No third-party package dependencies are required for `bin/mdgbdata.py`.
+`bin/mdgbdata.py` requires `PyYAML` for front-matter parsing and serialization.
 
 ## Metadata Types
 Implement:
@@ -138,10 +138,12 @@ DDF parser/serializer scope must preserve whole-document information as an order
 - Informational stories may have `status=None` and no tasks.
 
 File-scope story naming:
-- When parsing from a file path, the file-scope story `name` must be the filename stem (directory removed, extension removed).
+- When parsing from a file path, the file-scope story Story.name must be the concatenation of:
+    The string "file-"
+    the basename including extension (directory removed).
 - File-scope tasks and description text are attached to that file-scope story.
-- If a file has no H1 headings, the single informational story must still use the filename stem as its `name`.
-- When parsing from raw text without a file path, implementations may use a stable placeholder name for the file-scope story, but file-based parsing must use the filename stem.
+- If a file has no H1 headings, the single informational story must still use `file-{input file name}`.
+- When parsing from raw text without a file path, implementations may use a stable placeholder file-scope name.
 
 `mdgbdata.py` must include a parser to load and validate json text to produce story/task structures.
 
@@ -157,8 +159,6 @@ Validation rules:
 - When present, `Story.attributes` and `Task.attributes` must be JSON objects.
 - When present, `Story.tasks` must be an array of task objects.
 
-Compatibility rule for legacy task payloads:
-- JSON input with `task.attribs` must be accepted and mapped to `Task.attributes` when `attributes` is absent.
 
 ### Markdown Interpretation Rules
 All markdown behavior required for implementation is specified below.
@@ -166,9 +166,9 @@ All markdown behavior required for implementation is specified below.
 #### Story Header Detection
 A line starts a new story when any of these are true:
 
-1. It is a markdown heading at level 1 through 6 and matches a story status pattern after heading markers.
-2. It is a markdown heading at level 1 through 6 and contains tasks below it (non-pattern matched headings are still stories if they contain tasks).
-3. It is a markdown heading at level 1 through 6 whose heading text starts with `Story:` (case-insensitive, with optional surrounding whitespace).
+1. It is a markdown heading at level 1 and matches a story status pattern after heading markers.
+2. It is a markdown heading at level 1 and contains tasks below it (non-pattern matched headings are still stories if they contain tasks).
+3. It is a markdown heading at level 1 whose heading text starts with `Story:` (case-insensitive, with optional surrounding whitespace).
 
 For full DDF document boundaries, every H1 heading (`^# `) must start a new `Story` even when no status pattern or tasks are present.
 
@@ -180,13 +180,13 @@ Interpretation details:
 #### Story Name and Story Status
 For status-pattern stories:
 - Evaluate status patterns against heading text content (after removing `#` markers and leading spaces).
-- If matched, set and persist `Story.status` on the output dataclass.
+- If matched, set and persist `Story.status` on the model dataclass.
 - Story `name` is heading content with status prefix and `Story:` string removed.
 
 For non-pattern stories:
 - `name` is normalized heading text (trimmed; preserve internal spacing).
 - If no status pattern is detected and tasks are present in the story, default `status` to `TaskStatus.DO`.
-- If no status pattern is detected and no tasks are present, `status` must remain `None` (informational story).
+- If no status pattern is detected and no tasks are present, `status` must remain `None`.
 - This includes the corner case where a heading is promoted to a story only because it contains task lines.
 
 Story-level ad hoc metadata must be supported:
@@ -200,7 +200,12 @@ When serializing stories to MDGBDF:
 - Otherwise write header as:
    `# <status_val> - Story: <name>`
    where `<status_val>` is the `val` shorthand from story status metadata.
-- Emit `id: <story.id>` immediately after each story header.
+
+#### Story Description
+- `description` is all lines excluding section front-matter after the story header that are not part of a task, until one of:
+  - a new story boundary,
+- Preserve newlines in description text; trim outer blank lines.
+- Parsed markdown stories default `attributes` to `None` if no Ad hoc attributes are found.
 
 #### Task Header Detection
 A line starts a new task when all are true:
@@ -216,18 +221,18 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 #### Task Name, Status, and Detail
 - `status` is detected via task status pattern match.
 - `name` is the task line with status prefix removed.
-- `detail` is all subsequent lines until one of:
+- `detail` is all subsequent lines excluding section front-matter, until one of:
   - a new task header,
   - a new story boundary,
   - a heading at same or higher level than current story.
 - Preserve newlines in detail text; trim outer blank lines.
 - Parsed markdown tasks default `attributes` to `None` if no Ad hoc attributes are found.
 
-#### Explicit `id` Property
-- If a left-margin line beginning with `id:` appears immediately after a story header, the first non-whitespace token after `:` must be parsed as `Story.id`.
-- If a left-margin line beginning with `id:` appears immediately after a task header, the first non-whitespace token after `:` must be parsed as `Task.id`.
-- `id:` lines that are indented, or that do not appear immediately after the related header line, are not treated as ids and remain normal description/detail text.
-- When no explicit `id:` line is present, deterministic id generation rules still apply.
+#### Formal `id` Model Property
+- `id` is a formal schema property of both `Story` and `Task` in Python objects and must map to `Story.id` and `Task.id`, not to `attributes`.
+- In markdown front-matter, `id` must be parsed and serialized using the same YAML property handling as other recognized properties.
+- `id` handling must not depend on positional, non-YAML line parsing rules.
+- When `id` is not provided through parsed data, deterministic id generation rules still apply.
 
 #### Ad hoc Attributes
 Users can add ad hoc attributes to tasks without changing the core schema.
@@ -244,14 +249,84 @@ Users can add ad hoc attributes to stories without changing the core schema.
 - Informal Markdown input must support a single-line `key: value` form for story scope.
 - Attributes may appear anywhere after the relevant story header line within the story scope when not inside task scope.
 
-#### MDGBDF Front-matter for Section, Story, or Task
-YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or task, delimited by a `---` line before and after the block. Unlike conventional file front-matter, MDGBDF front-matter appears after any Task, Story, or Section heading that is not enclosed within a Story.
+##### Ad hoc Attributes Duplicating formal Property names with natural text representations
+The following Formal properties of Tasks in the gbdata model that have a parsable text representation separate from the YAML and Informal Single line may also appear as attributes.
+ *status*
+ *name*
+ *detail*
 
-Formal Markdown input rules support richer quoting and escaping behavior in YAML-like form. Implementations in this repository intentionally parse only simple key/value lines from this block.
+The following Formal properties of Stories in the gbdata model that have a parsable text representation separate from the YAML and Informal Single line may also appear as attributes.
+ *status*
+ *name*
+ *description*
+ *maxTasks*
+
+###### Example:
+
+For the following, a file named some-work.md with the markdown text shown below should load to the python gbdata model and should serialize as the JSON shown below.
+
+```markdown
+---
+"actualCommitMessage": "Buggy first update of mdgbdata.py to support DDF"
+"description": "A list of small, focused tasks guiding the current commit with detailed microsected activities."
+"title": "some-work.md"
+---
+
+This text is part of the file-scoped story description
+
+# Completed work
+
+x - update the gbdata Story object to allow status to be None.
+ - A Section is simply a story with no status or tasks. 
+ - update gbdata.py to allow status to be None in Story.
+
+```
+```json
+[
+  {
+    "id": "08de6878-8f5e-7ff3-9b8f-c472544ec177-6a7e38b4",
+    "name": "file-some-work.md",
+    "description": "This text is part of the file-scoped story description",
+    "attributes": {
+      "actualCommitMessage": "Buggy first update of mdgbdata.py to support DDF",
+      "description": "A list of small, focused tasks guiding the current commit with detailed microsected activities."
+    }
+  },
+  {
+    "id": "35c21655-8361-75c1-ac45-6c6d7a266c54-97782496",
+    "name": "Completed work",
+    "status": "do",
+    "tasks": [
+      {
+        "id": "e1111a67-255b-7018-b9d4-745108237e86-33345472",
+        "status": "completed",
+        "name": "update the gbdata Story object to allow status to be None.",
+        "detail": " - A Section is simply a story with no status or tasks. \n - update gbdata.py to allow status to be None in Story."
+      }
+    ]
+  }      
+]
+```
+
+
+#### MDGBDF Front-matter for Story or Task (Including H1 Section Headings)
+YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or task, delimited by a `---` line before and after the block. Expanding on conventional file front-matter, MDGBDF front-matter may also appear after any H1 Section, Task or Story heading.
+
+In DDF documents, conventional front-matter is the special subcase of MDGBDF front-matter where there is a file-scope story that has no text before the first front-matter delimiter. 
+
+Formal Markdown input rules use real YAML parsing through `yaml.safe_load` (PyYAML), matching the YAML library usage in `bin/dtask`.
+
+Front-matter parsing behavior:
+- Parse the block as YAML object mapping.
+- Parse all keys and scalar values for properties and attributes using normal YAML semantics from `yaml.safe_load`.
+- Property and attribute values stored in the gb-data model must be the parsed YAML values, not raw markdown token text.
+- Recognized model properties (including `id`) map to formal `Story` or `Task` fields; unrecognized keys map to `attributes`.
+- Non-mapping YAML front-matter is invalid input.
+- YAML parse errors in front-matter raise `ValueError`.
 
 Pattern:
 ```
-## Section Heading
+# Section Heading
 
 ---
 key: value
@@ -263,7 +338,7 @@ Section body text.
 
 Example (a work summary entry inside `# Work Summary`):
 ```markdown
-## 2026-05-19 12:26
+# 2026-05-19 12:26
 
 ---
 "workHeadline": "refactor(dtask): simplify do.md work summary insertion"
@@ -272,18 +347,28 @@ Example (a work summary entry inside `# Work Summary`):
 This update streamlines the dtask script's handling of work summary insertions.
 ```
 
+##### Front-matter future support
+Front-matter is not supported for section headings lower than H1 at this time.
+Future improvements are described in the backlog stories/ddf-refactor.md
+
 #### Formal Markdown Output Rules
-When attributes are serialized as markdown, they must be written as YAML front-matter using the MDGBDF front-matter rules above.
+When properties or attributes are serialized as markdown, they must be written as YAML front-matter using the MDGBDF front-matter rules above.
 
 Serialization behavior:
-- Task attributes are serialized inside a front-matter block immediately after `id: <task.id>`.
-- Story attributes are serialized inside a front-matter block immediately after `id: <story.id>`.
+- Story properties and attributes are serialized inside a front-matter block immediately after the story header.
+- Task properties and attributes are serialized inside a front-matter block immediately after the task header.
+- For both stories and tasks, `id` must be represented as the YAML `id` property in that front-matter block.
 - A front-matter block opens with `---` and closes with `---` on left margin.
-- Each attribute line is serialized as `key: value` with scalar value formatting compatible with current parser behavior.
+- Front-matter is serialized with PyYAML (`yaml.safe_dump`) using block-style mapping and insertion-order key preservation.
+- Property and attribute serialization must follow normal YAML scalar quoting behavior as emitted by `yaml.safe_dump`.
+
+JSON serialization behavior for YAML-derived attributes:
+- Values parsed from YAML front-matter must be serialized to JSON using their parsed property and attribute values from the gb-data model.
+- JSON output must reflect YAML parsing semantics (for example, quote delimiters used only for YAML syntax are not part of the resulting string value).
 
 
 #### Story Description Handling
-- `description` consists of Lines after a story header that are not task headers and not a closing heading boundary are story description context.
+- `description` consists of Lines after a story header that are not task headers. MDGBDF front-matter and not a crossing heading boundary are story description content.
 - Story description contributes to detecting boundaries and preventing false story/task starts.
 - In DDF, story description for informational stories is preserved as authored text and must round-trip through parse/serialize flows.
 
@@ -292,12 +377,10 @@ Per use-case text, bare tasks can exist without explicit story context, but pars
 
 Implement this rule:
 - Prefer explicit unnamed markdown headings (`#`, `##`, `###`, `####`, `#####`, `######`) as normal story containers when present.
-- If task headers appear before any active story, auto-create a synthetic story named `"Unscoped"` with deterministic id and attach those tasks.
-- The synthetic `"Unscoped"` story must use default status `TaskStatus.DO`.
-- Synthetic story must be first in output if encountered before first real story.
+- If task headers appear before any active story, auto-create a file-scoped story with deterministic id and attach those tasks.
+- file-scoped story must be first in the model Story list.
 
-For full DDF parsing, when file-scope informational story context already exists, bare tasks before the first H1 should be attached to that file-scope story and set its status to `TaskStatus.DO`.
-The file-scope story name for that case is the filename stem.
+For full DDF parsing, when file-scope story context already exists, bare tasks before the first H1 should be attached to that file-scope story.
 
 ### Heading Boundary Rules
 When inside a story with heading level `L`:
@@ -314,9 +397,6 @@ Generate IDs where possible based on source order and text:
 
 Once an ID is created for a non transient or synthetic Story or Task objects, it should be retained through all parsing and serialization
 operations, even if the content of the Object changes.
-
-When serializing stories back to MDGBDF:
-- Emit `id: <task.id>` immediately after each task header.
 
 Where:
 - `UUIDV7` is the fully approved standard implementation for UUID7 generated for each id.
@@ -354,6 +434,7 @@ Normalization for hash input:
 - Invalid metadata entry object shape: raise `ValueError` naming key and missing field.
 - Invalid regex in `pat_str`: raise `ValueError` naming key and regex compile error.
 - File decode errors in markdown file parser: propagate `UnicodeDecodeError`.
+- Invalid YAML front-matter blocks: raise `ValueError`.
 
 Parser robustness rules:
 - Never raise for unmatched lines; treat as descriptive text.
@@ -396,23 +477,29 @@ At minimum, include tests for:
    - task detail accumulation until boundary
    - task names/defaults for empty headline
    - task `attributes` default to `None`
+   - task `id` parsed from YAML section front-matter as formal model property
+   - quoted YAML keys/values in front-matter are parsed to unquoted keys/values in `attributes`
 
-5. Boundary behavior
+5. YAML property mapping
+   - story `id` parsed from YAML front-matter as formal model property
+   - task and story `id` serialized in YAML front-matter (not positional `id:` line parsing)
+
+6. Boundary behavior
    - same-level heading closes current story
    - higher-level heading closes current story
    - deeper heading does not close current story
 
-6. Bare tasks
-   - tasks before first heading go to synthetic `Unscoped` story
+7. Bare tasks
+   - tasks before first heading go to special file-scope story
 
-7. Deterministic IDs
+8. Deterministic IDs
    - same input yields same ids across parses
    - id format matches spec
 
-8. DDF whole-document preservation
-   - content before first H1 is preserved in file-scope informational story
-   - file with no H1 is represented as a single informational story
-   - file-scope story name uses the filename stem
+9. DDF whole-document preservation
+   - content before first H1 is preserved in file-scope story
+   - file with no H1 is represented as a single file-scope story
+   - file-scope story name uses `file-{input file name}` in file-based parsing
    - parsing then serializing preserves informational story description text
 
 ## Non-Goals

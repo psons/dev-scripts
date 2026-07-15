@@ -30,15 +30,25 @@ bltodo = _load_module("bltodo", _bin_dir / "bltodo.py")
 def _write_todo(path: Path) -> None:
     path.write_text(
         "# d - Story: Alpha\n"
+        "---\n"
         "id: story-a\n"
+        "---\n"
         "d - first task\n"
+        "---\n"
         "id: task-1\n"
+        "---\n"
         "x - second task\n"
+        "---\n"
         "id: task-2\n"
+        "---\n"
         "# d - Story: Beta\n"
+        "---\n"
         "id: story-b\n"
+        "---\n"
         "d - third task\n"
-        "id: task-3\n",
+        "---\n"
+        "id: task-3\n"
+        "---\n",
         encoding="utf-8",
     )
 

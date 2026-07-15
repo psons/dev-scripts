@@ -7,7 +7,7 @@ Allow simple to writing of attributes in stories and tasks in MDGBDF without for
 
 Serializing the gbdata model will write more formal MDGBDF pulling all the attribute definitions into section front-matter.
 
-An extension of mdgbdata.py (Same script with more functionality and maybe a new name like mdddf.py) should be built that treats top level sections as a simple Markdown Document that
+An extension of mdgbdata.py (Same script with more functionality) should be built that treats top level sections as a simple Markdown Document that
     - Also keeps the sections that are not stories
     - adds link objects with title and link to th IDs of stories and task (sort of like the google doc chips)
 

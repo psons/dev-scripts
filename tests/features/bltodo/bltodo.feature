@@ -7,9 +7,13 @@ Feature: bltodo command line support
     Given a bltodo TODO file named "todo.md" with content:
       """
       # d - Story: Alpha
+      ---
       id: story-a
+      ---
       d - first task
+      ---
       id: task-1
+      ---
       """
     And BL_TODO_FILE points to that bltodo TODO file
     When I run bltodo command "bltodo"
@@ -22,9 +26,13 @@ Feature: bltodo command line support
     Given a bltodo TODO file named "custom.md" with content:
       """
       # d - Story: Custom Source
+      ---
       id: story-custom
+      ---
       x - done task
+      ---
       id: task-done
+      ---
       """
     And BL_TODO_FILE points to that bltodo TODO file
     When I run bltodo command "bltodo"

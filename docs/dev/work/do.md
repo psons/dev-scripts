@@ -1,5 +1,5 @@
 ---
-"actualCommitMessage": "Bugghy first update of mdgbdata.py to support DDF"
+"actualCommitMessage": "implement dtask pop subcommand"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -9,8 +9,7 @@
 ---
 
 
-
-
+This text is part of the file-scoped story description
 
 # Completed work
 
@@ -31,14 +30,22 @@ x - update mdgbdata.py to support full DDF per updated docs/dev/spec/mdgbdata-sp
 
 x - update the gbdata model property name "attribs" to "attributes"
 
-/ - review the AI output from generating mdgbdata.py
- - is 'id' part of te front-matter, or a separate thing when writing md?
- - determine if support for legacy jsom attribs is present and good. 
+x - review the AI output from generating mdgbdata.py
+ - is 'id' part of the front-matter, or a separate thing when writing md?
+ - remove support for legacy  attribs.  The requirement has been removed from the spec. 
+
+x - regenerate mdgbdata.py per the spec docs/dev/spec/mdgbdata-spec.md, and update tests.
+prompt2: re-read the docs/dev/spec/mdgbdata-spec.md to set the file-scope story name according to the example and get rid of the extra quoting level when keys are quoted YAML and stored story attributes.
+
+/ - update spec and code so that frontmatter is not stripped out of sections that are not stories.
+
 
 x - do some manual testing of mdgbdata.py
 
-d - fix excessive quoting of front-matter is keeping quotes in the key names and values. Use the sae YAML library as the dtask script.
+x - fix excessive quoting of front-matter is that is keeping quotes in the key names and values  read from markdown . Use the same YAML library as the dtask script. Update spec program and tests.
  
+x - Use "file-{the input file name}" instead of "(file)" when naming a file scope story.  Update spec program and tests.
+
 d - add blank lines between tasks in serialized output for cleaner viewing.
 
 ## story: support story attributes in tasks
@@ -71,6 +78,13 @@ x - verify / support reading the form front-matter
 
 # Work Summary
 
+## 2026-07-15 17:55
+
+---
+workHeadline: "feat(mdgbdata): Adopt PyYAML for robust Markdown frontmatter, formalize `id` & attributes, update spec & tests"
+---
+
+This update significantly overhauls `bin/mdgbdata.py` to adopt `PyYAML` for parsing and serializing story and task frontmatter, enabling more robust handling of `id` properties and ad-hoc attributes directly within Markdown. The previous custom `id:` line parsing logic has been replaced, and attributes are now treated as formal YAML properties, which allows for advanced features like quoted keys and type preservation. Accompanying changes in `docs/dev/spec/mdgbdata-spec.md` formalize these new YAML-based rules, clarify file-scope story naming conventions, and refine story heading detection. Extensive updates and additions to the test suite ensure the correct parsing and serialization of the new frontmatter structure, confirming data integrity and round-trip functionality.
 ## 2026-07-13 11:45
 
 ---
@@ -86,15 +100,15 @@ Update spec, gbdata.py and tests per headline.
 workHeadline: "refactor: Rename Task.attribs to Task.attributes across codebase, updating parsing, serialization, docs, and tests for consistency"
 ---
 
-The primary change in this diff is the renaming of the `attribs` field to `attributes` within the `Task` dataclass in `bin/gbdata.py` and `bin/mdgbdata.py`, affecting how ad-hoc task properties are stored and processed. This modification is propagated throughout the codebase, including updates to the parsing logic in `_parse_frontmatter_block` and `parse_stories_from_markdown`, and serialization functions like `_task_to_dict` and `_render_markdown_story` in `bin/mdgbdata.py`. Supporting documentation in `docs/dev/spec/gbdata-spec-2.md`, `docs/dev/spec/mdgbdata-spec.md`, and `docs/dev/spec/usecases/story-task-parsing-md.md` has been updated to reflect this new field name and its implications for user-defined attributes. Corresponding unit tests in `tests/test_gbdata.py` and `tests/test_mdgbdata.py` were also adjusted to validate the `attributes` field's default behavior, parsing, and serialization, ensuring consistency across the application. Additionally, minor updates were made to `docs/dev/spec/usecases/README.md`, `docs/dev/work/TODO.md`, and `docs/dev/work/do.md` to refine descriptions and reflect progress on related work items.
+The primary change in this diff is the renaming of the `attribs` field to `attributes` within the `Task` dataclass in `bin/gbdata.py` and `bin/mdgbdata.py`, affecting how ad-hoc task properties are stored and processed. This modification is propagated throughout the codebase, including updates to the parsing logic in `_parse_front-matter_block` and `parse_stories_from_markdown`, and serialization functions like `_task_to_dict` and `_render_markdown_story` in `bin/mdgbdata.py`. Supporting documentation in `docs/dev/spec/gbdata-spec-2.md`, `docs/dev/spec/mdgbdata-spec.md`, and `docs/dev/spec/usecases/story-task-parsing-md.md` has been updated to reflect this new field name and its implications for user-defined attributes. Corresponding unit tests in `tests/test_gbdata.py` and `tests/test_mdgbdata.py` were also adjusted to validate the `attributes` field's default behavior, parsing, and serialization, ensuring consistency across the application. Additionally, minor updates were made to `docs/dev/spec/usecases/README.md`, `docs/dev/work/TODO.md`, and `docs/dev/work/do.md` to refine descriptions and reflect progress on related work items.
 
 ## 2026-07-11 10:52
 
 ---
-workHeadline: "feat: Implement ad-hoc task attributes in `mdgbdata.py` with Markdown frontmatter support, parsing, serialization, and tests"
+workHeadline: "feat: Implement ad-hoc task attributes in `mdgbdata.py` with Markdown front-matter support, parsing, serialization, and tests"
 ---
 
-The `mdgbdata.py` script has been significantly enhanced to support ad-hoc attributes for tasks, allowing users to define custom `key: value` pairs directly within Markdown. This update introduces parsing logic for both single-line attributes and multi-line frontmatter blocks delimited by `---`, integrating these new properties into the `Task.attribs` field. Furthermore, the script now serializes these attributes back into Markdown as YAML frontmatter and includes them in the JSON representation of stories and tasks. The `mdgbdata-spec.md` document was updated to formally describe these new parsing and serialization rules, while `test_mdgbdata.py` now includes comprehensive tests to ensure correct behavior and data round-tripping for the ad-hoc task attributes.
+The `mdgbdata.py` script has been significantly enhanced to support ad-hoc attributes for tasks, allowing users to define custom `key: value` pairs directly within Markdown. This update introduces parsing logic for both single-line attributes and multi-line front-matter blocks delimited by `---`, integrating these new properties into the `Task.attribs` field. Furthermore, the script now serializes these attributes back into Markdown as YAML front-matter and includes them in the JSON representation of stories and tasks. The `mdgbdata-spec.md` document was updated to formally describe these new parsing and serialization rules, while `test_mdgbdata.py` now includes comprehensive tests to ensure correct behavior and data round-tripping for the ad-hoc task attributes.
 ## 2026-07-11 09:52
 
 ---
@@ -119,7 +133,7 @@ The `dtask` README has been updated to clarify its role in automating the workfl
 ## 2026-07-07 13:19
 
 ---
-workHeadline: "feat: Introduce DDF spec, enhance `mdgbdata` with tasklist support and formal attribute parsing rules"
+workHeadline: "feat: Introduce DDF spec, enhance `mdgbdata` with task list support and formal attribute parsing rules"
 ---
 
 The project introduces a new "Development Description Format" (DDF) specification, centralizing attribute handling for stories and tasks in Markdown. This expands `mdgbdata.py`'s capabilities to include serialization and a new `--tasklist` option, allowing tasks to be output individually with their parent story's ID and name. The `mdgbdata-spec.md` now details both informal (single-line) and formal (YAML front-matter) rules for attribute parsing and writing, replacing prior ad-hoc definitions. The `do.md` work log reflects progress on formalizing story IDs and outlines a new story to enable `backlog` and `mdgbdata` to support task lists, improving overall task management workflows.

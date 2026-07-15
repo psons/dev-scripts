@@ -34,13 +34,21 @@ backlog = _load_module("backlog", _bin_dir / "backlog.py")
 def _write_todo(path: Path) -> None:
     path.write_text(
         "# d - Story: Alpha\n"
+        "---\n"
         "id: story-a\n"
+        "---\n"
         "d - first task\n"
+        "---\n"
         "id: task-1\n"
+        "---\n"
         "# d - Story: Beta\n"
+        "---\n"
         "id: story-b\n"
+        "---\n"
         "d - second task\n"
-        "id: task-2\n",
+        "---\n"
+        "id: task-2\n"
+        "---\n",
         encoding="utf-8",
     )
 
