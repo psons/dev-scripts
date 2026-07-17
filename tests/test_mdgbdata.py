@@ -618,14 +618,28 @@ def test_stories_to_json_text_includes_task_attributes_when_present():
     assert payload[0]["tasks"][0]["attributes"] == {"prompt": "build parser"}
 
 
-def test_tojson_includes_story_description_without_warning(tmp_path: Path, capsys: pytest.CaptureFixture[str]):
+def test_tojson_includes_story_description(tmp_path: Path):
     story_map, task_map = _status_maps()
     md = tmp_path / "sample.md"
     md.write_text("# d - Story\ncontext line\nx - task\n", encoding="utf-8")
 
     out = convert_markdown_file_to_json_text(md, story_map, task_map)
     payload = json.loads(out)
-    stderr = capsys.readouterr().err
 
     assert payload[0]["description"] == "context line"
-    assert "some non story text will be ignored" not in stderr
+
+
+def test_non_mdgbdf_delimited_block_is_preserved_in_story_description():
+    story_map, task_map = _status_maps()
+    text = (
+        "# Story: Plan\n"
+        "---\n"
+        "- not-a-mapping\n"
+        "---\n"
+        "Context line\n"
+    )
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].description == "---\n- not-a-mapping\n---\nContext line"

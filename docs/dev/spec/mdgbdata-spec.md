@@ -35,8 +35,6 @@ Commandline support should be provided by `bin/mdgbdata.py`for the following sub
     tojson 
         will read a file whose path is given as a command line argument and is presumed to be 'Markdown GB Data Form' and output JSON text representing a list of stories possibly containing tasks conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json
 
-        if the input file is markdown and contains text that is not part of a story or task, a WARNING should be printed on stderr indicating that "some non story text will be ignored"
-
         If the input file does not contain any markdown headers or tasks, raise an error 
 
     tomd 
@@ -212,9 +210,9 @@ A line starts a new task when all are true:
 
 1. Line is at left margin (no leading spaces or tabs).
 2. Line matches one of the task status patterns.
-3. Parser is currently within an active story scope, or within an H1-H6 heading scope that must be promoted to a story per Story Header Detection item 2.
+3. Parser is currently within an active H1-rooted story scope, or within an H1-H6 heading scope that must be promoted to a story per Story Header Detection item 2, or within file-scope story context (including files with no H1 heading).
 
-If a task-status line is encountered under an H1-H6 heading that has not yet been materialized as a story, that heading must first be promoted to a `Story` (default `TaskStatus.DO` for non-pattern headings), and the line must then be treated as a task header within that story.
+If a task-status line is encountered under an H1-H6 heading that has not yet been materialized as a story, that heading must first be promoted to a `Story` (default `TaskStatus.DO` for non-pattern headings), and the line must then be treated as a task header within that story. If task-status lines occur without any H1 heading, they must be attached to the file-scope story.
 
 Non-task-like indented lines must be treated as detail text, never as a task header.
 
@@ -310,7 +308,7 @@ x - update the gbdata Story object to allow status to be None.
 
 
 #### MDGBDF Front-matter for Story or Task (Including H1 Section Headings)
-YAML key/value pairs embedded in a block of text inside a markdown section body, which may represent a story or task, delimited by a `---` line before and after the block. Expanding on conventional file front-matter, MDGBDF front-matter may also appear after any H1 Section, Task or Story heading.
+YAML key/value pairs embedded in a `---`-delimited block inside a markdown H1 section body; this block is treated as MDGBDF front-matter only for file scope, story scope, or task scope rooted at H1, and any `---`-delimited block appearing in sections lower than H1 (H2-H6) is retained as part of the Story Description.
 
 In DDF documents, conventional front-matter is the special subcase of MDGBDF front-matter where there is a file-scope story that has no text before the first front-matter delimiter. 
 
@@ -321,8 +319,8 @@ Front-matter parsing behavior:
 - Parse all keys and scalar values for properties and attributes using normal YAML semantics from `yaml.safe_load`.
 - Property and attribute values stored in the gb-data model must be the parsed YAML values, not raw markdown token text.
 - Recognized model properties (including `id`) map to formal `Story` or `Task` fields; unrecognized keys map to `attributes`.
-- Non-mapping YAML front-matter is invalid input.
-- YAML parse errors in front-matter raise `ValueError`.
+- A `---`-delimited block qualifies as MDGBDF front-matter only when it closes with a matching `---` delimiter and parses as a YAML object mapping.
+- If a `---`-delimited block does not qualify as MDGBDF front-matter (for example: missing closing delimiter, YAML parse error, or non-mapping YAML), it must be preserved as ordinary markdown text in the current story description or task detail.
 
 Pattern:
 ```
@@ -381,6 +379,7 @@ Implement this rule:
 - file-scoped story must be first in the model Story list.
 
 For full DDF parsing, when file-scope story context already exists, bare tasks before the first H1 should be attached to that file-scope story.
+For files that contain no H1 heading, all task headers are part of the file-scope story.
 
 ### Heading Boundary Rules
 When inside a story with heading level `L`:

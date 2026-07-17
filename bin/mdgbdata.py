@@ -495,14 +495,20 @@ def parse_stories_from_markdown(
         if current_task_frontmatter_active:
             if line.strip() == _FRONTMATTER_DELIM and not line.startswith((" ", "\t")):
                 current_task_frontmatter_active = False
-                parsed_frontmatter = _parse_frontmatter_block(current_task_frontmatter_lines)
-                frontmatter_id, frontmatter_attributes = _apply_task_frontmatter(parsed_frontmatter)
-                if frontmatter_id is not None:
-                    current_task_id = frontmatter_id
-                if frontmatter_attributes:
-                    if current_task_attributes is None:
-                        current_task_attributes = {}
-                    current_task_attributes.update(frontmatter_attributes)
+                try:
+                    parsed_frontmatter = _parse_frontmatter_block(current_task_frontmatter_lines)
+                except ValueError:
+                    current_task_detail_lines.append(_FRONTMATTER_DELIM)
+                    current_task_detail_lines.extend(current_task_frontmatter_lines)
+                    current_task_detail_lines.append(_FRONTMATTER_DELIM)
+                else:
+                    frontmatter_id, frontmatter_attributes = _apply_task_frontmatter(parsed_frontmatter)
+                    if frontmatter_id is not None:
+                        current_task_id = frontmatter_id
+                    if frontmatter_attributes:
+                        if current_task_attributes is None:
+                            current_task_attributes = {}
+                        current_task_attributes.update(frontmatter_attributes)
                 current_task_frontmatter_lines = []
                 continue
 
@@ -512,14 +518,20 @@ def parse_stories_from_markdown(
         if current_story_frontmatter_active:
             if line.strip() == _FRONTMATTER_DELIM and not line.startswith((" ", "\t")):
                 current_story_frontmatter_active = False
-                parsed_frontmatter = _parse_frontmatter_block(current_story_frontmatter_lines)
-                frontmatter_id, frontmatter_attributes = _apply_story_frontmatter(parsed_frontmatter)
-                if frontmatter_id is not None:
-                    current_story_id = frontmatter_id
-                if frontmatter_attributes:
-                    if current_story_attributes is None:
-                        current_story_attributes = {}
-                    current_story_attributes.update(frontmatter_attributes)
+                try:
+                    parsed_frontmatter = _parse_frontmatter_block(current_story_frontmatter_lines)
+                except ValueError:
+                    current_story_description_lines.append(_FRONTMATTER_DELIM)
+                    current_story_description_lines.extend(current_story_frontmatter_lines)
+                    current_story_description_lines.append(_FRONTMATTER_DELIM)
+                else:
+                    frontmatter_id, frontmatter_attributes = _apply_story_frontmatter(parsed_frontmatter)
+                    if frontmatter_id is not None:
+                        current_story_id = frontmatter_id
+                    if frontmatter_attributes:
+                        if current_story_attributes is None:
+                            current_story_attributes = {}
+                        current_story_attributes.update(frontmatter_attributes)
                 current_story_frontmatter_lines = []
                 continue
 
@@ -597,6 +609,13 @@ def parse_stories_from_markdown(
         if line.strip():
             ensure_file_scope_story()
             current_story_description_lines.append(line)
+
+    if current_task_frontmatter_active:
+        current_task_detail_lines.append(_FRONTMATTER_DELIM)
+        current_task_detail_lines.extend(current_task_frontmatter_lines)
+    if current_story_frontmatter_active:
+        current_story_description_lines.append(_FRONTMATTER_DELIM)
+        current_story_description_lines.extend(current_story_frontmatter_lines)
 
     if current_story_name is not None:
         finalize_story()
@@ -763,34 +782,6 @@ def _stories_from_json_text(text: str) -> list[Story]:
     return [_story_from_mapping(item) for item in raw]
 
 
-def _contains_non_story_text(
-    text: str,
-    story_patterns: dict[TaskStatus, re.Pattern[str]],
-    task_patterns: dict[TaskStatus, re.Pattern[str]],
-) -> bool:
-    # Warn only when prose appears before the first structural markdown item.
-    # File-scoped markdown content is still preserved by the parser, so this
-    # check is only for leading text that is not anchored by a heading or task.
-    saw_structure = False
-
-    for line in text.splitlines():
-        if _HEADING_RE.match(line) is not None:
-            saw_structure = True
-            continue
-
-        if _task_header_status(line, task_patterns) is not None:
-            saw_structure = True
-            continue
-
-        if not line.strip():
-            continue
-
-        if not saw_structure:
-            return True
-
-    return False
-
-
 def _contains_markdown_structure(text: str, task_patterns: dict[TaskStatus, re.Pattern[str]]) -> bool:
     for line in text.splitlines():
         if _HEADING_RE.match(line) is not None:
@@ -853,12 +844,9 @@ def convert_markdown_file_to_json_text(
 ) -> str:
     """Convert a Markdown GB Data file to JSON text."""
     markdown_text = Path(path).read_text(encoding=encoding)
-    story_patterns = compile_status_patterns(story_status_map)
     task_patterns = compile_status_patterns(task_status_map)
     if not _contains_markdown_structure(markdown_text, task_patterns):
         raise ValueError("Input file does not contain any markdown headers or tasks")
-    if _contains_non_story_text(markdown_text, story_patterns, task_patterns):
-        print("WARNING: some non story text will be ignored", file=sys.stderr)
     stories = parse_stories_from_markdown(markdown_text, story_status_map, task_status_map)
     return stories_to_json_text(stories)
 

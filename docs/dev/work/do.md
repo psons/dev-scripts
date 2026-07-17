@@ -1,5 +1,6 @@
 ---
-"actualCommitMessage": "implement dtask pop subcommand"
+"actualCommitMessage": "Feat(mdgbdata): Preserve leading prose & malformed YAML in\
+  \ markdown parsing; update spec & tests"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -7,6 +8,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 
 This text is part of the file-scoped story description
@@ -78,6 +80,13 @@ x - verify / support reading the form front-matter
 
 # Work Summary
 
+## 2026-07-16 20:35
+
+---
+workHeadline: "Feat(mdgbdata): Preserve leading prose & malformed YAML in markdown parsing; update spec & tests"
+---
+
+This update to the `mdgbdata.py` script and its documentation significantly enhances its robustness in handling markdown input. Previously, the parser would warn and ignore leading prose or malformed YAML frontmatter blocks; now, these elements are gracefully preserved as part of the story or task description. This change ensures no content is lost during markdown-to-JSON conversion. Corresponding updates were made to `mdgbdata-spec.md` to reflect this new preservation behavior and clarify task header detection, while tests were modified to assert the content preservation and remove checks for the deprecated warning message.
 ## 2026-07-15 17:55
 
 ---

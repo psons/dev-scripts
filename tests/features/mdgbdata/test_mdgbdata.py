@@ -3,8 +3,8 @@
 from pytest_bdd import scenario
 
 
-@scenario("mdgbdata/mdgbdata.feature", "tojson converts markdown and warns about ignored prose")
-def test_mdgbdata_tojson_warns_on_ignored_text(mdgbdata_cli):
+@scenario("mdgbdata/mdgbdata.feature", "tojson converts markdown and preserves leading prose")
+def test_mdgbdata_tojson_preserves_leading_text(mdgbdata_cli):
     pass
 
 

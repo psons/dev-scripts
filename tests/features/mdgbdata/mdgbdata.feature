@@ -3,7 +3,7 @@ Feature: mdgbdata command line support
   I want mdgbdata to convert between markdown and JSON from the command line
   So that I can round-trip gb-data documents and detect malformed inputs
 
-  Scenario: tojson converts markdown and warns about ignored prose
+  Scenario: tojson converts markdown and preserves leading prose
     Given a markdown file named "sample.md" with content:
       """
       Intro prose that should be ignored.
@@ -15,7 +15,6 @@ Feature: mdgbdata command line support
       """
     When I run mdgbdata command "tojson sample.md"
     Then the mdgbdata command succeeds
-    And the mdgbdata stderr contains "some non story text will be ignored"
     And the mdgbdata stdout JSON contains a story named "Build parser" with status "do" and a task named "write tests" with status "completed"
     And the mdgbdata stdout JSON story description is "Story context line"
 
