@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "Feat(mdgbdata): Preserve leading prose & malformed YAML in\
-  \ markdown parsing; update spec & tests"
+"actualCommitMessage": "Introduced a new spec for mdgbdata.py"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,6 +7,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 
 

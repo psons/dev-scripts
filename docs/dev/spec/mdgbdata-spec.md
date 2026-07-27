@@ -49,9 +49,9 @@ Commandline support should be provided by `bin/mdgbdata.py`for the following sub
 ## Module Boundary
 `mdgbdata.py` owns markdown/text parsing and serialization behavior for MDGBDF/DDF.
 
-`gbdata.py` owns domain types and the shared status enum.
+`gbdata.py` owns domain types and the distinct `StoryStatus` and `TaskStatus` enums.
 
-`mdgbdata.py` must import `TaskStatus`, `Task`, and `Story` from `gbdata.py` instead of redefining those types.
+`mdgbdata.py` must import `StoryStatus`, `TaskStatus`, `Task`, and `Story` from `gbdata.py` instead of redefining those types.
 
 ## Inputs and Dependencies
 
@@ -73,13 +73,19 @@ Implement:
    - `val: str`
    - `pat_str: str`
 
-2. `StatusMap` type alias:
+2. `StoryStatusMap` type alias:
+   - `dict[StoryStatus, StatusEntry]`
+
+3. `TaskStatusMap` type alias:
    - `dict[TaskStatus, StatusEntry]`
+
+4. `StatusMap` type alias:
+   - `StoryStatusMap | TaskStatusMap`
 
 ## Status Metadata Behavior
 
 ### Metadata File Contract
-Both status metadata JSON files are object maps keyed by status name matching `TaskStatus` values. Each value object contains:
+Both status metadata JSON files are object maps keyed by status name matching the corresponding enum for that file (`StoryStatus` for story metadata and `TaskStatus` for task metadata). Each value object contains:
 - `val`: a single-character shorthand code
 - `pat_str`: regex string used to match a status-prefixed line
 
@@ -94,22 +100,22 @@ Current expected values in both files:
 ### Required Functions
 Implement utility functions:
 
-1. `load_status_map(path: str | Path) -> StatusMap`
+1. `load_status_map(path: str | Path, status_enum: type[StoryStatus] | type[TaskStatus]) -> StatusMap`
    - Reads JSON.
-   - Validates all keys map to `TaskStatus`.
+   - Validates all keys map to the provided `status_enum`.
    - Validates each entry has non-empty `val` and `pat_str`.
    - Returns `StatusMap` keyed by enum members.
    - Raises `ValueError` for invalid schema/content; propagates `FileNotFoundError`.
 
-2. `compile_status_patterns(status_map: StatusMap) -> dict[TaskStatus, re.Pattern[str]]`
+2. `compile_status_patterns(status_map: StatusMap) -> dict[StoryStatus | TaskStatus, re.Pattern[str]]`
    - Compiles each `pat_str`.
    - Raises `ValueError` with status key context for invalid regex.
 
-3. `detect_status(line: str, compiled_patterns: dict[TaskStatus, re.Pattern[str]]) -> TaskStatus | None`
+3. `detect_status(line: str, compiled_patterns: dict[StoryStatus | TaskStatus, re.Pattern[str]]) -> StoryStatus | TaskStatus | None`
    - Returns first matching status in deterministic enum order.
    - Returns `None` if no pattern matches.
 
-4. `strip_status_prefix(line: str, status: TaskStatus, compiled_patterns: dict[TaskStatus, re.Pattern[str]]) -> str`
+4. `strip_status_prefix(line: str, status: StoryStatus | TaskStatus, compiled_patterns: dict[StoryStatus | TaskStatus, re.Pattern[str]]) -> str`
    - Removes only the matched leading status marker and the `-` prefix token.
    - Trims leading/trailing whitespace of remaining headline.
 
@@ -124,8 +130,8 @@ If any rule here differs from referenced source documents, this file takes prece
 
 Required entry points:
 
-1. `parse_stories_from_markdown(text: str, story_status_map: StatusMap, task_status_map: StatusMap) -> list[Story]`
-2. `parse_stories_from_markdown_file(path: str | Path, story_status_map: StatusMap, task_status_map: StatusMap, encoding: str = "utf-8") -> list[Story]`
+1. `parse_stories_from_markdown(text: str, story_status_map: StoryStatusMap, task_status_map: TaskStatusMap) -> list[Story]`
+2. `parse_stories_from_markdown_file(path: str | Path, story_status_map: StoryStatusMap, task_status_map: TaskStatusMap, encoding: str = "utf-8") -> list[Story]`
 
 The file variant reads text then delegates to the text variant.
 
@@ -183,7 +189,7 @@ For status-pattern stories:
 
 For non-pattern stories:
 - `name` is normalized heading text (trimmed; preserve internal spacing).
-- If no status pattern is detected and tasks are present in the story, default `status` to `TaskStatus.DO`.
+- If no status pattern is detected and tasks are present in the story, default `status` to `StoryStatus.DO`.
 - If no status pattern is detected and no tasks are present, `status` must remain `None`.
 - This includes the corner case where a heading is promoted to a story only because it contains task lines.
 
@@ -212,7 +218,7 @@ A line starts a new task when all are true:
 2. Line matches one of the task status patterns.
 3. Parser is currently within an active H1-rooted story scope, or within an H1-H6 heading scope that must be promoted to a story per Story Header Detection item 2, or within file-scope story context (including files with no H1 heading).
 
-If a task-status line is encountered under an H1-H6 heading that has not yet been materialized as a story, that heading must first be promoted to a `Story` (default `TaskStatus.DO` for non-pattern headings), and the line must then be treated as a task header within that story. If task-status lines occur without any H1 heading, they must be attached to the file-scope story.
+If a task-status line is encountered under an H1-H6 heading that has not yet been materialized as a story, that heading must first be promoted to a `Story` (default `StoryStatus.DO` for non-pattern headings), and the line must then be treated as a task header within that story. If task-status lines occur without any H1 heading, they must be attached to the file-scope story.
 
 Non-task-like indented lines must be treated as detail text, never as a task header.
 
@@ -414,6 +420,8 @@ Normalization for hash input:
 
 `bin/mdgbdata.py` must export the following names via `__all__`:
 - `StatusEntry`
+- `StoryStatusMap`
+- `TaskStatusMap`
 - `StatusMap`
 - `load_status_map`
 - `compile_status_patterns`
@@ -429,7 +437,7 @@ Normalization for hash input:
 - `main`
 
 ## Error Handling
-- Invalid metadata key not in `TaskStatus`: raise `ValueError` naming invalid key.
+- Invalid metadata key not in the provided status enum (`StoryStatus` or `TaskStatus`): raise `ValueError` naming invalid key.
 - Invalid metadata entry object shape: raise `ValueError` naming key and missing field.
 - Invalid regex in `pat_str`: raise `ValueError` naming key and regex compile error.
 - File decode errors in markdown file parser: propagate `UnicodeDecodeError`.
@@ -463,7 +471,7 @@ At minimum, include tests for:
    - status-matched heading creates story with stripped name
    - status-matched heading persists `Story.status`
    - non-pattern heading with tasks still creates story
-   - non-pattern stories with tasks default `Story.status` to `TaskStatus.DO`
+   - non-pattern stories with tasks default `Story.status` to `StoryStatus.DO`
    - non-pattern H1 stories without tasks produce informational stories with `Story.status is None`
    - `Story:` heading creates story without tasks
    - story attributes parse to `Story.attributes`
