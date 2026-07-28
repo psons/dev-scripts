@@ -212,8 +212,9 @@ Any markdown H1 line starts a new story. (For full document preservation, every 
 
 The story is a Work Story when any of these are true:
 
-1. It matches a story status pattern after heading markers.  
-2. It is a markdown heading at level 1 and contains tasks below it (even if it has no Story status pattern and no story marker
+1. It matches the story marker after heading markers.  
+2. It matches a story status pattern after heading markers.  
+3. It is a markdown heading at level 1 and contains tasks below it (even if it has no Story status pattern and no story marker
 
 Interpretation details:
 
@@ -243,6 +244,12 @@ Story-level ad hoc metadata must be supported:
 
 - Any attribute key not mapped to an explicit `Story` field is stored in `Story.attributes`.  
 - Story attributes follow the same informal `key: value` and formal front-matter parsing rules used for task attributes, scoped to the current story.
+
+When serializing stories to MDGBDF:
+
+- Use heading level 1 for each serialized story.  
+- If `Story.status is None` or `Story.status == StoryStatus.DO`, write header as: `# Story: <name>`  
+- Otherwise write header as: `# <status_val> - Story: <name>` where `<status_val>` is the `val` shorthand from story status metadata.
 
 #### Story Description
 
@@ -499,21 +506,6 @@ Normalization for hash input:
 - Strip outer whitespace.  
 - Collapse internal whitespace runs to a single space.  
 - Keep case as-is.
-
-## Markdown Serialization
-
-When serializing stories to MDGBDF:
-
-- Use heading level 1 for each serialized story.  
-- If a story is a text story, do not write the `Story:` string into the header.   
-- If a story is a work story, write header as: `# <status_val> - Story:` where   
-  - `<status_val>` is the `val` shorthand from story status metadata.  
-  - `<name>` is the value of the story name property.
-
-The header for text stories when parsed from markdown 
-
-- should not change when re-serialized to markdown  
-- should yield a json object that will serialize to the original markdown unchanged.
 
 ## JSON Mapping Contract
 

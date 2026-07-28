@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Refactor mdgbdata for robust story/task parsing, generic type-safe\
-  \ status map, story maxTasks, update backlog/bltodo and tests"
+"actualCommitMessage": "Refine mdgbdata specs: restructure, update mdgbdata-spec2\
+  \ with parsing rules, and enhance docs/dev/work/README.md and TODO.md"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 This text is part of the file-scoped story description
 
@@ -78,6 +79,13 @@ x - verify / support reading the form front-matter
 
 # Work Summary
 
+## 2026-07-28 14:16
+
+---
+workHeadline: "Refine mdgbdata specs: restructure, update mdgbdata-spec2 with parsing rules, and enhance docs/dev/work/README.md and TODO.md"
+---
+
+This update significantly refactors the `mdgbdata` specification by deleting the old `mdgbdata-spec.md` and moving its content, along with a previous version of `mdgbdata-spec2.md`, to an `obsolete` directory. The primary specification, `mdgbdata-spec2.md`, has been updated with detailed terminology and explicit rules for parsing and serializing object properties and attributes, particularly focusing on YAML front-matter and informal key-value notation. Additionally, the `docs/dev/work/README.md` file now includes descriptions for `TODO.md` and `do.md`, while the `TODO.md` file itself had its front-matter removed, reflecting adjustments to document structure.
 ## 2026-07-28 14:11
 
 ---
