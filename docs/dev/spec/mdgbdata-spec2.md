@@ -258,6 +258,12 @@ When serializing stories to MDGBDF:
 - Preserve newlines in description text; trim outer blank lines.  
 - Parsed markdown stories default `attributes` to `None` if no Ad hoc attributes are found.
 
+#### Story maxTasks attribute clarification.
+The gb-data modes explicitly supports maxTasks, so it is an attribute of Story.  
+The maxTasks attribute is optional in the gb-data schema for Story, so it may be None in the python classes
+When maxTasks has a value to be serialized to markdown, it has to be serialized as object front-matter.  As such, it always refers to the formal Story.maxTasks attribute.
+If maxTasks appears with a setting in both the informal Markdown input and as object front-matter, then the object front-matter value is used as the value for the Story.maxTasks, and the informal value is not saved.
+
 #### Task Header Detection
 
 A line starts a new task when all are true:

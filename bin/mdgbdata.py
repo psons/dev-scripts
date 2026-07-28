@@ -412,6 +412,7 @@ def parse_stories_from_markdown(
         current_task_frontmatter_lines = []
 
     def finalize_story() -> None:
+        """Finalize the active story and append it to the parsed story list."""
         nonlocal current_story_index, current_story_name, current_story_status
         nonlocal current_story_level, current_story_id, current_story_tasks
         nonlocal current_story_description_lines, current_story_attributes

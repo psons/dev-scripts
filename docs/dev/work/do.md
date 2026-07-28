@@ -1,5 +1,5 @@
 ---
-"actualCommitMessage": "Introduced a new spec for mdgbdata.py"
+"actualCommitMessage": "first version of docs/dev/spec/gbdata-spec-2.md"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -7,6 +7,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 
 
