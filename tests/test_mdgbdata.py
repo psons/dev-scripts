@@ -44,17 +44,17 @@ stories_to_json_text = mdgbdata.stories_to_json_text
 stories_to_markdown_text = mdgbdata.stories_to_markdown_text
 
 
-def _status_maps() -> tuple[dict[TaskStatus, object], dict[TaskStatus, object]]:
+def _status_maps() -> tuple[dict[StoryStatus, object], dict[TaskStatus, object]]:
     repo_root = Path(__file__).resolve().parents[1]
-    story = load_status_map(repo_root / "docs/dev/spec/story_status_metadata.json")
-    task = load_status_map(repo_root / "docs/dev/spec/task_status_metadata.json")
+    story = load_status_map(repo_root / "docs/dev/spec/story_status_metadata.json", StoryStatus)
+    task = load_status_map(repo_root / "docs/dev/spec/task_status_metadata.json", TaskStatus)
     return story, task
 
 
 def test_load_status_map_valid_json_loads_expected_keys():
     story_map, _ = _status_maps()
 
-    assert set(story_map.keys()) == set(TaskStatus)
+    assert set(story_map.keys()) == set(StoryStatus)
 
 
 def test_load_status_map_invalid_key_raises_value_error(tmp_path: Path):
@@ -62,7 +62,7 @@ def test_load_status_map_invalid_key_raises_value_error(tmp_path: Path):
     bad.write_text('{"not_a_status": {"val": "n", "pat_str": "^n *-"}}', encoding="utf-8")
 
     with pytest.raises(ValueError, match="Invalid status key"):
-        load_status_map(bad)
+        load_status_map(bad, TaskStatus)
 
 
 def test_load_status_map_invalid_entry_shape_raises_value_error(tmp_path: Path):
@@ -70,7 +70,7 @@ def test_load_status_map_invalid_entry_shape_raises_value_error(tmp_path: Path):
     bad.write_text('{"do": {"val": "d"}}', encoding="utf-8")
 
     with pytest.raises(ValueError, match="missing field 'pat_str'"):
-        load_status_map(bad)
+        load_status_map(bad, TaskStatus)
 
 
 def test_detect_status_matches_patterns_and_unknown_returns_none():
@@ -319,17 +319,50 @@ def test_frontmatter_id_properties_override_generated_ids():
     assert stories[0].tasks[0].id == "task-456"
 
 
-def test_plain_id_lines_are_not_parsed_as_ids():
+def test_plain_id_lines_are_parsed_as_formal_ids():
     story_map, task_map = _status_maps()
     text = "# d - Alpha Story\nid: ignored-story-id\nx - Build\nid: ignored-task-id\n"
 
     stories = parse_stories_from_markdown(text, story_map, task_map)
 
-    assert stories[0].id != "ignored-story-id"
-    assert stories[0].description == "id: ignored-story-id"
+    assert stories[0].id == "ignored-story-id"
     assert stories[0].tasks is not None
-    assert stories[0].tasks[0].id != "ignored-task-id"
-    assert stories[0].tasks[0].detail == "id: ignored-task-id"
+    assert stories[0].tasks[0].id == "ignored-task-id"
+
+
+def test_informal_story_property_lines_map_to_formal_properties():
+    story_map, task_map = _status_maps()
+    text = "# Planning\nstatus: do\nmaxTasks: 3\ndescription: Story context\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].status == StoryStatus.DO
+    assert stories[0].maxTasks == 3
+    assert stories[0].description == "Story context"
+    assert stories[0].attributes is None
+
+
+def test_informal_task_property_lines_map_to_formal_properties():
+    story_map, task_map = _status_maps()
+    text = (
+        "# Story: Plan\n"
+        "x - build parser\n"
+        "status: do\n"
+        "name: renamed task\n"
+        "id: task-123\n"
+        "detail: detail from informal property\n"
+    )
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert stories[0].tasks is not None
+    task = stories[0].tasks[0]
+    assert task.status == TaskStatus.DO
+    assert task.name == "renamed task"
+    assert task.id == "task-123"
+    assert task.detail == "detail from informal property"
+    assert task.attributes is None
 
 
 def test_parse_stories_from_markdown_file_reads_and_parses(tmp_path: Path):
@@ -432,6 +465,30 @@ def test_story_frontmatter_yaml_dequotes_keys_and_values():
     assert stories[0].attributes == {"owner": "team-a", "priority": "high"}
 
 
+def test_story_frontmatter_maps_formal_properties():
+    story_map, task_map = _status_maps()
+    text = (
+        "# Story: Plan\n"
+        "---\n"
+        '"id": "story-1"\n'
+        '"status": "completed"\n'
+        '"name": "Renamed Plan"\n'
+        '"description": "YAML description"\n'
+        '"maxTasks": 5\n'
+        '"owner": "team-a"\n'
+        "---\n"
+    )
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert stories[0].id == "story-1"
+    assert stories[0].status == StoryStatus.COMPLETED
+    assert stories[0].name == "Renamed Plan"
+    assert stories[0].description == "YAML description"
+    assert stories[0].maxTasks == 5
+    assert stories[0].attributes == {"owner": "team-a"}
+
+
 def test_quoted_informal_story_attribute_keys_are_normalized():
     story_map, task_map = _status_maps()
     text = '# Story: Plan\n"workHeadline": "refactor(dtask): simplify do.md work summary insertion"\n'
@@ -487,6 +544,23 @@ def test_task_frontmatter_yaml_dequotes_and_preserves_scalar_types():
 
     assert stories[0].tasks is not None
     assert stories[0].tasks[0].attributes == {"effort": 3, "enabled": True, "owner": "team-a"}
+
+
+def test_story_max_tasks_frontmatter_overrides_informal_value():
+    story_map, task_map = _status_maps()
+    text = (
+        "# Story: Plan\n"
+        "maxTasks: 2\n"
+        "---\n"
+        "maxTasks: 7\n"
+        "---\n"
+    )
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].maxTasks == 7
+    assert stories[0].attributes is None or "maxTasks" not in stories[0].attributes
 
 
 def test_stories_to_markdown_serializes_task_attributes_as_frontmatter_and_roundtrips():
@@ -555,6 +629,23 @@ def test_stories_to_json_text_serializes_story_objects():
             ],
         }
     ]
+
+
+def test_stories_to_markdown_serializes_max_tasks_in_story_frontmatter():
+    story_map, task_map = _status_maps()
+    story = gbdata.Story(
+        id="story-1",
+        status=StoryStatus.DO,
+        name="Story One",
+        description="Summary",
+        maxTasks=4,
+        tasks=None,
+        attributes=None,
+    )
+
+    markdown = stories_to_markdown_text([story], story_map, task_map)
+
+    assert "maxTasks: 4" in markdown
 
 
 def test_stories_to_json_text_omits_story_status_when_none_and_keeps_story_attributes():

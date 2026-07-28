@@ -40,7 +40,9 @@ class StatusEntry:
     pat_str: str
 
 
-StatusMap: TypeAlias = dict[TaskStatus, StatusEntry]
+StoryStatusMap: TypeAlias = dict[StoryStatus, StatusEntry]
+TaskStatusMap: TypeAlias = dict[TaskStatus, StatusEntry]
+StatusMap: TypeAlias = StoryStatusMap | TaskStatusMap
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,20 +57,11 @@ _HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
 _WS_RE = re.compile(r"\s+")
 _ATTRIBUTE_RE = re.compile(r"^(\S+):\s*(.*)$")
 _FRONTMATTER_DELIM = "---"
-_TASK_ATTR_RESERVED_KEYS = {"id", "status", "name", "detail", "attributes", "attribs"}
-_STORY_ATTR_RESERVED_KEYS = {
-    "id",
-    "status",
-    "name",
-    "description",
-    "maxTasks",
-    "tasks",
-    "attributes",
-    "attribs",
-}
+_STORY_FORMAL_KEYS = {"id", "status", "name", "description", "maxTasks"}
+_TASK_FORMAL_KEYS = {"id", "status", "name", "detail"}
 
 
-def load_status_map(path: str | Path) -> StatusMap:
+def load_status_map(path: str | Path, status_enum: type[StoryStatus] | type[TaskStatus]) -> StatusMap:
     """Load status metadata from a JSON file."""
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
@@ -77,7 +70,7 @@ def load_status_map(path: str | Path) -> StatusMap:
     status_map: StatusMap = {}
     for key, value in raw.items():
         try:
-            status = TaskStatus(key)
+            status = status_enum(key)
         except ValueError as exc:
             raise ValueError(f"Invalid status key: {key}") from exc
 
@@ -102,7 +95,7 @@ def load_status_map(path: str | Path) -> StatusMap:
 
 def compile_status_patterns(status_map: StatusMap) -> dict[TaskStatus, re.Pattern[str]]:
     """Compile status-map regex patterns."""
-    compiled: dict[TaskStatus, re.Pattern[str]] = {}
+    compiled: dict[StoryStatus | TaskStatus, re.Pattern[str]] = {}
     for status, entry in status_map.items():
         try:
             compiled[status] = re.compile(entry.pat_str)
@@ -113,10 +106,15 @@ def compile_status_patterns(status_map: StatusMap) -> dict[TaskStatus, re.Patter
 
 def detect_status(
     line: str,
-    compiled_patterns: dict[TaskStatus, re.Pattern[str]],
-) -> TaskStatus | None:
+    compiled_patterns: dict[StoryStatus | TaskStatus, re.Pattern[str]],
+) -> StoryStatus | TaskStatus | None:
     """Detect a status from a line using deterministic enum order."""
-    for status in TaskStatus:
+    if not compiled_patterns:
+        return None
+
+    first_status = next(iter(compiled_patterns))
+    status_enum = type(first_status)
+    for status in status_enum:
         pattern = compiled_patterns.get(status)
         if pattern is not None and pattern.match(line):
             return status
@@ -125,8 +123,8 @@ def detect_status(
 
 def strip_status_prefix(
     line: str,
-    status: TaskStatus,
-    compiled_patterns: dict[TaskStatus, re.Pattern[str]],
+    status: StoryStatus | TaskStatus,
+    compiled_patterns: dict[StoryStatus | TaskStatus, re.Pattern[str]],
 ) -> str:
     """Strip only the matched status marker prefix from a line."""
     pattern = compiled_patterns.get(status)
@@ -163,7 +161,7 @@ def _trim_outer_blank_lines(lines: list[str]) -> list[str]:
     return lines[start:end]
 
 
-def _parse_attribute_line(line: str, reserved_keys: set[str]) -> tuple[str, object] | None:
+def _parse_attribute_line(line: str) -> tuple[str, object] | None:
     if line.startswith((" ", "\t")):
         return None
 
@@ -179,9 +177,6 @@ def _parse_attribute_line(line: str, reserved_keys: set[str]) -> tuple[str, obje
             key = key_text[1:-1]
     else:
         key = key_text
-
-    if key in reserved_keys:
-        return None
 
     value_text = match.group(2)
     if value_text and value_text[:1] in {"\"", "'"} and value_text[-1:] == value_text[:1]:
@@ -220,26 +215,76 @@ def _format_frontmatter_mapping(mapping: dict[str, object]) -> list[str]:
     return dumped.splitlines() if dumped else []
 
 
-def _apply_story_frontmatter(mapping: dict[str, object]) -> tuple[str | None, dict[str, object] | None]:
-    story_id: str | None = None
+def _split_story_mapping(mapping: dict[str, object]) -> tuple[dict[str, object], dict[str, object]]:
+    properties: dict[str, object] = {}
     attributes: dict[str, object] = {}
     for key, value in mapping.items():
-        if key == "id":
-            story_id = str(value)
-        elif key not in _STORY_ATTR_RESERVED_KEYS:
+        if key in _STORY_FORMAL_KEYS:
+            properties[key] = value
+        elif key in {"attributes", "attribs"}:
+            if isinstance(value, dict):
+                attributes.update({str(attr_key): attr_value for attr_key, attr_value in value.items()})
+        elif key != "tasks":
             attributes[key] = value
-    return story_id, (attributes or None)
+    return properties, attributes
 
 
-def _apply_task_frontmatter(mapping: dict[str, object]) -> tuple[str | None, dict[str, object] | None]:
-    task_id: str | None = None
+def _split_task_mapping(mapping: dict[str, object]) -> tuple[dict[str, object], dict[str, object]]:
+    properties: dict[str, object] = {}
     attributes: dict[str, object] = {}
     for key, value in mapping.items():
-        if key == "id":
-            task_id = str(value)
-        elif key not in _TASK_ATTR_RESERVED_KEYS:
+        if key in _TASK_FORMAL_KEYS:
+            properties[key] = value
+        elif key in {"attributes", "attribs"}:
+            if isinstance(value, dict):
+                attributes.update({str(attr_key): attr_value for attr_key, attr_value in value.items()})
+        else:
             attributes[key] = value
-    return task_id, (attributes or None)
+    return properties, attributes
+
+
+def _coerce_story_status(value: object) -> StoryStatus:
+    if isinstance(value, StoryStatus):
+        return value
+    if isinstance(value, TaskStatus):
+        return StoryStatus(value.value)
+    if isinstance(value, str):
+        try:
+            return StoryStatus(value)
+        except ValueError as exc:
+            raise ValueError(f"Invalid story status value: {value}") from exc
+    raise ValueError(f"Invalid story status value type: {type(value).__name__}")
+
+
+def _coerce_task_status(value: object) -> TaskStatus:
+    if isinstance(value, TaskStatus):
+        return value
+    if isinstance(value, StoryStatus):
+        return TaskStatus(value.value)
+    if isinstance(value, str):
+        try:
+            return TaskStatus(value)
+        except ValueError as exc:
+            raise ValueError(f"Invalid task status value: {value}") from exc
+    raise ValueError(f"Invalid task status value type: {type(value).__name__}")
+
+
+def _coerce_max_tasks(value: object) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise ValueError("Story maxTasks must be an integer when present")
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped or stripped.lower() == "none":
+            return None
+        try:
+            return int(stripped)
+        except ValueError as exc:
+            raise ValueError("Story maxTasks must be an integer when present") from exc
+    raise ValueError("Story maxTasks must be an integer when present")
 
 
 def _is_story_prefixed_heading(text: str) -> bool:
@@ -261,15 +306,12 @@ def _strip_story_prefix(text: str) -> str:
 
 def _task_header_status(
     line: str,
-    compiled_patterns: dict[TaskStatus, re.Pattern[str]],
+    compiled_patterns: dict[StoryStatus | TaskStatus, re.Pattern[str]],
 ) -> TaskStatus | None:
     if line.startswith((" ", "\t")):
         return None
-    return detect_status(line, compiled_patterns)
-
-
-def _to_story_status(status: TaskStatus) -> StoryStatus:
-    return StoryStatus(status.value)
+    status = detect_status(line, compiled_patterns)
+    return status if isinstance(status, TaskStatus) else None
 
 
 def _deterministic_uuid7(seed_text: str) -> str:
@@ -305,8 +347,8 @@ def _make_task_id(
 
 def parse_stories_from_markdown(
     text: str,
-    story_status_map: StatusMap,
-    task_status_map: StatusMap,
+    story_status_map: StoryStatusMap,
+    task_status_map: TaskStatusMap,
 ) -> list[Story]:
     """Parse stories and tasks from markdown text in a single pass."""
     if not text:
@@ -323,6 +365,8 @@ def parse_stories_from_markdown(
     current_story_status: StoryStatus | None = None
     current_story_level: int | None = None
     current_story_id: str | None = None
+    current_story_max_tasks: int | None = None
+    current_story_max_tasks_from_frontmatter = False
     current_story_description_lines: list[str] = []
     current_story_attributes: dict[str, object] | None = None
     current_story_tasks: list[Task] = []
@@ -346,21 +390,24 @@ def parse_stories_from_markdown(
 
     def start_story(
         name: str,
-        status: TaskStatus | None,
+        status: StoryStatus | None,
         level: int,
         initial_description_lines: list[str] | None = None,
     ) -> None:
         nonlocal story_counter, current_story_index, current_story_name
         nonlocal current_story_status, current_story_level, current_story_description_lines, current_story_attributes
-        nonlocal current_story_id, current_story_tasks
+        nonlocal current_story_id, current_story_tasks, current_story_max_tasks
+        nonlocal current_story_max_tasks_from_frontmatter
         nonlocal current_task_index, current_story_frontmatter_active, current_story_frontmatter_lines
 
         story_counter += 1
         current_story_index = story_counter
         current_story_name = _normalize_name(name, "(unnamed story)")
-        current_story_status = None if status is None else _to_story_status(status)
+        current_story_status = status
         current_story_level = level
         current_story_id = None
+        current_story_max_tasks = None
+        current_story_max_tasks_from_frontmatter = False
         current_story_description_lines = [] if initial_description_lines is None else list(initial_description_lines)
         current_story_attributes = None
         current_story_tasks = []
@@ -411,10 +458,54 @@ def parse_stories_from_markdown(
         current_task_frontmatter_active = False
         current_task_frontmatter_lines = []
 
+    def set_story_property(key: str, value: object, *, from_frontmatter: bool = False) -> bool:
+        nonlocal current_story_id, current_story_status, current_story_name
+        nonlocal current_story_max_tasks, current_story_max_tasks_from_frontmatter
+        nonlocal current_story_description_lines
+
+        if key == "id":
+            current_story_id = str(value)
+            return True
+        if key == "status":
+            current_story_status = _coerce_story_status(value)
+            return True
+        if key == "name":
+            current_story_name = _normalize_name(str(value), "(unnamed story)")
+            return True
+        if key == "description":
+            current_story_description_lines = [str(value)]
+            return True
+        if key == "maxTasks":
+            if from_frontmatter or not current_story_max_tasks_from_frontmatter:
+                current_story_max_tasks = _coerce_max_tasks(value)
+                if from_frontmatter:
+                    current_story_max_tasks_from_frontmatter = True
+            return True
+        return False
+
+    def set_task_property(key: str, value: object, *, from_frontmatter: bool = False) -> bool:
+        del from_frontmatter
+        nonlocal current_task_id, current_task_status, current_task_name, current_task_detail_lines
+
+        if key == "id":
+            current_task_id = str(value)
+            return True
+        if key == "status":
+            current_task_status = _coerce_task_status(value)
+            return True
+        if key == "name":
+            current_task_name = _normalize_name(str(value), "(unnamed task)")
+            return True
+        if key == "detail":
+            current_task_detail_lines = [str(value)]
+            return True
+        return False
+
     def finalize_story() -> None:
         """Finalize the active story and append it to the parsed story list."""
         nonlocal current_story_index, current_story_name, current_story_status
-        nonlocal current_story_level, current_story_id, current_story_tasks
+        nonlocal current_story_level, current_story_id, current_story_tasks, current_story_max_tasks
+        nonlocal current_story_max_tasks_from_frontmatter
         nonlocal current_story_description_lines, current_story_attributes
         nonlocal current_story_frontmatter_active, current_story_frontmatter_lines
 
@@ -436,6 +527,7 @@ def parse_stories_from_markdown(
                 name=story_name,
                 status=current_story_status,
                 description=story_description,
+                maxTasks=current_story_max_tasks,
                 tasks=current_story_tasks or None,
                 attributes=current_story_attributes,
             )
@@ -446,6 +538,8 @@ def parse_stories_from_markdown(
         current_story_status = None
         current_story_level = None
         current_story_id = None
+        current_story_max_tasks = None
+        current_story_max_tasks_from_frontmatter = False
         current_story_description_lines = []
         current_story_attributes = None
         current_story_tasks = []
@@ -476,12 +570,12 @@ def parse_stories_from_markdown(
             if story_status is not None:
                 stripped_heading = strip_status_prefix(heading_text, story_status, story_patterns)
                 story_name = _strip_story_prefix(stripped_heading)
-                start_story(story_name, story_status, heading_level)
+                start_story(story_name, _coerce_story_status(story_status), heading_level)
                 continue
 
             if _is_story_prefixed_heading(heading_text):
                 story_name = _strip_story_prefix(heading_text)
-                start_story(story_name, TaskStatus.DO, heading_level)
+                start_story(story_name, StoryStatus.DO, heading_level)
                 continue
 
             if heading_level == 1:
@@ -503,9 +597,9 @@ def parse_stories_from_markdown(
                     current_task_detail_lines.extend(current_task_frontmatter_lines)
                     current_task_detail_lines.append(_FRONTMATTER_DELIM)
                 else:
-                    frontmatter_id, frontmatter_attributes = _apply_task_frontmatter(parsed_frontmatter)
-                    if frontmatter_id is not None:
-                        current_task_id = frontmatter_id
+                    frontmatter_properties, frontmatter_attributes = _split_task_mapping(parsed_frontmatter)
+                    for key, value in frontmatter_properties.items():
+                        set_task_property(key, value, from_frontmatter=True)
                     if frontmatter_attributes:
                         if current_task_attributes is None:
                             current_task_attributes = {}
@@ -526,9 +620,9 @@ def parse_stories_from_markdown(
                     current_story_description_lines.extend(current_story_frontmatter_lines)
                     current_story_description_lines.append(_FRONTMATTER_DELIM)
                 else:
-                    frontmatter_id, frontmatter_attributes = _apply_story_frontmatter(parsed_frontmatter)
-                    if frontmatter_id is not None:
-                        current_story_id = frontmatter_id
+                    frontmatter_properties, frontmatter_attributes = _split_story_mapping(parsed_frontmatter)
+                    for key, value in frontmatter_properties.items():
+                        set_story_property(key, value, from_frontmatter=True)
                     if frontmatter_attributes:
                         if current_story_attributes is None:
                             current_story_attributes = {}
@@ -575,12 +669,13 @@ def parse_stories_from_markdown(
                 current_task_frontmatter_lines = []
                 continue
 
-            parsed_attribute = _parse_attribute_line(line, _TASK_ATTR_RESERVED_KEYS)
+            parsed_attribute = _parse_attribute_line(line)
             if parsed_attribute is not None:
                 key, value = parsed_attribute
-                if current_task_attributes is None:
-                    current_task_attributes = {}
-                current_task_attributes[key] = value
+                if not set_task_property(key, value):
+                    if current_task_attributes is None:
+                        current_task_attributes = {}
+                    current_task_attributes[key] = value
                 continue
 
             current_task_detail_lines.append(line)
@@ -592,12 +687,13 @@ def parse_stories_from_markdown(
                 current_story_frontmatter_lines = []
                 continue
 
-            parsed_story_attribute = _parse_attribute_line(line, _STORY_ATTR_RESERVED_KEYS)
+            parsed_story_attribute = _parse_attribute_line(line)
             if parsed_story_attribute is not None:
                 key, value = parsed_story_attribute
-                if current_story_attributes is None:
-                    current_story_attributes = {}
-                current_story_attributes[key] = value
+                if not set_story_property(key, value):
+                    if current_story_attributes is None:
+                        current_story_attributes = {}
+                    current_story_attributes[key] = value
                 continue
 
             current_story_description_lines.append(line)
@@ -626,8 +722,8 @@ def parse_stories_from_markdown(
 
 def parse_stories_from_markdown_file(
     path: str | Path,
-    story_status_map: StatusMap,
-    task_status_map: StatusMap,
+    story_status_map: StoryStatusMap,
+    task_status_map: TaskStatusMap,
     encoding: str = "utf-8",
 ) -> list[Story]:
     """Read a markdown file and parse story/task structures from it."""
@@ -651,11 +747,11 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def _story_status_entry(status: StoryStatus | TaskStatus, story_status_map: StatusMap) -> StatusEntry:
-    return story_status_map[TaskStatus(status.value)]
+def _story_status_entry(status: StoryStatus, story_status_map: StoryStatusMap) -> StatusEntry:
+    return story_status_map[status]
 
 
-def _task_status_entry(status: TaskStatus, task_status_map: StatusMap) -> StatusEntry:
+def _task_status_entry(status: TaskStatus, task_status_map: TaskStatusMap) -> StatusEntry:
     return task_status_map[status]
 
 
@@ -792,13 +888,15 @@ def _contains_markdown_structure(text: str, task_patterns: dict[TaskStatus, re.P
     return False
 
 
-def _render_markdown_story(story: Story, story_status_map: StatusMap, task_status_map: StatusMap) -> list[str]:
+def _render_markdown_story(story: Story, story_status_map: StoryStatusMap, task_status_map: TaskStatusMap) -> list[str]:
     if story.status is None or story.status == StoryStatus.DO:
         lines = [f"# Story: {story.name}"]
     else:
         story_entry = _story_status_entry(story.status, story_status_map)
         lines = [f"# {story_entry.val} - Story: {story.name}"]
     story_frontmatter: dict[str, object] = {"id": story.id}
+    if story.maxTasks is not None:
+        story_frontmatter["maxTasks"] = story.maxTasks
     if story.attributes:
         story_frontmatter.update(story.attributes)
     if story_frontmatter:
@@ -825,8 +923,8 @@ def _render_markdown_story(story: Story, story_status_map: StatusMap, task_statu
 
 def stories_to_markdown_text(
     stories: list[Story],
-    story_status_map: StatusMap,
-    task_status_map: StatusMap,
+    story_status_map: StoryStatusMap,
+    task_status_map: TaskStatusMap,
 ) -> str:
     """Serialize Story objects to MDGBDF markdown text."""
     lines: list[str] = []
@@ -839,8 +937,8 @@ def stories_to_markdown_text(
 
 def convert_markdown_file_to_json_text(
     path: str | Path,
-    story_status_map: StatusMap,
-    task_status_map: StatusMap,
+    story_status_map: StoryStatusMap,
+    task_status_map: TaskStatusMap,
     encoding: str = "utf-8",
 ) -> str:
     """Convert a Markdown GB Data file to JSON text."""
@@ -854,8 +952,8 @@ def convert_markdown_file_to_json_text(
 
 def convert_json_file_to_markdown_text(
     path: str | Path,
-    story_status_map: StatusMap,
-    task_status_map: StatusMap,
+    story_status_map: StoryStatusMap,
+    task_status_map: TaskStatusMap,
     encoding: str = "utf-8",
 ) -> str:
     """Convert a JSON file of Story objects to MDGBDF markdown text."""
@@ -885,8 +983,8 @@ def main(argv: list[str] | None = None) -> int:
     """Run the mdgbdata command-line interface."""
     args = parse_args(argv)
     repo_root = _repo_root()
-    story_status_map = load_status_map(repo_root / "docs/dev/spec/story_status_metadata.json")
-    task_status_map = load_status_map(repo_root / "docs/dev/spec/task_status_metadata.json")
+    story_status_map = load_status_map(repo_root / "docs/dev/spec/story_status_metadata.json", StoryStatus)
+    task_status_map = load_status_map(repo_root / "docs/dev/spec/task_status_metadata.json", TaskStatus)
 
     if args.command in (None, "help"):
         parser = argparse.ArgumentParser(
@@ -921,6 +1019,8 @@ if __name__ == "__main__":
 
 __all__ = [
     "StatusEntry",
+    "StoryStatusMap",
+    "TaskStatusMap",
     "StatusMap",
     "load_status_map",
     "compile_status_patterns",

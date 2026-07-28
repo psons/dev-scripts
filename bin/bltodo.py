@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 
 import mdgbdata
-from gbdata import Story, StoryStatus, Task
+from gbdata import Story, StoryStatus, Task, TaskStatus
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,8 +33,8 @@ def _repo_root() -> Path:
 
 def _load_status_maps() -> tuple[mdgbdata.StatusMap, mdgbdata.StatusMap]:
     repo_root = _repo_root()
-    story_map = mdgbdata.load_status_map(repo_root / "docs/dev/spec/story_status_metadata.json")
-    task_map = mdgbdata.load_status_map(repo_root / "docs/dev/spec/task_status_metadata.json")
+    story_map = mdgbdata.load_status_map(repo_root / "docs/dev/spec/story_status_metadata.json", StoryStatus)
+    task_map = mdgbdata.load_status_map(repo_root / "docs/dev/spec/task_status_metadata.json", TaskStatus)
     return story_map, task_map
 
 

@@ -1,5 +1,6 @@
 ---
-"actualCommitMessage": "first version of docs/dev/spec/gbdata-spec-2.md"
+"actualCommitMessage": "Refactor mdgbdata for robust story/task parsing, generic type-safe\
+  \ status map, story maxTasks, update backlog/bltodo and tests"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -7,10 +8,6 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
-
-
-
-
 
 This text is part of the file-scoped story description
 
@@ -40,7 +37,7 @@ x - review the AI output from generating mdgbdata.py
 x - regenerate mdgbdata.py per the spec docs/dev/spec/mdgbdata-spec.md, and update tests.
 prompt2: re-read the docs/dev/spec/mdgbdata-spec.md to set the file-scope story name according to the example and get rid of the extra quoting level when keys are quoted YAML and stored story attributes.
 
-/ - update spec and code so that frontmatter is not stripped out of sections that are not stories.
+/ - update spec and code so that front-matter is not stripped out of sections that are not stories.
 
 
 x - do some manual testing of mdgbdata.py
@@ -80,6 +77,14 @@ x - verify / support reading the form front-matter
 
 
 # Work Summary
+
+## 2026-07-28 14:11
+
+---
+workHeadline: "Refactor mdgbdata for robust story/task parsing, generic type-safe status map, story maxTasks, update backlog/bltodo and tests"
+---
+
+The `mdgbdata.py` module underwent a significant refactoring to enhance the parsing and serialization of story and task data from Markdown. The `load_status_map` function was updated to be more generic, accepting specific status enum types (`StoryStatus` or `TaskStatus`), thereby improving type safety. This change involved new helper functions for coercing and distinguishing formal properties like `id`, `status`, `name`, `description`, `detail`, and a newly added `maxTasks` for stories, from general attributes in both YAML frontmatter and informal attribute lines. Corresponding adjustments were made in `backlog.py` and `bltodo.py` to align with the new function signature, and comprehensive unit tests were added and modified in `test_mdgbdata.py` to validate these robust parsing and serialization behaviors.
 
 ## 2026-07-16 20:35
 
