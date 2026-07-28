@@ -80,7 +80,7 @@ def test_run_backlog_poptask_mdgbdf(monkeypatch, tmp_path: Path):
 
     result = backlog.run_backlog_command(command="poptask", output_format="mdgbdf")
 
-    assert "# Story: Top Task" in result.output_text
+    assert "# d - Story: Top Task" in result.output_text
     assert "d - first task" in result.output_text
 
 

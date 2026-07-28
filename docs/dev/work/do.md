@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Refine mdgbdata specs: restructure, update mdgbdata-spec2\
-  \ with parsing rules, and enhance docs/dev/work/README.md and TODO.md"
+"actualCommitMessage": "feat(mdgbdata): Enhance stdin/stdout/file processing; refine\
+  \ markdown serialization, parsing & round-trip conversion"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 
 This text is part of the file-scoped story description
@@ -79,6 +80,13 @@ x - verify / support reading the form front-matter
 
 # Work Summary
 
+## 2026-07-28 17:09
+
+---
+workHeadline: "feat(mdgbdata): Enhance stdin/stdout/file processing; refine markdown serialization, parsing & round-trip conversion"
+---
+
+This update significantly refines `bin/mdgbdata.py` to enable command-line `tojson` and `tomd` operations via standard input and output, alongside file-based processing. The changes introduce a more nuanced markdown serialization of story headers, distinguishing between work and informational stories, and allow the suppression of story headers for "file-input" stories to accommodate document-level frontmatter. Parsing logic now correctly processes file-scope frontmatter and promotes headings to stories when associated tasks are present, ensuring a more robust round-trip conversion of Markdown GB Data Form documents. Comprehensive updates to the `mdgbdata-spec2.md` documentation and relevant tests validate these new behaviors.
 ## 2026-07-28 14:16
 
 ---

@@ -337,7 +337,7 @@ A line starts a new task when all are true:
 
 1. The line is at the left margin (no leading spaces or tabs).  
 2. Line matches one of the task status patterns.  
-3. Parser is currently within an active H1-rooted story scope that must be promoted to a story per Story Header Detection item 2, or within file-scope story context (including files with no H1 heading).
+3. Parser is currently within an active H1-rooted story scope, or within an H1-H6 heading scope that must be promoted to a story per Story Header Detection item 2, or within file-scope story context (including files with no H1 heading).
 
 If a task-status line is encountered under an H1 heading that has not yet been materialized as a story, that heading must first be promoted to a `Story` (default `StoryStatus.DO` for non-pattern headings), and the line must then be treated as a task header within that story. If task-status lines occur without any H1 heading, they must be attached to the file-scope story.
 

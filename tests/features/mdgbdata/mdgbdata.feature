@@ -49,7 +49,7 @@ Feature: mdgbdata command line support
       """
     When I run mdgbdata command "tomd stories.json"
     Then the mdgbdata command succeeds
-    And the mdgbdata stdout contains "# Story: Build parser"
+    And the mdgbdata stdout contains "# d - Story: Build parser"
     And the mdgbdata stdout contains "Parser context"
     And the mdgbdata stdout contains "x - write tests"
     And the mdgbdata stdout contains "cover the happy path"

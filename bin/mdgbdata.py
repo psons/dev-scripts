@@ -287,16 +287,6 @@ def _coerce_max_tasks(value: object) -> int | None:
     raise ValueError("Story maxTasks must be an integer when present")
 
 
-def _is_story_prefixed_heading(text: str) -> bool:
-    tokens = text.strip().split()
-    if not tokens:
-        return False
-    first = tokens[0].lower()
-    if first.startswith("story:"):
-        return True
-    return len(tokens) > 1 and tokens[1].lower().startswith("story:")
-
-
 def _strip_story_prefix(text: str) -> str:
     match = re.match(r"^\s*(?:[^\s-]+\s*-\s*)?(?i:story:)\s*(.*)$", text)
     if match is None:
@@ -573,11 +563,6 @@ def parse_stories_from_markdown(
                 start_story(story_name, _coerce_story_status(story_status), heading_level)
                 continue
 
-            if _is_story_prefixed_heading(heading_text):
-                story_name = _strip_story_prefix(heading_text)
-                start_story(story_name, StoryStatus.DO, heading_level)
-                continue
-
             if heading_level == 1:
                 start_story(heading_text, None, heading_level)
                 continue
@@ -639,7 +624,7 @@ def parse_stories_from_markdown(
                 if pending_heading_text is not None and pending_heading_level is not None:
                     start_story(
                         pending_heading_text,
-                        TaskStatus.DO,
+                        StoryStatus.DO,
                         pending_heading_level,
                         initial_description_lines=pending_heading_description_lines,
                     )
@@ -703,6 +688,12 @@ def parse_stories_from_markdown(
             pending_heading_description_lines.append(line)
             continue
 
+        if line.strip() == _FRONTMATTER_DELIM and not line.startswith((" ", "\t")):
+            ensure_file_scope_story()
+            current_story_frontmatter_active = True
+            current_story_frontmatter_lines = []
+            continue
+
         if line.strip():
             ensure_file_scope_story()
             current_story_description_lines.append(line)
@@ -713,6 +704,11 @@ def parse_stories_from_markdown(
     if current_story_frontmatter_active:
         current_story_description_lines.append(_FRONTMATTER_DELIM)
         current_story_description_lines.extend(current_story_frontmatter_lines)
+
+    if pending_heading_text is not None and pending_heading_level is not None:
+        ensure_file_scope_story()
+        current_story_description_lines.append(f"{'#' * pending_heading_level} {pending_heading_text}")
+        current_story_description_lines.extend(pending_heading_description_lines)
 
     if current_story_name is not None:
         finalize_story()
@@ -888,12 +884,20 @@ def _contains_markdown_structure(text: str, task_patterns: dict[TaskStatus, re.P
     return False
 
 
-def _render_markdown_story(story: Story, story_status_map: StoryStatusMap, task_status_map: TaskStatusMap) -> list[str]:
-    if story.status is None or story.status == StoryStatus.DO:
-        lines = [f"# Story: {story.name}"]
-    else:
-        story_entry = _story_status_entry(story.status, story_status_map)
-        lines = [f"# {story_entry.val} - Story: {story.name}"]
+def _render_markdown_story(
+    story: Story,
+    story_status_map: StoryStatusMap,
+    task_status_map: TaskStatusMap,
+    *,
+    suppress_header: bool = False,
+) -> list[str]:
+    lines: list[str] = []
+    if not suppress_header:
+        if story.status is None:
+            lines.append(f"# {story.name}")
+        else:
+            story_entry = _story_status_entry(story.status, story_status_map)
+            lines.append(f"# {story_entry.val} - Story: {story.name}")
     story_frontmatter: dict[str, object] = {"id": story.id}
     if story.maxTasks is not None:
         story_frontmatter["maxTasks"] = story.maxTasks
@@ -931,7 +935,15 @@ def stories_to_markdown_text(
     for index, story in enumerate(stories):
         if index > 0:
             lines.append("")
-        lines.extend(_render_markdown_story(story, story_status_map, task_status_map))
+        suppress_header = index == 0 and story.name == "file-input"
+        lines.extend(
+            _render_markdown_story(
+                story,
+                story_status_map,
+                task_status_map,
+                suppress_header=suppress_header,
+            )
+        )
     return "\n".join(lines).rstrip() + ("\n" if lines else "")
 
 
@@ -943,6 +955,15 @@ def convert_markdown_file_to_json_text(
 ) -> str:
     """Convert a Markdown GB Data file to JSON text."""
     markdown_text = Path(path).read_text(encoding=encoding)
+    return convert_markdown_text_to_json_text(markdown_text, story_status_map, task_status_map)
+
+
+def convert_markdown_text_to_json_text(
+    markdown_text: str,
+    story_status_map: StoryStatusMap,
+    task_status_map: TaskStatusMap,
+) -> str:
+    """Convert Markdown GB Data text to JSON text."""
     task_patterns = compile_status_patterns(task_status_map)
     if not _contains_markdown_structure(markdown_text, task_patterns):
         raise ValueError("Input file does not contain any markdown headers or tasks")
@@ -957,7 +978,16 @@ def convert_json_file_to_markdown_text(
     encoding: str = "utf-8",
 ) -> str:
     """Convert a JSON file of Story objects to MDGBDF markdown text."""
-    stories = _stories_from_json_text(Path(path).read_text(encoding=encoding))
+    return convert_json_text_to_markdown_text(Path(path).read_text(encoding=encoding), story_status_map, task_status_map)
+
+
+def convert_json_text_to_markdown_text(
+    json_text: str,
+    story_status_map: StoryStatusMap,
+    task_status_map: TaskStatusMap,
+) -> str:
+    """Convert JSON text of Story objects to MDGBDF markdown text."""
+    stories = _stories_from_json_text(json_text)
     return stories_to_markdown_text(stories, story_status_map, task_status_map)
 
 
@@ -970,10 +1000,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command")
 
     tojson_parser = subparsers.add_parser("tojson", help="Convert Markdown GB Data Form to JSON")
-    tojson_parser.add_argument("path", help="Path to a Markdown GB Data Form file")
+    tojson_parser.add_argument("path", nargs="?", help="Optional path to a Markdown GB Data Form file; reads stdin when omitted")
 
     tomd_parser = subparsers.add_parser("tomd", help="Convert JSON to Markdown GB Data Form")
-    tomd_parser.add_argument("path", help="Path to a JSON file")
+    tomd_parser.add_argument("path", nargs="?", help="Optional path to a JSON file; reads stdin when omitted")
 
     subparsers.add_parser("help", help="Show command usage summary")
     return parser.parse_args(argv)
@@ -1000,9 +1030,15 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.command == "tojson":
-            output_text = convert_markdown_file_to_json_text(args.path, story_status_map, task_status_map)
+            if args.path:
+                output_text = convert_markdown_file_to_json_text(args.path, story_status_map, task_status_map)
+            else:
+                output_text = convert_markdown_text_to_json_text(sys.stdin.read(), story_status_map, task_status_map)
         elif args.command == "tomd":
-            output_text = convert_json_file_to_markdown_text(args.path, story_status_map, task_status_map)
+            if args.path:
+                output_text = convert_json_file_to_markdown_text(args.path, story_status_map, task_status_map)
+            else:
+                output_text = convert_json_text_to_markdown_text(sys.stdin.read(), story_status_map, task_status_map)
         else:
             raise ValueError(f"Unknown command: {args.command}")
     except (FileNotFoundError, ValueError, UnicodeDecodeError) as exc:

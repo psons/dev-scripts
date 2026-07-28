@@ -19,7 +19,7 @@ Feature: bltodo command line support
     When I run bltodo command "bltodo"
     Then the bltodo command succeeds
     And the bltodo stdout contains "TODO file:"
-    And the bltodo stdout contains "# Story: Alpha"
+    And the bltodo stdout contains "# d - Story: Alpha"
     And the bltodo stdout contains "d - first task"
 
   Scenario: command uses BL_TODO_FILE content
@@ -37,7 +37,7 @@ Feature: bltodo command line support
     And BL_TODO_FILE points to that bltodo TODO file
     When I run bltodo command "bltodo"
     Then the bltodo command succeeds
-    And the bltodo stdout contains "# Story: Custom Source"
+    And the bltodo stdout contains "# d - Story: Custom Source"
     And the bltodo stdout contains "x - done task"
 
   Scenario: command fails when TODO file does not exist

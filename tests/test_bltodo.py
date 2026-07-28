@@ -105,4 +105,4 @@ def test_main_prints_todo_path_and_mdgbdf(monkeypatch, tmp_path: Path, capsys):
 
     assert exit_code == 0
     assert f"TODO file: {todo_file.resolve()}" in out
-    assert "# Story: Alpha" in out
+    assert "# d - Story: Alpha" in out

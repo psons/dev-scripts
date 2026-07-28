@@ -22,7 +22,7 @@ Feature: backlog command line support
     And BL_TODO_FILE points to that backlog TODO file
     When I run backlog command "backlog prioritized"
     Then the backlog command succeeds
-    And the backlog stdout contains "# Story: Prioritized Tasks"
+    And the backlog stdout contains "# d - Story: Prioritized Tasks"
     And the backlog stdout contains "d - first task"
 
   Scenario: prioritized supports json output
@@ -65,7 +65,7 @@ Feature: backlog command line support
     And BL_TODO_FILE points to that backlog TODO file
     When I run backlog command "backlog poptask"
     Then the backlog command succeeds
-    And the backlog stdout contains "# Story: Top Task"
+    And the backlog stdout contains "# d - Story: Top Task"
     And the backlog stdout contains "d - first task"
 
   Scenario: help prints command usage summary

@@ -6,6 +6,7 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 
 import pytest
@@ -124,15 +125,16 @@ def test_status_matched_heading_strips_story_prefix_from_story_name():
     assert stories[0].name == "Build parser"
 
 
-def test_story_prefix_heading_creates_story_without_tasks():
+def test_story_prefixed_non_h1_heading_is_preserved_in_file_scope_story():
     story_map, task_map = _status_maps()
     text = "## Story: Parser Boundary Behavior\nNo tasks yet.\n"
 
     stories = parse_stories_from_markdown(text, story_map, task_map)
 
     assert len(stories) == 1
-    assert stories[0].name == "Parser Boundary Behavior"
-    assert stories[0].status == StoryStatus.DO
+    assert stories[0].name == "file-input"
+    assert stories[0].status is None
+    assert stories[0].description == "## Story: Parser Boundary Behavior\nNo tasks yet."
     assert stories[0].tasks is None
 
 
@@ -403,7 +405,7 @@ def test_stories_to_markdown_writes_story_prefix_in_story_header():
 
     markdown = stories_to_markdown_text(stories, story_map, task_map)
 
-    assert "# Story: Build parser" in markdown
+    assert "# d - Story: Build parser" in markdown
 
 
 def test_stories_to_markdown_keeps_status_marker_for_non_do_story_status():
@@ -421,19 +423,57 @@ def test_stories_to_markdown_serializes_story_and_task_ids_in_frontmatter():
 
     markdown = stories_to_markdown_text(stories, story_map, task_map)
 
-    assert f"# Story: Build parser\n---\nid: {stories[0].id}\n---" in markdown
+    assert f"# d - Story: Build parser\n---\nid: {stories[0].id}\n---" in markdown
     assert stories[0].tasks is not None
     assert f"x - write tests\n---\nid: {stories[0].tasks[0].id}\n---" in markdown
 
 
-def test_stories_to_markdown_uses_story_prefix_for_informational_story_with_none_status():
+def test_stories_to_markdown_uses_plain_header_for_informational_story_with_none_status():
     story_map, task_map = _status_maps()
     story = gbdata.Story(id="story-1", name="Info Story", status=None, description="Context")
 
     markdown = stories_to_markdown_text([story], story_map, task_map)
 
-    assert "# Story: Info Story" in markdown
+    assert "# Info Story" in markdown
     assert "---\nid: story-1\n---" in markdown
+
+
+def test_stories_to_markdown_suppresses_first_story_header_for_file_input_story_name():
+    story_map, task_map = _status_maps()
+    stories = [
+        gbdata.Story(
+            id="story-file",
+            name="file-input",
+            status=None,
+            description="File-level intro",
+            tasks=[
+                gbdata.Task(
+                    id="task-1",
+                    status=TaskStatus.DO,
+                    name="bootstrap",
+                    detail=None,
+                    attributes=None,
+                )
+            ],
+            attributes={"fileFront": "meta"},
+        ),
+        gbdata.Story(
+            id="story-2",
+            name="Work Story",
+            status=StoryStatus.DO,
+            description=None,
+            tasks=None,
+            attributes=None,
+        ),
+    ]
+
+    markdown = stories_to_markdown_text(stories, story_map, task_map)
+
+    assert not markdown.startswith("# file-input")
+    assert "---\nid: story-file\nfileFront: meta\n---" in markdown
+    assert "File-level intro" in markdown
+    assert "d - bootstrap" in markdown
+    assert "# d - Story: Work Story" in markdown
 
 
 def test_story_attributes_are_parsed_and_roundtrip_in_markdown():
@@ -525,6 +565,26 @@ def test_parse_markdown_file_uses_filename_for_file_scope_story_name_with_frontm
     stories = parse_stories_from_markdown_file(md, story_map, task_map)
 
     assert stories[0].name == "file-some-work.md"
+
+
+def test_file_scope_frontmatter_delimiters_are_not_description_text(tmp_path: Path):
+    story_map, task_map = _status_maps()
+    md = tmp_path / "todo-test.md"
+    md.write_text(
+        "---\n"
+        "fileFront: at the top of file\n"
+        "---\n"
+        "\n"
+        "# Here is a section\n"
+        "It isn't a story.  Just a section\n",
+        encoding="utf-8",
+    )
+
+    stories = parse_stories_from_markdown_file(md, story_map, task_map)
+
+    assert stories[0].name == "file-todo-test.md"
+    assert stories[0].description is None
+    assert stories[0].attributes == {"fileFront": "at the top of file"}
 
 
 def test_task_frontmatter_yaml_dequotes_and_preserves_scalar_types():
@@ -682,7 +742,7 @@ def test_convert_json_file_to_markdown_accepts_story_without_status(tmp_path: Pa
 
     markdown = convert_json_file_to_markdown_text(src, story_map, task_map)
 
-    assert "# Story: Info Story" in markdown
+    assert "# Info Story" in markdown
     assert "owner: team-a" in markdown
 
 
@@ -734,3 +794,91 @@ def test_non_mdgbdf_delimited_block_is_preserved_in_story_description():
 
     assert len(stories) == 1
     assert stories[0].description == "---\n- not-a-mapping\n---\nContext line"
+
+
+def test_cli_tojson_reads_markdown_from_stdin_when_no_path() -> None:
+    markdown_text = "# d - Story: Build parser\nx - write tests\n"
+
+    result = subprocess.run(
+        [sys.executable, str(_bin_dir / "mdgbdata.py"), "tojson"],
+        input=markdown_text,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert isinstance(payload, list)
+    assert payload[0]["name"] == "Build parser"
+
+
+def test_cli_tomd_reads_json_from_stdin_when_no_path() -> None:
+    json_text = json.dumps(
+        [
+            {
+                "id": "11111111-1111-7111-8111-111111111111-aaaaaaaa",
+                "status": "do",
+                "name": "Build parser",
+                "tasks": [
+                    {
+                        "id": "22222222-2222-7222-8222-222222222222-bbbbbbbb",
+                        "status": "completed",
+                        "name": "write tests",
+                    }
+                ],
+            }
+        ]
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(_bin_dir / "mdgbdata.py"), "tomd"],
+        input=json_text,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "# d - Story: Build parser" in result.stdout
+    assert "x - write tests" in result.stdout
+
+
+def test_cli_tomd_suppresses_first_story_header_for_file_input_name() -> None:
+    json_text = json.dumps(
+        [
+            {
+                "id": "11111111-1111-7111-8111-111111111111-aaaaaaaa",
+                "name": "file-input",
+                "description": "File intro",
+                "attributes": {"fileFront": "meta"},
+                "tasks": [
+                    {
+                        "id": "22222222-2222-7222-8222-222222222222-bbbbbbbb",
+                        "status": "do",
+                        "name": "bootstrap",
+                    }
+                ],
+            },
+            {
+                "id": "33333333-3333-7333-8333-333333333333-cccccccc",
+                "status": "do",
+                "name": "Next story",
+            },
+        ]
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(_bin_dir / "mdgbdata.py"), "tomd"],
+        input=json_text,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert not result.stdout.startswith("# file-input")
+    assert "---\nid: 11111111-1111-7111-8111-111111111111-aaaaaaaa\nfileFront: meta\n---" in result.stdout
+    assert "File intro" in result.stdout
+    assert "d - bootstrap" in result.stdout
+    assert "# d - Story: Next story" in result.stdout
