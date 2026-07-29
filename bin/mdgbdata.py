@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Markdown parsing and serialization utilities for gb-data.
 
+The program name mdgbdata is a mnemonic that stands for *Mark Down / Goal Blotter Data* since it is a parser and serializer for the 'Markdown GB Data Form' (MDGBDF).
+
 Public API:
 - load_status_map: load status metadata from JSON files.
 - compile_status_patterns: compile status regexes for parsing.
@@ -348,6 +350,7 @@ def parse_stories_from_markdown(
     text: str,
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
+    work_stories_only: bool = False,
 ) -> list[Story]:
     """Parse stories and tasks from markdown text in a single pass."""
     if not text:
@@ -726,7 +729,9 @@ def parse_stories_from_markdown(
     if current_story_name is not None:
         finalize_story()
 
-    return stories
+    if not work_stories_only:
+        return stories
+    return [story for story in stories if story.status is not None or bool(story.tasks)]
 
 
 def parse_stories_from_markdown_file(
@@ -734,11 +739,17 @@ def parse_stories_from_markdown_file(
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
     encoding: str = "utf-8",
+    work_stories_only: bool = False,
 ) -> list[Story]:
     """Read a markdown file and parse story/task structures from it."""
     md_path = Path(path)
     text = md_path.read_text(encoding=encoding)
-    stories = parse_stories_from_markdown(text, story_status_map, task_status_map)
+    stories = parse_stories_from_markdown(
+        text,
+        story_status_map,
+        task_status_map,
+        work_stories_only=work_stories_only,
+    )
     if stories and stories[0].name == "file-input":
         stories[0] = Story(
             id=stories[0].id,
@@ -897,6 +908,10 @@ def _contains_markdown_structure(text: str, task_patterns: dict[TaskStatus, re.P
     return False
 
 
+def _filter_work_stories(stories: list[Story]) -> list[Story]:
+    return [story for story in stories if story.status is not None or bool(story.tasks)]
+
+
 def _render_markdown_story(
     story: Story,
     story_status_map: StoryStatusMap,
@@ -969,22 +984,34 @@ def convert_markdown_file_to_json_text(
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
     encoding: str = "utf-8",
+    work_stories_only: bool = False,
 ) -> str:
     """Convert a Markdown GB Data file to JSON text."""
     markdown_text = Path(path).read_text(encoding=encoding)
-    return convert_markdown_text_to_json_text(markdown_text, story_status_map, task_status_map)
+    return convert_markdown_text_to_json_text(
+        markdown_text,
+        story_status_map,
+        task_status_map,
+        work_stories_only=work_stories_only,
+    )
 
 
 def convert_markdown_text_to_json_text(
     markdown_text: str,
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
+    work_stories_only: bool = False,
 ) -> str:
     """Convert Markdown GB Data text to JSON text."""
     task_patterns = compile_status_patterns(task_status_map)
     if not _contains_markdown_structure(markdown_text, task_patterns):
         raise ValueError("Input file does not contain any markdown headers or tasks")
-    stories = parse_stories_from_markdown(markdown_text, story_status_map, task_status_map)
+    stories = parse_stories_from_markdown(
+        markdown_text,
+        story_status_map,
+        task_status_map,
+        work_stories_only=work_stories_only,
+    )
     return stories_to_json_text(stories)
 
 
@@ -993,23 +1020,31 @@ def convert_json_file_to_markdown_text(
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
     encoding: str = "utf-8",
+    work_stories_only: bool = False,
 ) -> str:
     """Convert a JSON file of Story objects to MDGBDF markdown text."""
-    return convert_json_text_to_markdown_text(Path(path).read_text(encoding=encoding), story_status_map, task_status_map)
+    return convert_json_text_to_markdown_text(
+        Path(path).read_text(encoding=encoding),
+        story_status_map,
+        task_status_map,
+        work_stories_only=work_stories_only,
+    )
 
 
 def convert_json_text_to_markdown_text(
     json_text: str,
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
+    work_stories_only: bool = False,
 ) -> str:
     """Convert JSON text of Story objects to MDGBDF markdown text."""
     stories = _stories_from_json_text(json_text)
+    if work_stories_only:
+        stories = _filter_work_stories(stories)
     return stories_to_markdown_text(stories, story_status_map, task_status_map)
 
 
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    """Parse mdgbdata command-line arguments."""
+def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="mdgbdata",
         description="Convert Markdown GB Data Form to and from JSON",
@@ -1018,12 +1053,62 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
     tojson_parser = subparsers.add_parser("tojson", help="Convert Markdown GB Data Form to JSON")
     tojson_parser.add_argument("path", nargs="?", help="Optional path to a Markdown GB Data Form file; reads stdin when omitted")
+    tojson_parser.add_argument(
+        "--work",
+        action="store_true",
+        help="Return only work stories (stories with status or tasks)",
+    )
 
     tomd_parser = subparsers.add_parser("tomd", help="Convert JSON to Markdown GB Data Form")
     tomd_parser.add_argument("path", nargs="?", help="Optional path to a JSON file; reads stdin when omitted")
+    tomd_parser.add_argument(
+        "--work",
+        action="store_true",
+        help="Return only work stories (stories with status or tasks)",
+    )
 
     subparsers.add_parser("help", help="Show command usage summary")
-    return parser.parse_args(argv)
+    return parser
+
+
+def _format_help_with_subcommands(parser: argparse.ArgumentParser) -> str:
+    sections = [parser.format_help().rstrip()]
+    subparser_action = next(
+        (action for action in parser._actions if isinstance(action, argparse._SubParsersAction)),
+        None,
+    )
+    if subparser_action is None:
+        return "\n\n".join(sections) + "\n"
+
+    for name in subparser_action.choices:
+        subparser = subparser_action.choices[name]
+        sections.append(subparser.format_help().rstrip())
+    return "\n\n".join(sections) + "\n"
+
+
+def _help_text() -> str:
+        return """mdgbdata - convert Markdown GB Data Form and JSON representations
+
+Subcommands:
+    help    Print this help message.
+
+    tojson  Convert Markdown GB Data Form (MDGBDF) to JSON.
+                    Reads from file path when provided, or stdin when path is omitted.
+
+                    Options:
+                        --work            Return only work stories (stories with status or tasks).
+
+    tomd    Convert JSON stories to Markdown GB Data Form (MDGBDF).
+                    Reads from file path when provided, or stdin when path is omitted.
+
+                    Options:
+                        --work            Return only work stories (stories with status or tasks).
+"""
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse mdgbdata command-line arguments."""
+    return _build_arg_parser().parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1034,28 +1119,40 @@ def main(argv: list[str] | None = None) -> int:
     task_status_map = load_status_map(repo_root / "docs/dev/spec/task_status_metadata.json", TaskStatus)
 
     if args.command in (None, "help"):
-        parser = argparse.ArgumentParser(
-            prog="mdgbdata",
-            description="Convert Markdown GB Data Form to and from JSON",
-        )
-        subparsers = parser.add_subparsers(dest="command")
-        subparsers.add_parser("tojson", help="Convert Markdown GB Data Form to JSON")
-        subparsers.add_parser("tomd", help="Convert JSON to Markdown GB Data Form")
-        subparsers.add_parser("help", help="Show command usage summary")
-        parser.print_help()
+        print(_help_text(), end="")
         return 0
 
     try:
         if args.command == "tojson":
             if args.path:
-                output_text = convert_markdown_file_to_json_text(args.path, story_status_map, task_status_map)
+                output_text = convert_markdown_file_to_json_text(
+                    args.path,
+                    story_status_map,
+                    task_status_map,
+                    work_stories_only=args.work,
+                )
             else:
-                output_text = convert_markdown_text_to_json_text(sys.stdin.read(), story_status_map, task_status_map)
+                output_text = convert_markdown_text_to_json_text(
+                    sys.stdin.read(),
+                    story_status_map,
+                    task_status_map,
+                    work_stories_only=args.work,
+                )
         elif args.command == "tomd":
             if args.path:
-                output_text = convert_json_file_to_markdown_text(args.path, story_status_map, task_status_map)
+                output_text = convert_json_file_to_markdown_text(
+                    args.path,
+                    story_status_map,
+                    task_status_map,
+                    work_stories_only=args.work,
+                )
             else:
-                output_text = convert_json_text_to_markdown_text(sys.stdin.read(), story_status_map, task_status_map)
+                output_text = convert_json_text_to_markdown_text(
+                    sys.stdin.read(),
+                    story_status_map,
+                    task_status_map,
+                    work_stories_only=args.work,
+                )
         else:
             raise ValueError(f"Unknown command: {args.command}")
     except (FileNotFoundError, ValueError, UnicodeDecodeError) as exc:

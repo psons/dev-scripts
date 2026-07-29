@@ -34,7 +34,8 @@ The module must:
   - write json given a file name and an ordered list of story objects  
   - write markdown given a file name and an ordered list of story objects  
   - return a list of story objects given a markdown file.  
-  - return a list of story objects given a JSON file.
+  - return a list of story objects given a JSON file.  
+  - allow optional filtering of story objects to include wonly ork stories for methods that return lists of stories.
 
 The format described in this document that will be read and written by `bin/mdgbdata.py` will be referred to in other specifications as 'Markdown GB Data Form' (MDGBDF).
 
@@ -56,7 +57,18 @@ tomd
 
 help
 
-    will print a command usage summary for all subcommands 
+   will print a command usage summary for all subcommands and subcommand options.
+
+   The help output must include every supported subcommand and, for each subcommand,
+   list all supported options for that subcommand.
+
+   Example requirement: if `--work` is supported by `tojson` and `tomd`, then help
+   output must show `--work` under both `tojson` and `tomd`.
+
+Subcommand options should be supported as follows:
+
+\--work   
+This sub command option should be supported for both the tojson and the tomd story listing sub commands to filter the list of stories so that it contains only work stories.
 
 ## Module Boundary
 

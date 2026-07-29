@@ -95,6 +95,29 @@ def test_pop_story_returns_top_priority_story(monkeypatch, tmp_path: Path):
     assert story.id == "story-a"
 
 
+def test_pop_story_skips_informational_story_and_returns_first_work_story(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    todo_file.write_text(
+        "# Notes\n"
+        "Just informational text\n"
+        "# d - Story: Alpha\n"
+        "---\n"
+        "id: story-a\n"
+        "---\n"
+        "d - first task\n"
+        "---\n"
+        "id: task-1\n"
+        "---\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    story = bltodo.pop_story()
+
+    assert story is not None
+    assert story.id == "story-a"
+
+
 def test_main_prints_todo_path_and_mdgbdf(monkeypatch, tmp_path: Path, capsys):
     todo_file = tmp_path / "sample.md"
     _write_todo(todo_file)

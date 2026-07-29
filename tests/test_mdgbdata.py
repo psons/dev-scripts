@@ -261,6 +261,29 @@ def test_non_pattern_h1_without_tasks_is_informational_story_with_none_status():
     assert stories[0].tasks is None
 
 
+def test_parse_stories_from_markdown_work_stories_only_filters_text_stories():
+    story_map, task_map = _status_maps()
+    text = "# Notes\ninformational\n# Story: Plan\nwork details\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map, work_stories_only=True)
+
+    assert len(stories) == 1
+    assert stories[0].name == "Plan"
+    assert stories[0].status == StoryStatus.DO
+
+
+def test_parse_stories_from_markdown_file_work_stories_only_filters_file_scope_text_story(tmp_path: Path):
+    story_map, task_map = _status_maps()
+    md = tmp_path / "mixed.md"
+    md.write_text("Preface text\n# d - Story: Work item\nx - task one\n", encoding="utf-8")
+
+    stories = parse_stories_from_markdown_file(md, story_map, task_map, work_stories_only=True)
+
+    assert len(stories) == 1
+    assert stories[0].name == "Work item"
+    assert stories[0].status == StoryStatus.DO
+
+
 def test_parse_markdown_file_with_no_h1_uses_file_prefixed_filename_for_file_scope_story(tmp_path: Path):
     story_map, task_map = _status_maps()
     md = tmp_path / "alpha-plan.md"
@@ -858,6 +881,29 @@ def test_cli_tojson_reads_markdown_from_stdin_when_no_path() -> None:
     assert payload[0]["name"] == "Build parser"
 
 
+def test_cli_tojson_work_filters_to_work_stories_from_stdin() -> None:
+    markdown_text = (
+        "# Notes\n"
+        "informational\n"
+        "# d - Story: Build parser\n"
+        "x - write tests\n"
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(_bin_dir / "mdgbdata.py"), "tojson", "--work"],
+        input=markdown_text,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert len(payload) == 1
+    assert payload[0]["name"] == "Build parser"
+    assert payload[0]["status"] == "do"
+
+
 def test_cli_tomd_reads_json_from_stdin_when_no_path() -> None:
     json_text = json.dumps(
         [
@@ -887,6 +933,35 @@ def test_cli_tomd_reads_json_from_stdin_when_no_path() -> None:
     assert result.returncode == 0, result.stderr
     assert "# d - Story: Build parser" in result.stdout
     assert "x - write tests" in result.stdout
+
+
+def test_cli_tomd_work_filters_to_work_stories_from_stdin() -> None:
+    json_text = json.dumps(
+        [
+            {
+                "id": "11111111-1111-7111-8111-111111111111-aaaaaaaa",
+                "name": "Info only",
+                "description": "informational",
+            },
+            {
+                "id": "33333333-3333-7333-8333-333333333333-cccccccc",
+                "status": "do",
+                "name": "Build parser",
+            },
+        ]
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(_bin_dir / "mdgbdata.py"), "tomd", "--work"],
+        input=json_text,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "# d - Story: Build parser" in result.stdout
+    assert "# Info only" not in result.stdout
 
 
 def test_cli_tomd_suppresses_first_story_header_for_file_input_name() -> None:
@@ -927,3 +1002,40 @@ def test_cli_tomd_suppresses_first_story_header_for_file_input_name() -> None:
     assert "File intro" in result.stdout
     assert "d - bootstrap" in result.stdout
     assert "# d - Story: Next story" in result.stdout
+
+
+def test_cli_subcommand_help_includes_work_option_for_tojson_and_tomd() -> None:
+    tojson_help = subprocess.run(
+        [sys.executable, str(_bin_dir / "mdgbdata.py"), "tojson", "--help"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    tomd_help = subprocess.run(
+        [sys.executable, str(_bin_dir / "mdgbdata.py"), "tomd", "--help"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert tojson_help.returncode == 0
+    assert tomd_help.returncode == 0
+    assert "--work" in tojson_help.stdout
+    assert "--work" in tomd_help.stdout
+
+
+def test_cli_help_subcommand_shows_all_subcommands_and_options() -> None:
+    result = subprocess.run(
+        [sys.executable, str(_bin_dir / "mdgbdata.py"), "help"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "mdgbdata - convert Markdown GB Data Form and JSON representations" in result.stdout
+    assert "Subcommands:" in result.stdout
+    assert "help    Print this help message." in result.stdout
+    assert "tojson  Convert Markdown GB Data Form (MDGBDF) to JSON." in result.stdout
+    assert "tomd    Convert JSON stories to Markdown GB Data Form (MDGBDF)." in result.stdout
+    assert result.stdout.count("--work") >= 2

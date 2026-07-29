@@ -73,7 +73,13 @@ def pop_task(todo_file: str | Path | None = None) -> Task | None:
 
 def pop_story(todo_file: str | Path | None = None) -> Story | None:
     """Return the highest-priority story, or a synthetic story for bare tasks."""
-    stories = load_todo_stories(todo_file)
+    story_map, task_map = _load_status_maps()
+    stories = mdgbdata.parse_stories_from_markdown_file(
+        resolve_todo_file(todo_file),
+        story_map,
+        task_map,
+        work_stories_only=True,
+    )
     if stories:
         return stories[0]
 

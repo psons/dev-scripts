@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Feat(mdgbdata): Enhance markdown parsing for 'Story:' markers,\
-  \ improve output format, consolidate docs, and add tests"
+"actualCommitMessage": "feat(mdgbdata, bltodo): Add --work option to filter active\
+  \ stories; improve CLI help & update tests/docs"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
+
 
 # Current work
 
@@ -18,13 +19,19 @@
 x - update the spec withe respect to the rules for round trip handling of the story marker.
 x - update the program
 prompt: update mdgbdata.py per the updated spec docs/dev/spec/mdgbdata-spec.md, particularly to treat headings with the story marker as work stories.
-d - implement an flag so bltodo can ask for only work stories
+x - implement an flag so bltodo can ask for only work stories
     - the logic for identifying work stories should stay encapsulated in mdgbdata.py
     - bltodo.py will use the flag to filter stories, for popstory
     - later when bltodo.py will update a story, it should be done by ID so that the distinction of being a work story does not matter.
-d - update use case documentation
+    x - update the spec docs/dev/spec/mdgbdata-spec.md
+    x - update the program mdgbdata.py per the updated spec docs/dev/spec/mdgbdata-spec.md
+    x - update the program mdgbdata.py per the updated spec docs/dev/spec/mdgbdata-spec.md for the new 'Command line Requirements' to support the new --work subcommand
+    x - update the docs/dev/spec/mdgbdata-spec.md to require that the help subcommand shows all subcommand and subcommand options.
+    x - per the updated spec docs/dev/spec/mdgbdata-spec.md for the new 'Command line Requirements' update the help subcommand behavior
+d - update use case documentation per comment in the google doc version of the spec.
 d - update help text in bltodo.py
  - bltodo.py has knowledge of work queue management and is closer to the user, whereas mdgbdata.py is just a parser / serializer.
+    - Text in the TODO file will be ignored doe heading sections that do not represnt work stories. 
  - users would interact with mdgbdata.py rarely if ever.  
 
 # Completed work
@@ -95,6 +102,15 @@ x - verify / support reading the form front-matter
 
 
 # Work Summary
+
+## 2026-07-29 15:10
+
+---
+workHeadline: "feat(mdgbdata, bltodo): Add --work option to filter active stories; improve CLI help & update tests/docs"
+---
+
+This change introduces a `--work` option to the `mdgbdata` tool, allowing users to filter story lists to include only "work stories"—those with an assigned status or associated tasks. This filtering capability has been integrated into `mdgbdata.py`'s parsing and conversion functions, as well as the `bltodo.py` script's `pop_story` function to ensure only active work items are prioritized. Additionally, the CLI's help output has been significantly enhanced to provide a more comprehensive overview of all subcommands and their options, improving discoverability for this new feature. Corresponding tests were added in `test_bltodo.py` and `test_mdgbdata.py` to validate the new filtering logic and the updated help command, and the `mdgbdata-spec.md` documentation was updated to reflect these changes.
+
 
 ## 2026-07-29 13:13
 
