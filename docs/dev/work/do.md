@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat(mdgbdata, bltodo): Add --work option to filter active\
-  \ stories; improve CLI help & update tests/docs"
+"actualCommitMessage": "feat(dtask): Relocate story for `pop` subcommand from TODO.md\
+  \ to do.md, formalize spec"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -10,9 +10,36 @@
 ---
 
 
+
 # Current work
 
-# / - mdgbdata.py or bltodo.py should only return work stories 
+# / - story: dtask integration with backlog.py
+/ - early version of dtask pop which does not remove content from the backlog
+    d - update dtask with a pop subcommand that reads 1 story by default from backlog.py and inserts it at the top of do.md, below the front-matter.
+    - refer to the plugin api in docs/dev/spec/backlog-spec.md 
+        / - update the spec docs/dev/spec/dtask-spec.md
+         - [dtask spec](../spec//dtask-spec.md#pop-subcommand)
+        / - update the program.
+
+
+d - add a '--number (-n) n' option to take more than 1 Story or task object.  
+ - possibly don't do this
+
+d - add a --task option to `dtask pop` to just 1 task instead of a whole story.
+ - possibly don't do this
+ ### analysis
+ popping a single task creates focus, whereas seeing the whole story lends context and helps avoid overlap in the way things are written.
+ ### judgement 
+ favor popping the whole story.  Allow the focus to come via the act of marking a single task as in progress '/', and likely adding prompts or elaboration
+
+## limitations and assumptions 
+Data in the TODO.md that is not part of a Task or Story will may be lost subject to the progress on support for DDF, todo.md, linking back to backlogs, and placeholders in the backlog.
+ - this assumption avoids the need to build document preserving functionality in what I am calling for the future Dev Description Format (DDF). docs/dev/spec/adr/dev-description-format.md
+ - This simplifying assumption avoids the situation where users would see the same object in two files with possibly different state.
+ - Take together with the previous assumption, it means state for the TODO list can be manipulated as objects in memory and written back to the TODO.md file in new state.   
+
+
+# / - story: mdgbdata.py or bltodo.py should only return work stories 
  - presently, stories tagged with the string "story:" are not considered work stories if they do not have a status or tasks. 
     - need to reverse this decision, but make sure text stories do not get flagged as 'story:'
         - do it by adding a status if the story marker is present.
@@ -95,13 +122,21 @@ x - support writing attributes in formal markdown as YAML
 
 x - verify / support reading the form front-matter
 
-# - avoid anonymous-story as an id
+# - avoid 'anonymous-story' as an id
  - assure that Story objects always have IDS that exist for their life time.
  x - update the spec
  x - prompt: update mdgbdata.py and tests to conform with the update in the '### ID Generation' section of docs/dev/spec/mdgbdata-spec.md.
 
 
 # Work Summary
+
+## 2026-07-29 15:53
+
+---
+workHeadline: "feat(dtask): Relocate story for `pop` subcommand from TODO.md to do.md, formalize spec"
+---
+
+This change adds documentation for the `dtask pop` subcommand. The story for `dtask pop`, previously outlined in `TODO.md`, has been moved to `do.md`as "/ - story: dtask integration with backlog.py." The `dtask-spec.md` file was updated to formally define the `pop` subcommand's behavior, including how it integrates with `backlog.py` and handles the `do.md` file. This move prepares the `dtask pop` feature for implementation by placing its work details in `do.md` and codifying its specification.
 
 ## 2026-07-29 15:10
 

@@ -77,6 +77,7 @@ The 'intendedCommitMessage:' is a message that the engineer believes when starti
 
 The 'actualCommitMessage:' is the commit message to be used when the work is finally committed.  Since definition and understanding of a task often changes during work, the actualCommitMessages is likely to be different than the intendedCommitMessage.   The difference between the two can represent learning worth mention in the sprint retrospective.
 
+# subcommands
 The dtask command supports the following subcommands:
 
 help - prints a list of the sub commands and a description of each.
@@ -102,6 +103,8 @@ commit - add a commit on workBranch using the do.md actualCommitMessage.  If the
     -a same as --actual
 
     --final signals that the task is complete.  dtask commit --final performs two commits: first, all unstaged files are staged and committed using the actualCommitMessage; second, the do.md file is removed and an additional commit is made with a commit message of 'remove do.md'.  This leaves the working tree ready for a new task cycle starting with dtask init.
+
+pop - add the top story and its tasks from the backlog.py module to the '# Current work' section of do.md.
 
 ## clarification 2026-05-18
 Ensure that if do.md is updated in any way by dtask, ensure that it is saved and added to the working set before making the commit. In particular, the --actual flag updates the actualCommitMessage and requires that do.md be written and added to the working set before the commit.
@@ -298,3 +301,11 @@ verification checks:
 - `git status --short`
 
 
+# pop subcommand
+Implement the pop subcommand per the '# subcommands' section above.
+
+dtask should source backlog.py as a module to invoke the underlying function that implements popstory to return mdgbdf text.
+The mdgbdf text should be inserted atr the top of the '# current work' section of do.md.
+If do.md does not exist, dtask should exit with an error indicating that do.md should be created with `dtask init`. 
+If do.md exists, but does not contain a '# current work' section, then a '# current work' section should be created after any existing file front-matter.
+The output of the help subcommand should be updated to include the pop subcommand.
