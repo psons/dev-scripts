@@ -1,5 +1,7 @@
 # mdgbdata.py Code-Ready Specification (Markdown Parsing)
 
+This file is sourced from [mdgbdata-spec2.md](https://docs.google.com/document/d/1iWvy8uXUjdXeP8fiCUUDMa2l0Q4_faTkCTf2l0f_F78/edit?usp=sharing) to be downloaded to {repo:devscripts}/docs/dev/spec/mdgbdata-spec2.md 
+
 ## Purpose
 
 ### Sources
@@ -200,7 +202,7 @@ All markdown behavior required for implementation is specified below.
 
 ***definition:*** Story marker \-  the pattern \`\[Ss\]tory:\\W\*\`
 
-***definition:*** Story status pattern any pattern string listed as a pst\_str attribute in `docs/dev/spec/story_status_metadata.json`  
+***definition:*** Story status pattern any pattern string listed as a pat\_str attribute in `docs/dev/spec/story_status_metadata.json`  
    
 ***definition***: work story \- any Story that has a status or tasks.
 
@@ -212,8 +214,9 @@ Any markdown H1 line starts a new story. (For full document preservation, every 
 
 The story is a Work Story when any of these are true:
 
-1. It matches a story status pattern after heading markers.  
-2. It is a markdown heading at level 1 and contains tasks below it (even if it has no Story status pattern and no story marker)
+1. It has a header that matches the story marker.  
+2. It matches a story status pattern after heading markers.  
+3. It is a markdown heading at level 1 and contains tasks below it (even if it has no Story status pattern and no story marker)
 
 Interpretation details:
 
@@ -230,16 +233,20 @@ For Work Stories:
 - Story `name` is heading content that remains after the removal of   
   - the markdown header ‘\#’ symbols  
   - the status pattern match  
-  - the Story marker.
+  - the Story marker.  
+- For the corner case where there is no heading because the story is the file scope story and the story is a ‘work story’ because it has tasks, set the status to `None.`
 
-For non-pattern stories:
+For Text Stories:
 
-- `name` is normalized heading text (trimmed; preserve internal spacing).  
-- Work stories default status to `StoryStatus.DO`.  
-- If no status pattern is detected and no tasks are present, `status` must remain `None`.  
-- This includes the corner case where a heading is promoted to a story only because it contains task lines.
+- `name` is normalized heading text (trimmed; preserve internal spacing).
 
-Story-level ad hoc metadata must be supported:
+##### Summary of Round trip handling of the story marker.
+
+- Rules specified elsewhere in this document work together so that the  
+-  story marker is not lost on stories, even though the story marker is not stored internally.   
+  - if a story marker was found, a status will be set to a default even if it is not present in the header.  The presence of a status in the model object will cause the story marker to be included when the story is serialized.
+
+#### Story-level ad hoc metadata must be supported:
 
 - Any attribute key not mapped to an explicit `Story` field is stored in `Story.attributes`.  
 - Story attributes follow the same informal `key: value` and formal front-matter parsing rules used for task attributes, scoped to the current story.
@@ -281,9 +288,9 @@ object front-matter \- a block of text that is
 - delimited by lines matching the regex '`^---\W*$`'   
 - as the first line excluding the header of a Story or a Task
 
-  Object frontmatter is to be interpreted as YAML
+  Object front-matter is to be interpreted as YAML
 
-***definition***: parsed object frontmatter \- object frontmatter that is used for properties and attributes and is removed from text used for description or detail fields 
+***definition***: parsed object front-matter \- object front-matter that is used for properties and attributes and is removed from text used for description or detail fields 
 
 object front-matter following sections lower than H1 (H2-H6) is retained as part of the text of the description property for the containing Story or Task.
 
@@ -337,7 +344,7 @@ A line starts a new task when all are true:
 
 1. The line is at the left margin (no leading spaces or tabs).  
 2. Line matches one of the task status patterns.  
-3. Parser is currently within an active H1-rooted story scope, or within an H1-H6 heading scope that must be promoted to a story per Story Header Detection item 2, or within file-scope story context (including files with no H1 heading).
+3. Parser is currently within an active H1-rooted story scope that must be promoted to a story per Story Header Detection item 2, or within file-scope story context (including files with no H1 heading).
 
 If a task-status line is encountered under an H1 heading that has not yet been materialized as a story, that heading must first be promoted to a `Story` (default `StoryStatus.DO` for non-pattern headings), and the line must then be treated as a task header within that story. If task-status lines occur without any H1 heading, they must be attached to the file-scope story.
 
@@ -347,7 +354,7 @@ Non-task-like indented lines must be treated as detail text, never as a task hea
 
 - `status` is detected via task status pattern match.  
 - `name` is the task line with status prefix removed.  
-- `detail` is all subsequent lines excluding parsed object frontmatter, until one of:  
+- `detail` is all subsequent lines excluding parsed object front-matter, until one of:  
   - a new task header,  
   - a new story boundary,  
   - a heading at the same or higher level than the current story.  
@@ -434,7 +441,7 @@ For the following, a file named some-work.md with the markdown text shown below 
 
 ##### 
 
-#### Formal Markdown Output Rules
+#### Formal Markdown Output Rules for properties and attributes
 
 When properties or attributes are serialized as markdown, they must be written as YAML front-matter using the object front-matter rules above.
 
@@ -515,7 +522,7 @@ The header for text stories when parsed from markdown
 - should not change when re-serialized to markdown  
 - should yield a json object that will serialize to the original markdown unchanged.
 
-If the first story in a list to be serialized has the special name "file-input", then do not write the story header in serialized output.  The intent of this feature is so that any frontmatter still follows the standard file frontmatter rules that other parsers may be using.
+If the first story in a list to be serialized has the special name "file-input", then do not write the story header in serialized output.  The intent of this feature is so that any front-matter still follows the standard file front-matter rules that other parsers may be using.
 
 ## JSON Mapping Contract
 
@@ -575,7 +582,9 @@ Parser robustness rules:
 - Keep parsing algorithm single-pass over input lines (`O(n)`).  
 - Avoid recursive parser design; use explicit state variables.  
 - Compile regex once per parse call.  
-- Import domain classes from `gbdata.py`; do not duplicate dataclass definitions.
+- Import domain classes from `gbdata.py`; do not duplicate dataclass definitions.  
+- include this doc string for the file:  
+  - “The program name mdgbdata is a mnemonic that stands for *Mark Down / Goal Blotter Data* since it is a parser and serializer for the 'Markdown GB Data Form' (MDGBDF)”
 
 ## Test Requirements for `tests/`
 

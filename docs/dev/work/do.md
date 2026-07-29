@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat(mdgbdata): Enhance stdin/stdout/file processing; refine\
-  \ markdown serialization, parsing & round-trip conversion"
+"actualCommitMessage": "Feat(mdgbdata): Enhance markdown parsing for 'Story:' markers,\
+  \ improve output format, consolidate docs, and add tests"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -9,9 +9,23 @@
 "workBranch": "dtask-pop"
 ---
 
+# Current work
 
-
-This text is part of the file-scoped story description
+# / - mdgbdata.py or bltodo.py should only return work stories 
+ - presently, stories tagged with the string "story:" are not considered work stories if they do not have a status or tasks. 
+    - need to reverse this decision, but make sure text stories do not get flagged as 'story:'
+        - do it by adding a status if the story marker is present.
+x - update the spec withe respect to the rules for round trip handling of the story marker.
+x - update the program
+prompt: update mdgbdata.py per the updated spec docs/dev/spec/mdgbdata-spec.md, particularly to treat headings with the story marker as work stories.
+d - implement an flag so bltodo can ask for only work stories
+    - the logic for identifying work stories should stay encapsulated in mdgbdata.py
+    - bltodo.py will use the flag to filter stories, for popstory
+    - later when bltodo.py will update a story, it should be done by ID so that the distinction of being a work story does not matter.
+d - update use case documentation
+d - update help text in bltodo.py
+ - bltodo.py has knowledge of work queue management and is closer to the user, whereas mdgbdata.py is just a parser / serializer.
+ - users would interact with mdgbdata.py rarely if ever.  
 
 # Completed work
 
@@ -39,18 +53,21 @@ x - review the AI output from generating mdgbdata.py
 x - regenerate mdgbdata.py per the spec docs/dev/spec/mdgbdata-spec.md, and update tests.
 prompt2: re-read the docs/dev/spec/mdgbdata-spec.md to set the file-scope story name according to the example and get rid of the extra quoting level when keys are quoted YAML and stored story attributes.
 
-/ - update spec and code so that front-matter is not stripped out of sections that are not stories.
-
+x - update spec and code so that front-matter is not stripped out of sections that are not stories.
 
 x - do some manual testing of mdgbdata.py
 
-x - fix excessive quoting of front-matter is that is keeping quotes in the key names and values  read from markdown . Use the same YAML library as the dtask script. Update spec program and tests.
+x - mdgbdata.py - fix excessive quoting of front-matter is that is keeping quotes in the key names and values  read from markdown . Use the same YAML library as the dtask script. Update spec program and tests.
+ - though marked as complet, there are still some issies with multiline frontmatter being separated.   For now, TODO.md does not support multi line front-matter
  
-x - Use "file-{the input file name}" instead of "(file)" when naming a file scope story.  Update spec program and tests.
+x - mdgbdata.py Use "file-{the input file name}" instead of "(file)" when naming a file scope story.  Update spec program and tests.
 
-d - add blank lines between tasks in serialized output for cleaner viewing.
+x - mdgbdata.py add blank lines between tasks in serialized output for cleaner viewing.
+ x - update the spec.
+ x - update the program.
+ prompt: update mdgbdata.py to conform to the new additions to the spec docs/dev/spec/mdgbdata-spec2.md at lines 520 to 524.
 
-## story: support story attributes in tasks
+## x - story: support story attributes in tasks
 Proceed with work to support attributes in tasks, such as the story id and title.
 This is in a state of partial specification, and specs need to be cleaned up with respect 
 to abandoned work to support task level popping from backlog.py -> bltodo.py
@@ -77,8 +94,15 @@ x - verify / support reading the form front-matter
  x - prompt: update mdgbdata.py and tests to conform with the update in the '### ID Generation' section of docs/dev/spec/mdgbdata-spec.md.
 
 
-
 # Work Summary
+
+## 2026-07-29 13:13
+
+---
+workHeadline: "Feat(mdgbdata): Enhance markdown parsing for 'Story:' markers, improve output format, consolidate docs, and add tests"
+---
+
+The `mdgbdata.py` script was updated to enhance its markdown parsing by recognizing explicit "Story:" markers in headings, automatically assigning a 'do' status, and ensuring these are correctly serialized. The script's markdown output now includes blank lines between tasks and two blank lines between stories for improved readability. Accompanying these code changes, older, fragmented specification documents for `mdgbdata.py` were replaced with a single, consolidated `mdgbdata-spec.md`, which details the new parsing and serialization rules. Documentation in `backlog-spec.md`, `TODO.md`, and `do.md` was updated to clarify pending work related to `dtask` and `bltodo.py` integration. New unit tests were added to confirm the correct implementation of the story marker logic and the new serialization formatting.
 
 ## 2026-07-28 17:09
 

@@ -56,6 +56,7 @@ class MdgbdataCommandResult:
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
 _WS_RE = re.compile(r"\s+")
 _ATTRIBUTE_RE = re.compile(r"^(\S+):\s*(.*)$")
+_STORY_MARKER_RE = re.compile(r"(?i:^story:\W*)")
 _FRONTMATTER_DELIM = "---"
 _STORY_FORMAL_KEYS = {"id", "status", "name", "description", "maxTasks"}
 _TASK_FORMAL_KEYS = {"id", "status", "name", "detail"}
@@ -292,6 +293,14 @@ def _strip_story_prefix(text: str) -> str:
     if match is None:
         return text.strip()
     return match.group(1).strip()
+
+
+def _has_story_marker(text: str) -> bool:
+    return _STORY_MARKER_RE.match(text) is not None
+
+
+def _story_heading_name(text: str) -> str:
+    return _strip_story_prefix(text)
 
 
 def _task_header_status(
@@ -564,7 +573,10 @@ def parse_stories_from_markdown(
                 continue
 
             if heading_level == 1:
-                start_story(heading_text, None, heading_level)
+                if _has_story_marker(heading_text):
+                    start_story(_story_heading_name(heading_text), StoryStatus.DO, heading_level)
+                else:
+                    start_story(heading_text, None, heading_level)
                 continue
 
             pending_heading_level = heading_level
@@ -622,8 +634,9 @@ def parse_stories_from_markdown(
         if task_status is not None:
             if current_story_name is None:
                 if pending_heading_text is not None and pending_heading_level is not None:
+                    pending_story_name = _story_heading_name(pending_heading_text)
                     start_story(
-                        pending_heading_text,
+                        pending_story_name,
                         StoryStatus.DO,
                         pending_heading_level,
                         initial_description_lines=pending_heading_description_lines,
@@ -910,7 +923,10 @@ def _render_markdown_story(
     if story.description:
         lines.extend(story.description.splitlines())
     if story.tasks:
-        for task in story.tasks:
+        lines.append("")
+        for task_index, task in enumerate(story.tasks):
+            if task_index > 0:
+                lines.append("")
             task_entry = _task_status_entry(task.status, task_status_map)
             lines.append(f"{task_entry.val} - {task.name}")
             task_frontmatter: dict[str, object] = {"id": task.id}
@@ -932,9 +948,8 @@ def stories_to_markdown_text(
 ) -> str:
     """Serialize Story objects to MDGBDF markdown text."""
     lines: list[str] = []
+    total_stories = len(stories)
     for index, story in enumerate(stories):
-        if index > 0:
-            lines.append("")
         suppress_header = index == 0 and story.name == "file-input"
         lines.extend(
             _render_markdown_story(
@@ -944,6 +959,8 @@ def stories_to_markdown_text(
                 suppress_header=suppress_header,
             )
         )
+        if index < total_stories - 1:
+            lines.extend(["", ""])
     return "\n".join(lines).rstrip() + ("\n" if lines else "")
 
 

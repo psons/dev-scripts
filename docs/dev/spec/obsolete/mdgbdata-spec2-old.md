@@ -40,17 +40,17 @@ The format described in this document that will be read and written by `bin/mdgb
 
 Commandline support should be provided by `bin/mdgbdata.py`for the following sub commands:
 
-tojson 
+tojson
 
-    will read a file whose path is given as a command line argument and is presumed to be 'Markdown GB Data Form' and output JSON text representing a list of stories possibly containing tasks conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json
+   will read a file whose path is given as a command line argument, or is read from stdin if no path argument is given, and is presumed to be 'Markdown GB Data Form' and output JSON text representing a list of stories possibly containing tasks conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json
 
-    If the input file does not contain any markdown headers or tasks, raise an error 
+   If the input file does not contain any markdown headers or tasks, raise an error
 
-tomd 
+tomd
 
-    will read a file whose path is given as a command line argument and is presumed to be json conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json and output Markdown GB Data Form' (MDGBDF)'
+   will read a file whose path is given as a command line argument, or is read from stdin if no path argument is given, and is presumed to be json conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json and output Markdown GB Data Form' (MDGBDF)'
 
-    if the input file is not valid json, raise an error.  
+   if the input file is not valid json, raise an error. 
 
 help
 
@@ -212,9 +212,8 @@ Any markdown H1 line starts a new story. (For full document preservation, every 
 
 The story is a Work Story when any of these are true:
 
-1. It matches the story marker after heading markers.  
-2. It matches a story status pattern after heading markers.  
-3. It is a markdown heading at level 1 and contains tasks below it (even if it has no Story status pattern and no story marker
+1. It matches a story status pattern after heading markers.  
+2. It is a markdown heading at level 1 and contains tasks below it (even if it has no Story status pattern and no story marker)
 
 Interpretation details:
 
@@ -244,12 +243,6 @@ Story-level ad hoc metadata must be supported:
 
 - Any attribute key not mapped to an explicit `Story` field is stored in `Story.attributes`.  
 - Story attributes follow the same informal `key: value` and formal front-matter parsing rules used for task attributes, scoped to the current story.
-
-When serializing stories to MDGBDF:
-
-- Use heading level 1 for each serialized story.  
-- If `Story.status is None` or `Story.status == StoryStatus.DO`, write header as: `# Story: <name>`  
-- Otherwise write header as: `# <status_val> - Story: <name>` where `<status_val>` is the `val` shorthand from story status metadata.
 
 #### Story Description
 
@@ -344,7 +337,7 @@ A line starts a new task when all are true:
 
 1. The line is at the left margin (no leading spaces or tabs).  
 2. Line matches one of the task status patterns.  
-3. Parser is currently within an active H1-rooted story scope, or within an H1-H6 heading scope that must be promoted to a story per Story Header Detection item 2, or within file-scope story context (including files with no H1 heading).
+3. Parser is currently within an active H1-rooted story scope that must be promoted to a story per Story Header Detection item 2, or within file-scope story context (including files with no H1 heading).
 
 If a task-status line is encountered under an H1 heading that has not yet been materialized as a story, that heading must first be promoted to a `Story` (default `StoryStatus.DO` for non-pattern headings), and the line must then be treated as a task header within that story. If task-status lines occur without any H1 heading, they must be attached to the file-scope story.
 
@@ -506,6 +499,28 @@ Normalization for hash input:
 - Strip outer whitespace.  
 - Collapse internal whitespace runs to a single space.  
 - Keep case as-is.
+
+## Markdown Serialization
+
+When serializing stories to MDGBDF:
+
+- Use heading level 1 for each serialized story.  
+- If a story is a text story, do not write the `Story:` string into the header.   
+- If a story is a work story, write header as: `# <status_val> - Story:` where   
+  - `<status_val>` is the `val` shorthand from story status metadata.  
+  - `<name>` is the value of the story name property.
+
+The header for text stories when parsed from markdown 
+
+- should not change when re-serialized to markdown  
+- should yield a json object that will serialize to the original markdown unchanged.
+
+If the first story in a list to be serialized has the special name "file-input", then do not write the story header in serialized output.  The intent of this feature is so that any frontmatter still follows the standard file frontmatter rules that other parsers may be using.
+
+In serialized output
+ - place a blank line between consecutive tasks 
+ - place a blank line before the first task in a story
+ - place 2 blank lines after any story except the last story in the list.
 
 ## JSON Mapping Contract
 

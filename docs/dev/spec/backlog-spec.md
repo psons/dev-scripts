@@ -20,7 +20,7 @@ If the --provider flag is not present, use a string value from the environment s
 If BACKLOG_PROVIDER is not set, default to bltodo.
 
 #### Planning Roadmap:
-The default plugin 
+The default plugin is Todo as bltodo.py
 ##### Future Plugins
 Other possible future plugins are to implement the backlog protocols against:
  - Taskwarrior as bltw.py
@@ -43,9 +43,12 @@ These plugin protocols are not to be implemented yet, but are enumerated here fo
 
 * UpdateTask implements update_task which finds the task with the same id as the task argument and replaces it in the backlog attribute by attribute.  The previous state will be save in some TBD way.
 
-* UpdateStory implements update_story which finds the Story with same id as the required Story argument and replaces it in the backlog attribute by attribute including the full list of stories.  The previous state will be save in some TBD way.
+* UpdateStory implements update_story which finds the Story with same id as the required Story argument and replaces it in the backlog attribute by attribute including the full list of tasks.  The previous state will be save in some TBD way.
 
-* Load implements load, which takes a required URL argument of which defaults to the protocol and syntax forms supported by the plugin.  Load defaults rto the file:: protocol and the bltodo.py plugin.    portion of the URL if no protocol is specified, and  
+d - update this spec to say what the load function does. Does it find the story or task by id?  Ir is it to load a local file system cache such as TODO.md
+-/t
+
+* Load implements load, which takes a required URL argument of which defaults to the protocol and syntax forms supported by the plugin.  Load defaults to the file:: protocol and the bltodo.py plugin.    If no protocol of the URL exist, defaults and environment settings will exist to perform the load function  
 
 ## subcommands of backlog.py 
 The subcommands output the data from the corresponding protocol methods according to the following options:
@@ -73,9 +76,9 @@ The path to the todo file can be set using and environment variable BL_TODO_FILE
 
 If BL_TODO_FILE is not set, default to the path relative to the running program file ../docs/dev/work/TODO.md.
 
-unit tests should be provided that do not read or write the ocs/dev/work/TODO.md file in the source repository.
+unit tests should be provided that do not read or write the docs/dev/work/TODO.md file in the source repository.
 
-bltodo.py provides an API function for each  of the 'Backlog Plugin Protocols' supported by backlog.py
+plugin api: bltodo.py provides an API function for each  of the 'Backlog Plugin Protocols' supported by backlog.py
 
 bltodo.py when executed as a command:
  - reports the full absolute path for the TODO file it is using on stdout.

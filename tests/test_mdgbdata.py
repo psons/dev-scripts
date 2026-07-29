@@ -345,6 +345,18 @@ def test_informal_story_property_lines_map_to_formal_properties():
     assert stories[0].attributes is None
 
 
+def test_story_marker_heading_creates_work_story_with_default_do_status():
+    story_map, task_map = _status_maps()
+    text = "# Story: Plan\nContext line\n"
+
+    stories = parse_stories_from_markdown(text, story_map, task_map)
+
+    assert len(stories) == 1
+    assert stories[0].name == "Plan"
+    assert stories[0].status == StoryStatus.DO
+    assert stories[0].description == "Context line"
+
+
 def test_informal_task_property_lines_map_to_formal_properties():
     story_map, task_map = _status_maps()
     text = (
@@ -426,6 +438,39 @@ def test_stories_to_markdown_serializes_story_and_task_ids_in_frontmatter():
     assert f"# d - Story: Build parser\n---\nid: {stories[0].id}\n---" in markdown
     assert stories[0].tasks is not None
     assert f"x - write tests\n---\nid: {stories[0].tasks[0].id}\n---" in markdown
+
+
+def test_stories_to_markdown_places_blank_lines_before_and_between_tasks():
+    story_map, task_map = _status_maps()
+    story = gbdata.Story(
+        id="story-1",
+        status=StoryStatus.DO,
+        name="Story One",
+        description="Intro",
+        maxTasks=None,
+        tasks=[
+            gbdata.Task(id="task-1", status=TaskStatus.DO, name="Task One", detail=None, attributes=None),
+            gbdata.Task(id="task-2", status=TaskStatus.COMPLETED, name="Task Two", detail=None, attributes=None),
+        ],
+        attributes=None,
+    )
+
+    markdown = stories_to_markdown_text([story], story_map, task_map)
+
+    assert "Intro\n\nd - Task One" in markdown
+    assert "d - Task One\n---\nid: task-1\n---\n\nx - Task Two" in markdown
+
+
+def test_stories_to_markdown_places_two_blank_lines_between_stories():
+    story_map, task_map = _status_maps()
+    stories = [
+        gbdata.Story(id="story-1", status=StoryStatus.DO, name="First", tasks=None, description=None),
+        gbdata.Story(id="story-2", status=StoryStatus.DO, name="Second", tasks=None, description=None),
+    ]
+
+    markdown = stories_to_markdown_text(stories, story_map, task_map)
+
+    assert "# d - Story: First\n---\nid: story-1\n---\n\n\n# d - Story: Second" in markdown
 
 
 def test_stories_to_markdown_uses_plain_header_for_informational_story_with_none_status():
