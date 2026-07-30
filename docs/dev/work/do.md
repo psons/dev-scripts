@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat(dtask): Relocate story for `pop` subcommand from TODO.md\
-  \ to do.md, formalize spec"
+"actualCommitMessage": "Feat: Add `dtask pop` for backlog integration into `do.md`,\
+  \ with `# Current work` section creation; remove obsolete spec"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -11,21 +11,23 @@
 
 
 
+
 # Current work
 
 # / - story: dtask integration with backlog.py
-/ - early version of dtask pop which does not remove content from the backlog
-    d - update dtask with a pop subcommand that reads 1 story by default from backlog.py and inserts it at the top of do.md, below the front-matter.
+x - early version of dtask pop which does not remove content from the backlog
+    x - update dtask with a pop subcommand that reads 1 story by default from backlog.py and inserts it at the top of do.md, below the front-matter.
     - refer to the plugin api in docs/dev/spec/backlog-spec.md 
         / - update the spec docs/dev/spec/dtask-spec.md
          - [dtask spec](../spec//dtask-spec.md#pop-subcommand)
         / - update the program.
+        prompt: implement the pop subcommand per ../spec//dtask-spec.md#pop-subcommand.
 
 
-d - add a '--number (-n) n' option to take more than 1 Story or task object.  
+a - add a '--number (-n) n' option to take more than 1 Story or task object.  
  - possibly don't do this
 
-d - add a --task option to `dtask pop` to just 1 task instead of a whole story.
+a - add a --task option to `dtask pop` to just 1 task instead of a whole story.
  - possibly don't do this
  ### analysis
  popping a single task creates focus, whereas seeing the whole story lends context and helps avoid overlap in the way things are written.
@@ -34,9 +36,13 @@ d - add a --task option to `dtask pop` to just 1 task instead of a whole story.
 
 ## limitations and assumptions 
 Data in the TODO.md that is not part of a Task or Story will may be lost subject to the progress on support for DDF, todo.md, linking back to backlogs, and placeholders in the backlog.
- - this assumption avoids the need to build document preserving functionality in what I am calling for the future Dev Description Format (DDF). docs/dev/spec/adr/dev-description-format.md
- - This simplifying assumption avoids the situation where users would see the same object in two files with possibly different state.
- - Take together with the previous assumption, it means state for the TODO list can be manipulated as objects in memory and written back to the TODO.md file in new state.   
+ - this feature avoids the need to build document preserving functionality.  The document preserving  in what I am calling for the future Dev Description Format (DDF). docs/dev/spec/adr/dev-description-format.md
+
+d - remove the popped story from the backlog file
+ - This feature avoids the situation where users would need to maintain the same Story in two files.
+ - Take together with the previous assumption, it means state for the TODO list can be manipulated as objects in memory and written back to the TODO.md file in new state.
+    d - add a feature to strip the id: attributes upon serialization by mdgbdata.py.   This avoids unnecessary noise in te TODO.md if there is no write back to the backlog.
+        d - include a feature to eliminate the front-matter section if there are no attributes to write into it.
 
 
 # / - story: mdgbdata.py or bltodo.py should only return work stories 
@@ -130,6 +136,13 @@ x - verify / support reading the form front-matter
 
 # Work Summary
 
+## 2026-07-29 20:43
+
+---
+workHeadline: "Feat: Add `dtask pop` for backlog integration into `do.md`, with `# Current work` section creation; remove obsolete spec"
+---
+
+This update introduces a new `pop` subcommand to the `dtask` script, allowing users to automatically insert the top story from `backlog popstory` into the `docs/dev/work/do.md` file. The new functionality ensures that if a "# Current work" section does not exist, it will be created, maintaining proper document structure by placing the new story after any existing front-matter. This enhancement streamlines the workflow for developers by automating the transfer of high-priority backlog items into their active work document. Additionally, an obsolete specification file, `docs/dev/spec/obsolete/mdgbdata-spec2-old.md`, was removed as part of ongoing documentation cleanup.
 ## 2026-07-29 15:53
 
 ---

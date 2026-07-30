@@ -322,6 +322,11 @@ Subcommands:
                                         is already committed, it is simply replaced
                                         with no extra commit.
 
+    pop     Insert the top story returned by backlog popstory at the top of
+                    the '# Current work' section in docs/dev/work/do.md.
+                    If '# Current work' does not exist, it will be created after file
+                    front-matter.
+
   commit  Commit staged changes on workBranch using workHeadline as the commit message.
           Unstaged changes are only included when --all or --update is used.
 
@@ -344,6 +349,80 @@ Subcommands:
                                                 2) remove do.md and commit with message
                                                     'removed do.md for finalized tasks'.
 """)
+
+
+def _read_text(path):
+    with open(path, "r") as f:
+        return f.read()
+
+
+def _write_text(path, text):
+    with open(path, "w") as f:
+        f.write(text)
+
+
+def _fetch_popstory_markdown():
+    """Return mdgbdf text for top story from backlog popstory."""
+    try:
+        bin_dir = os.path.dirname(os.path.abspath(__file__))
+        if bin_dir not in sys.path:
+            sys.path.insert(0, bin_dir)
+        import backlog
+    except Exception as exc:
+        print(f"Error: failed to import backlog module: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        result = backlog.run_backlog_command(command="popstory", output_format="mdgbdf")
+    except Exception as exc:
+        print(f"Error: backlog popstory failed: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    return result.output_text.strip()
+
+
+def _insert_at_current_work(content, popstory_md):
+    """Insert popstory markdown at top of # Current work, creating section if needed."""
+    current_work_match = re.search(r"(?im)^#\s*current work\s*$", content)
+    if current_work_match is not None:
+        insert_pos = current_work_match.end()
+        if insert_pos < len(content) and content[insert_pos] == "\n":
+            insert_pos += 1
+        insert_text = "\n" + popstory_md.rstrip() + "\n\n"
+        return content[:insert_pos] + insert_text + content[insert_pos:]
+
+    frontmatter_end = 0
+    if content.startswith("---"):
+        frontmatter_match = re.search(r"(?ms)^---\s*$.*?^---\s*$\n?", content)
+        if frontmatter_match is not None:
+            frontmatter_end = frontmatter_match.end()
+
+    section_text = "# Current work\n\n" + popstory_md.rstrip() + "\n\n"
+    if frontmatter_end > 0 and frontmatter_end < len(content) and content[frontmatter_end] != "\n":
+        section_text = "\n" + section_text
+    if frontmatter_end < len(content) and content[frontmatter_end:] and not content[frontmatter_end:].startswith("\n"):
+        section_text += "\n"
+
+    return content[:frontmatter_end] + section_text + content[frontmatter_end:]
+
+
+def cmd_pop(_args):
+    repo_root = find_repo_root()
+    do_md_path = get_do_md_path(repo_root)
+
+    if not os.path.isfile(do_md_path):
+        print(f"Error: {DO_MD_RELATIVE} not found. Run 'dtask init' first.", file=sys.stderr)
+        sys.exit(1)
+
+    popstory_md = _fetch_popstory_markdown()
+    if not popstory_md:
+        print("No story available from backlog popstory.")
+        return
+
+    content = _read_text(do_md_path)
+    updated = _insert_at_current_work(content, popstory_md)
+    _write_text(do_md_path, updated)
+    print(f"Inserted backlog popstory into {DO_MD_RELATIVE}.")
 
 
 def cmd_init(args):
@@ -654,6 +733,11 @@ def main():
         parser.add_argument("--final", action="store_true", default=False)
         args = parser.parse_args(sys.argv[2:])
         cmd_commit(args)
+
+    elif subcommand == "pop":
+        parser = argparse.ArgumentParser(prog="dtask pop", add_help=True)
+        args = parser.parse_args(sys.argv[2:])
+        cmd_pop(args)
 
     else:
         print(f"Error: unknown subcommand '{subcommand}'. Run 'dtask help' for usage.", file=sys.stderr)
