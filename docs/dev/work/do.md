@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "Feat: Add `dtask pop` for backlog integration into `do.md`,\
-  \ with `# Current work` section creation; remove obsolete spec"
+"actualCommitMessage": "First version of dtask pop sub command to update do.md."
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "implement dtask pop subcommand"
@@ -8,10 +7,6 @@
 "title": "do.md"
 "workBranch": "dtask-pop"
 ---
-
-
-
-
 # Current work
 
 # / - story: dtask integration with backlog.py
@@ -136,6 +131,13 @@ x - verify / support reading the form front-matter
 
 # Work Summary
 
+## 2026-07-29 20:47
+
+---
+workHeadline: "feat(dtask): Enhance `pop` subcommand with comprehensive tests; refine `do.md` commit message and formatting"
+---
+
+The `do.md` file's internal commit message was refined, and unnecessary blank lines were removed for clarity. A new test file, `test_dtask_pop.py`, was introduced to provide comprehensive unit test coverage for the `dtask pop` subcommand. These tests validate that `dtask pop` correctly integrates backlog stories into `do.md` by inserting them at the top of the `# Current work` section, ensuring this section is created if it does not already exist, handling cases where `do.md` is missing, and confirming the `pop` subcommand appears in `dtask`'s help output.
 ## 2026-07-29 20:43
 
 ---
