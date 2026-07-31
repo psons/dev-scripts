@@ -1,6 +1,6 @@
 # mdgbdata.py Code-Ready Specification (Markdown Parsing)
 
-This file is sourced from [mdgbdata-spec2.md](https://docs.google.com/document/d/1iWvy8uXUjdXeP8fiCUUDMa2l0Q4_faTkCTf2l0f_F78/edit?usp=sharing) to be downloaded to {repo:devscripts}/docs/dev/spec/mdgbdata-spec2.md 
+This file is sourced from [mdgbdata-spec2.md](https://docs.google.com/document/d/1iWvy8uXUjdXeP8fiCUUDMa2l0Q4_faTkCTf2l0f_F78/edit?usp=sharing) to be downloaded to {repo:dev-scripts}/docs/dev/spec/mdgbdata-spec.md 
 
 ## Purpose
 
@@ -35,7 +35,7 @@ The module must:
   - write markdown given a file name and an ordered list of story objects  
   - return a list of story objects given a markdown file.  
   - return a list of story objects given a JSON file.  
-  - allow optional filtering of story objects to include wonly ork stories for methods that return lists of stories.
+  - allow optional filtering of story objects to include only work stories for methods that return lists of stories.
 
 The format described in this document that will be read and written by `bin/mdgbdata.py` will be referred to in other specifications as 'Markdown GB Data Form' (MDGBDF).
 
@@ -288,7 +288,7 @@ YAML key/value pairs embedded in object front-matter are only considered Object 
 - A  `key: value`  line is recognized when non-whitespace text begins at the left margin and is followed by a colon.  
 - The key is the non-whitespace text starting at the beginning of the line and ending wight the character before the colon.  
 - The value is the text after the colon up to the end of the line.  
-- informal `key: value` defenitions may appear anywhere in a task or story other than the header or the object front-matter section.
+- informal `key: value` definitions may appear anywhere in a task or story other than the header or the object front-matter section.
 
 Informal ‘key: value’ notation can be used to parse object attributes and object properties, but will not be used for serializing object attributes and object properties. 
 
@@ -306,7 +306,7 @@ object front-matter \- a block of text that is
 
 object front-matter following sections lower than H1 (H2-H6) is retained as part of the text of the description property for the containing Story or Task.
 
-In markdown documents, conventional front-matter is the special subcase of Object front-matter where there is a file-scope story that has no text before the first front-matter delimiter.
+In markdown documents, conventional front-matter is the special sub case of Object front-matter where there is a file-scope story that has no text before the first front-matter delimiter.
 
 Formal Markdown input rules use real YAML parsing through `yaml.safe_load` (PyYAML), matching the YAML library usage in `bin/dtask`.
 

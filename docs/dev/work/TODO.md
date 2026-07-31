@@ -4,7 +4,7 @@
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
 estimate: 4p
 ---
-Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from.   But if pop is taking them out of the DDF doc, it is getting ripped appart anyway.   This can be fixed when there are markers in the DDF doc.
+Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from.   But if pop is taking them out of the DDF doc, it is getting ripped apart anyway.   This can be fixed when there are markers in the DDF doc.
 
 d \- build a dtask unpop subcommand and module capability to:  
 
@@ -81,7 +81,7 @@ for each capability of each included piece.
 
 * 8 big pieces of dtask suite  
 * 1 big piece of clean\_node\_modules  
-*  overall \+ 3 sm pieces \- ../enable\_env\_local.sh (3 small pieces)  / helper funcs (2 small pieces)
+*  overall \+ 3 sm pieces \- ../enable\_env\_local.sh (3 small pieces)  / helper functions (2 small pieces)
 
 
 # d - Story: Document things \- Doc a Task Spec and Prompt Workflow
@@ -119,6 +119,6 @@ d - update use case documentation per comment in the google doc version of the s
 
 d - update help text in bltodo.py
  - bltodo.py has knowledge of work queue management and is closer to the user, whereas mdgbdata.py is just a parser / serializer.
-    - Text in the TODO file will be ignored for heading sections that do not represnt work stories. 
+    - Text in the TODO file will be ignored for heading sections that do not represent work stories. 
  - users would interact with mdgbdata.py rarely if ever.  
 

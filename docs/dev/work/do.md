@@ -11,26 +11,8 @@
 ---
 
 
+
 # Current work
-
-# Story: Create recovery needed by bltodo.py
-/ - add save_recovery and show_recovery
-
-	x - do spec  
-	estimate: 2p  
-prompt:
-enhance the bltodo.py spec within docs/dev/spec/backlog-spec.md to include specifications for methods save_recovery and show_recovery
-save_recovery should use a temp filesystem mechanism similar to how pytest saves test results, and save a copy of the backlog file.  
-show_recovery should print the backlog file path, the recovery directory path, and the listing of the recovery directory. 
-
-
-	/ - run prompt, review, play test  
-	estimate: 1p  
-prompt: add to the section '#### subcommands' for the bltodo.py spec within docs/dev/spec/backlog-spec.md for the recovery commands.
- - 'showrecovery' which invokes the show_recovery function
- - 'recovery' which takes an optional 'n' argument to specify the number of recovery files to keep, and invokes the save_recovery function.
-
-d - prompt: update bltodo.py per spec within docs/dev/spec/backlog-spec.md
 
 # d - Story: finish dtask pop to remove story from backlog file
 ---
@@ -38,21 +20,50 @@ id: 06a070cf-03b3-7f21-9177-8ecd7a1d4150-63b72315
 estimate: 4p
 ---
 
-d - pop has to delete the story some how.   
-    since dtask owns do.md, the backlog protocol can make sure the do.md write succeeds before deleting the story from the file
-    sooo. backlog, or specifically bltodo.py should carefully update the TODO.md file wit id for everything before it processes the pop
-        - carefully means save it to history first, then load it update it, and write it back with ids for everything before returning the popped task 
-            this isn't pop at all, and should be renamed if we expect the caller to persist the data and call backlog back to finally delete it.
-            if bltodo is really careful, it can pop without needing a call back.   the idea of undoing last operation, or restoring the backlog maybe comes into play.
+pop has to delete the story some how.   
 
-            drafting spec prompt:
-            A calling python module wil ask to "pop" some content out of a file A.  There is a chance that the caller will fail some how before persisting the popped content.  When this happens, the caller must be able to request that file A bew restored to it s previous state, as it was before the pop.
-            The module implementing the pop operation needs a helper module called 
+since dtask owns do.md, the backlog protocol can not make sure the do.md write succeeds before deleting the story from the file
 
-            dtask calls backlog.pop_story which determines that the configured plugin is bltodo.py
-                q: is the recovery operation part of the backlog protocol, or an implementation behavior of bltodo.py?
-                a: it is an implementation detail of bltodo.py.  
-                    - bltodo.py will have a command show recovery files, which will print the name of the recovery directory and show a listing of recovery files in that directory. 
+dtask owns do.md
+bltodo.py owns TODO.md
+
+sooo... 
+    backlog, or specifically bltodo.py should carefully update the TODO.md file with id for everything before it processes the pop.
+        the addids sub command should save recovery, then read and rewrite the backlog file in mdgbdf with the with IDs 
+
+
+    - carefully means save it to history first, then load it update it, and write it back with ids for everything before returning the popped task 
+        this isn't pop at all, and should be renamed if we expect the caller to persist the data and call backlog back to finally delete it.
+        if bltodo is really careful, it can pop without needing a call back.   the idea of undoing last operation, or restoring the backlog maybe comes into play.
+
+        drafting spec prompt:
+        A calling python module wil ask to "pop" some content out of a file A.  There is a chance that the caller will fail some how before persisting the popped content.  When this happens, the caller must be able to request that file A bew restored to it s previous state, as it was before the pop.
+        The module implementing the pop operation needs a helper module called 
+
+        dtask calls backlog.pop_story which determines that the configured plugin is bltodo.py
+            q: is the recovery operation part of the backlog protocol, or an implementation behavior of bltodo.py?
+            a: it is an implementation detail of bltodo.py.  
+                - bltodo.py will have a command show recovery files, which will print the name of the recovery directory and show a listing of recovery files in that directory. 
+
+/ - implement add id capability in bltodo.py
+    specPrompt:update the bltodo.py spec within docs/dev/spec/backlog-spec.md to require a method that will call into mdgbdata to read the contents of the backlog file and and normalize it to the formal mdgbdata specification, including id properties  for Stories and Tasks.  The method must successfully save a recovery file and then The method should then resave the normalized contents back to the backlog file.
+
+/ - update bltodo pop_story to carefully remove the popped story from the backlog.
+    specPrompt: 
+update the bltodo.py spec within docs/dev/spec/backlog-spec.md so that: before returning the popped story, pop_story will 
+     - call normalize_backlog so that all stories are stored id attributes
+     - re-read the backlog file with id attributes
+     - fetch the story to pop from the list of stories
+     - save a recovery file of the backlog 
+     - remove the popped story from the list of stories.
+     - save the revised list of stories to the backlog file (without the popped story)     
+
+    d - update spec ad user docs to note that pop behavior may differ across plugin implementations.
+    - # pop behavior may differ across plugin implementations.
+    The bltodo backlog implementation relies on human direct editing to maintain the backlog, so i is important to avoid any need to maintain story content in both TODO.md and the do.md file.   For this reason, the pop_story implementation removes story content from the backlog.   Other plugin implementations with more sophisticated editing may still show the story in the backlog, marked as in progress.  In either case, dtask --final will 'unpop' incomplee work back into the backlog.
+
+    d - prompt: update bltodo.py per spec within docs/dev/spec/backlog-spec.md
+
 
 d - remove the popped story from the backlog file
 ---
@@ -76,10 +87,39 @@ d - write spec for pop remove from backlog TODO.md
                     - error if unable to save TODO.md to history
                 - read the backlog file, remove the task with the matching id from the list, and rewrite the backlog file.
 
+# d - story: bug fix
+d - update a line in the spec do TODO.md is based on git, not the script location.
+
+update the bltodo.py spec within docs/dev/spec/backlog-spec.md 
+edit this:
+
+If BL_TODO_FILE is not set, default to the path relative to the running program file ../docs/dev/work/TODO.md.
+
+d - create a story that allows a project directory structure to be defined as a series of environment exports.
+ - create an example file.
+
 # Completed work
+# Story: Create recovery needed by bltodo.py
+x - add save_recovery and show_recovery
+
+	x - do spec  
+	estimate: 2p  
+prompt:
+enhance the bltodo.py spec within docs/dev/spec/backlog-spec.md to include specifications for methods save_recovery and show_recovery
+save_recovery should use a temp filesystem mechanism similar to how pytest saves test results, and save a copy of the backlog file.  
+show_recovery should print the backlog file path, the recovery directory path, and the listing of the recovery directory. 
+
+
+	x - run prompt, review, play test  
+	estimate: 1p  
+prompt: add to the section '#### subcommands' for the bltodo.py spec within docs/dev/spec/backlog-spec.md for the recovery commands.
+ - 'showrecovery' which invokes the show_recovery function
+ - 'recovery' which takes an optional 'n' argument to specify the number of recovery files to keep, and invokes the save_recovery function.
+
+x - prompt: update bltodo.py per spec within docs/dev/spec/backlog-spec.md
+
 
 # Work Summary
-
 
 ## 2026-07-31 12:04
 

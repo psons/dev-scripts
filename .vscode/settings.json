@@ -18,6 +18,7 @@
         "popstory",
         "poptask",
         "pytest",
+        "showrecovery",
         "stdlib",
         "Taskwarrior",
         "tojson",
