@@ -59,7 +59,7 @@ The sub command popstory invokes the 'pop_story' method of the PopStory protocol
 
 The help subcommand outputs a usage summary of subcommands and options.
 
-# plugins do not implement user command line parsing and options
+# plugins do not implement user command line parsing and options for the backlog protocol
 See docs/dev/spec/adr/relationship between CLI and plugin modules.md
 
 # bltodo.py - The default plugin.
@@ -91,6 +91,22 @@ bltodo.py should also provide two recovery-oriented API methods:
     - prints the full path of the backlog file currently in use.
     - prints the full path of the recovery directory.
     - prints a listing of the recovery directory contents.
+
+- normalize_backlog:
+    - calls into mdgbdata.py to read the current backlog file and normalize content to the formal MDGBDF specification.
+    - ensures Story and Task id properties are present according to mdgbdata.py rules during normalization.
+    - must successfully invoke save_recovery before writing any normalized content back to the backlog file.
+    - after successful recovery save, writes the normalized content back to the configured backlog file path.
+
+### pop_story behavior in bltodo.py
+Before returning the popped Story, pop_story must perform the following sequence:
+
+1. call normalize_backlog so that all stories are stored with id attributes.
+2. re-read the backlog file after normalization so the in-memory Story list includes normalized id attributes.
+3. fetch the Story to pop from that Story list.
+4. save a recovery file of the backlog using save_recovery.
+5. remove the popped Story from the Story list.
+6. save the revised Story list back to the backlog file, excluding the popped Story.
 
 ### bltodo command line  
 

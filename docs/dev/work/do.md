@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat(bltodo): Add TODO.md recovery with save/show commands,\
-  \ rename resolve_todo_file, update docs and tests"
+"actualCommitMessage": "feat(bltodo): Implement backlog normalization, pre-pop recovery,\
+  \ and update docs/tests for enhanced data integrity"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "dtask(Feat) to remove popped stories from backlog, but put\
@@ -9,6 +9,7 @@
 "title": "do.md"
 "workBranch": "pop-n-unpop"
 ---
+
 
 
 
@@ -121,6 +122,13 @@ x - prompt: update bltodo.py per spec within docs/dev/spec/backlog-spec.md
 
 # Work Summary
 
+## 2026-07-31 17:05
+
+---
+workHeadline: "feat(bltodo): Implement backlog normalization, pre-pop recovery, and update docs/tests for enhanced data integrity"
+---
+
+The `bltodo.py` script has been updated to include a new `normalize_backlog` function, which reads, standardizes, and rewrites the backlog markdown, ensuring all stories have ID attributes. The `pop_story` method now incorporates this normalization, along with a critical step to save a recovery file of the backlog *before* removing a story and persisting the changes. These modifications enhance data integrity and provide a robust recovery mechanism. The changes are reflected in `docs/dev/spec/backlog-spec.md` and new tests have been added to `tests/test_bltodo.py` to cover the new functionality.
 ## 2026-07-31 12:04
 
 ---

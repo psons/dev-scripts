@@ -107,10 +107,39 @@ def show_recovery(todo_file: str | Path | None = None) -> str:
     return "\n".join(lines)
 
 
+def _read_stories_from_backlog(
+    backlog_path: Path,
+    *,
+    work_stories_only: bool = False,
+) -> list[Story]:
+    story_map, task_map = _load_status_maps()
+    markdown_text = backlog_path.read_text(encoding="utf-8")
+    return mdgbdata.parse_stories_from_markdown(
+        markdown_text,
+        story_map,
+        task_map,
+        work_stories_only=work_stories_only,
+    )
+
+
+def _write_stories_to_backlog(backlog_path: Path, stories: list[Story]) -> None:
+    story_map, task_map = _load_status_maps()
+    markdown_text = mdgbdata.stories_to_markdown_text(stories, story_map, task_map)
+    backlog_path.write_text(markdown_text, encoding="utf-8")
+
+
+def normalize_backlog(todo_file: str | Path | None = None) -> Path:
+    """Normalize backlog markdown via mdgbdata, saving recovery before write-back."""
+    backlog_path = resolve_todo_file_path(todo_file)
+    stories = _read_stories_from_backlog(backlog_path)
+    save_recovery(backlog_path)
+    _write_stories_to_backlog(backlog_path, stories)
+    return backlog_path
+
+
 def load_todo_stories(todo_file: str | Path | None = None) -> list[Story]:
     """Load stories from the configured TODO markdown file."""
-    story_map, task_map = _load_status_maps()
-    return mdgbdata.parse_stories_from_markdown_file(resolve_todo_file_path(todo_file), story_map, task_map)
+    return _read_stories_from_backlog(resolve_todo_file_path(todo_file))
 
 
 def prioritized(todo_file: str | Path | None = None) -> list[Task]:
@@ -129,29 +158,24 @@ def pop_task(todo_file: str | Path | None = None) -> Task | None:
 
 
 def pop_story(todo_file: str | Path | None = None) -> Story | None:
-    """Return the highest-priority story, or a synthetic story for bare tasks."""
-    story_map, task_map = _load_status_maps()
-    stories = mdgbdata.parse_stories_from_markdown_file(
-        resolve_todo_file_path(todo_file),
-        story_map,
-        task_map,
-        work_stories_only=True,
-    )
-    if stories:
-        return stories[0]
+    """Pop and return the highest-priority story after normalizing and persisting backlog changes."""
+    backlog_path = resolve_todo_file_path(todo_file)
 
-    tasks = prioritized(todo_file)
-    if not tasks:
+    normalize_backlog(backlog_path)
+    stories = _read_stories_from_backlog(backlog_path)
+
+    pop_index = next(
+        (index for index, story in enumerate(stories) if story.status is not None or bool(story.tasks)),
+        None,
+    )
+    if pop_index is None:
         return None
 
-    return Story(
-        id="anonymous-story",
-        status=StoryStatus.DO,
-        name="Anonymous",
-        description=None,
-        maxTasks=None,
-        tasks=tasks,
-    )
+    popped_story = stories[pop_index]
+    save_recovery(backlog_path)
+    del stories[pop_index]
+    _write_stories_to_backlog(backlog_path, stories)
+    return popped_story
 
 
 def build_command_result(todo_file: str | Path | None = None) -> BltodoCommandResult:
@@ -248,6 +272,7 @@ __all__ = [
     "resolve_todo_file_path",
     "save_recovery",
     "show_recovery",
+    "normalize_backlog",
     "load_todo_stories",
     "prioritized",
     "pop_task",

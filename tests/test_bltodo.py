@@ -93,6 +93,9 @@ def test_pop_story_returns_top_priority_story(monkeypatch, tmp_path: Path):
 
     assert story is not None
     assert story.id == "story-a"
+    rewritten = todo_file.read_text(encoding="utf-8")
+    assert "Story: Alpha" not in rewritten
+    assert "Story: Beta" in rewritten
 
 
 def test_pop_story_skips_informational_story_and_returns_first_work_story(monkeypatch, tmp_path: Path):
@@ -116,6 +119,33 @@ def test_pop_story_skips_informational_story_and_returns_first_work_story(monkey
 
     assert story is not None
     assert story.id == "story-a"
+
+
+def test_normalize_backlog_adds_ids_and_rewrites(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    todo_file.write_text(
+        "# d - Story: Alpha\n"
+        "d - first task\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    bltodo.normalize_backlog()
+
+    normalized = todo_file.read_text(encoding="utf-8")
+    assert normalized.count("id:") >= 2
+
+
+def test_pop_story_saves_recovery_before_removal(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    bltodo.pop_story()
+    recovery_text = bltodo.show_recovery()
+
+    assert "Recovery files:" in recovery_text
+    assert ".md" in recovery_text
 
 
 def test_main_prints_todo_path_and_mdgbdf(monkeypatch, tmp_path: Path, capsys):
