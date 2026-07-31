@@ -28,11 +28,9 @@ Other possible future plugins are to implement the backlog protocols against:
  - Goal Blotter as blgb.py
 
 
-
 ## Backlog Plugin Protocols
 
 The functions implementing the 'Backlog Plugin Protocols' should return types defined in bin/gbdata.py
-
 
 * Prioritized implements prioritized which returns a listing of tasks, which are assumed to be in priority order
 * PopTask implements pop_task which returns the highest priority task
@@ -80,18 +78,43 @@ unit tests should be provided that do not read or write the docs/dev/work/TODO.m
 
 plugin api: bltodo.py provides an API function for each  of the 'Backlog Plugin Protocols' supported by backlog.py
 
-bltodo.py when executed as a command:
+### Recovery support methods
+bltodo.py should also provide two recovery-oriented API methods:
+
+- save_recovery:
+    - creates or reuses a recovery directory in a temporary filesystem location, using a mechanism aligned with pytest-style temporary artifact storage (ephemeral temp-root based storage, not repository-local source paths).
+    - saves a copy of the current backlog file into that recovery directory.
+    - should preserve the source backlog file unchanged and only write the copied recovery artifact.
+    - takes an optional argument to specify the number of recovery files to keep, with a default of 4.
+
+- show_recovery:
+    - prints the full path of the backlog file currently in use.
+    - prints the full path of the recovery directory.
+    - prints a listing of the recovery directory contents.
+
+### bltodo command line  
+
+bltodo.py when executed as a command with no argument runs the show subcommand by default
+
+#### subcommands
+show
  - reports the full absolute path for the TODO file it is using on stdout.
  - outputs the backlog contents in 'Markdown GB Data Form' (MDGBDF)
 
+showrecovery
+ - invokes the show_recovery function.
+ - prints the backlog file path, recovery directory path, and recovery directory listing.
+
+recovery [n]
+ - invokes the save_recovery function.
+ - takes an optional numeric argument n to specify how many recovery files to keep.
+ - if n is not provided, defaults to keeping 4 recovery files.
+
+help
+ - shows help text in the style of dtask.
 
 # Output Format -'Markdown GB Data Form' (MDGBDF)
 MDGBDF is implemented in mdgbdata.py and is described in docs/dev/spec/mdgbdata-spec.md.
-
-
-## potential data loss from files not already in Markdown Story Form
-Markdown files may contain content that is not part of stories and tasks.
-Initial implementations of bltodo.py will not have the capability to update or recreate files that are not already in 'Markdown GB Data Form'.  
 
 
  

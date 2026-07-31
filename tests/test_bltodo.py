@@ -129,3 +129,58 @@ def test_main_prints_todo_path_and_mdgbdf(monkeypatch, tmp_path: Path, capsys):
     assert exit_code == 0
     assert f"TODO file: {todo_file.resolve()}" in out
     assert "# d - Story: Alpha" in out
+
+
+def test_save_recovery_creates_copy_and_prunes(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    saved_paths = [bltodo.save_recovery(keep=2) for _ in range(3)]
+    recovery_dir = saved_paths[-1].parent
+    files = sorted(path for path in recovery_dir.iterdir() if path.is_file())
+
+    assert len(files) == 2
+    assert saved_paths[-1].name in {path.name for path in files}
+    assert all(path.read_text(encoding="utf-8") == todo_file.read_text(encoding="utf-8") for path in files)
+
+
+def test_show_recovery_lists_paths_and_files(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    bltodo.save_recovery(keep=4)
+    text = bltodo.show_recovery()
+
+    assert f"TODO file: {todo_file.resolve()}" in text
+    assert "Recovery dir:" in text
+    assert "Recovery files:" in text
+    assert ".md" in text
+
+
+def test_main_showrecovery_command(monkeypatch, tmp_path: Path, capsys):
+    todo_file = tmp_path / "sample.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    bltodo.save_recovery()
+    exit_code = bltodo.main(["showrecovery"])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "TODO file:" in out
+    assert "Recovery dir:" in out
+    assert "Recovery files:" in out
+
+
+def test_main_recovery_command_accepts_keep_argument(monkeypatch, tmp_path: Path, capsys):
+    todo_file = tmp_path / "sample.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    exit_code = bltodo.main(["recovery", "2"])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "Saved recovery:" in out
