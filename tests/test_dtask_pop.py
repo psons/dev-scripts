@@ -151,3 +151,34 @@ def test_help_lists_pop_subcommand(tmp_path: Path):
 
     assert result.returncode == 0
     assert "pop" in result.stdout
+
+
+def test_pop_write_failure_emits_popped_content_to_stderr(tmp_path: Path):
+    repo_dir = tmp_path / "repo"
+    repo_dir.mkdir()
+
+    _run_git(repo_dir, ["init"])
+
+    do_md = _write_do_md(
+        repo_dir,
+        "# Current work\n\nExisting line\n",
+    )
+    todo_md = _write_todo_md(
+        repo_dir,
+        "# d - Story: Alpha\n"
+        "d - first task\n",
+    )
+
+    # Make do.md read-only so opening in write mode fails.
+    do_md.chmod(0o444)
+    try:
+        result = _run_dtask_pop(repo_dir, todo_md)
+    finally:
+        # Restore write permission to avoid cleanup issues on some systems.
+        do_md.chmod(0o644)
+
+    assert result.returncode != 0
+    assert "failed to write updated content" in result.stderr
+    assert "Popped content (recovery):" in result.stderr
+    assert "# d - Story: Alpha" in result.stderr
+    assert "d - first task" in result.stderr

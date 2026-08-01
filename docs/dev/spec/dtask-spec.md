@@ -105,6 +105,7 @@ commit - add a commit on workBranch using the do.md actualCommitMessage.  If the
     --final signals that the task is complete.  dtask commit --final performs two commits: first, all unstaged files are staged and committed using the actualCommitMessage; second, the do.md file is removed and an additional commit is made with a commit message of 'remove do.md'.  This leaves the working tree ready for a new task cycle starting with dtask init.
 
 pop - add the top story and its tasks from the backlog.py module to the '# Current work' section of do.md.
+If the pop subcommand cannot write the updated content to docs/dev/work/do.md, it must exit with an error and write the popped story content to stderr so the user can recover it.
 
 ## clarification 2026-05-18
 Ensure that if do.md is updated in any way by dtask, ensure that it is saved and added to the working set before making the commit. In particular, the --actual flag updates the actualCommitMessage and requires that do.md be written and added to the working set before the commit.

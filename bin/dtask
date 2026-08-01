@@ -421,7 +421,16 @@ def cmd_pop(_args):
 
     content = _read_text(do_md_path)
     updated = _insert_at_current_work(content, popstory_md)
-    _write_text(do_md_path, updated)
+    try:
+        _write_text(do_md_path, updated)
+    except Exception as exc:
+        print(
+            f"Error: failed to write updated content to {DO_MD_RELATIVE}: {exc}",
+            file=sys.stderr,
+        )
+        print("Popped content (recovery):", file=sys.stderr)
+        print(popstory_md, file=sys.stderr)
+        sys.exit(1)
     print(f"Inserted backlog popstory into {DO_MD_RELATIVE}.")
 
 
