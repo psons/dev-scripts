@@ -1,4 +1,4 @@
-# d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into [TODO.md](http://TODO.md).
+# d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
 estimate: 4p
@@ -8,7 +8,7 @@ Just at the top for now. This can mess up a DDF document a little because it wil
 d \- build a dtask unpop subcommand and module capability to:  
 
 - get the current work stories after ‘\#current work’ and before ‘\#completed work’  
-- load [TODO.md](http://TODO.md) as mdgbdata  
+- load TODO.md as mdgbdata  
 - prepend the tasks to the TODO story list in memory, and write it back
 
 
