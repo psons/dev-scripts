@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat(bltodo): Implement backlog normalization, pre-pop recovery,\
-  \ and update docs/tests for enhanced data integrity"
+"actualCommitMessage": "feat(bltodo): Prioritize TODO.md at git root; update spec,\
+  \ add test, document project root structure"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "dtask(Feat) to remove popped stories from backlog, but put\
@@ -11,9 +11,18 @@
 ---
 
 
-
-
 # Current work
+
+# d - story: list bug from quick test an make tasks.
+
+/ - bltodo.py should locate backlog file per project
+    bug: a different repo reached to the dev-scripts backlog to pop.
+    / - spec written as one line modification in spec
+    / - prompt: update bltodo.py per its spec within docs/dev/spec/backlog-spec.md, as updated since the last git commit. 
+
+ - will be fixed, I think when above is fixed - everything shares a collection of recovery files, because the 
+ location is partly based on the path to the file being backed up.
+ - recovery path has pytest in the name
 
 # d - Story: finish dtask pop to remove story from backlog file
 ---
@@ -122,6 +131,13 @@ x - prompt: update bltodo.py per spec within docs/dev/spec/backlog-spec.md
 
 # Work Summary
 
+## 2026-08-01 11:33
+
+---
+workHeadline: "feat(bltodo): Prioritize TODO.md at git root; update spec, add test, document project root structure"
+---
+
+The provided git diff introduces changes to `bltodo.py` and its supporting documentation and tests, primarily focused on how the `TODO.md` backlog file is located. The `bltodo.py` script now prioritizes finding `TODO.md` relative to the git repository root of the current working directory, if the `BL_TODO_FILE` environment variable is not set, a behavior that is now reflected in `backlog-spec.md` and validated by a new unit test in `test_bltodo.py`. Additionally, a new architectural decision record, `project-root-structure.md`, has been added to explain the rationale behind this change, and minor modifications were made to `do.md` and `TODO.md` to update work items and fix formatting.
 ## 2026-07-31 17:05
 
 ---

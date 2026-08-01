@@ -72,7 +72,7 @@ bltodo.py will be a plugin that
 
 The path to the todo file can be set using and environment variable BL_TODO_FILE
 
-If BL_TODO_FILE is not set, default to the path relative to the running program file ../docs/dev/work/TODO.md.
+If BL_TODO_FILE is not set, default to the path docs/dev/work/TODO.md relative to the git repo root that contains current working directory.
 
 unit tests should be provided that do not read or write the docs/dev/work/TODO.md file in the source repository.
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import subprocess
 import sys
 
 
@@ -61,6 +62,18 @@ def test_resolve_todo_file_uses_env_var(monkeypatch, tmp_path: Path):
     resolved = bltodo.resolve_todo_file()
 
     assert resolved == todo_file.resolve()
+
+
+def test_resolve_todo_file_defaults_to_caller_git_repo_root(monkeypatch, tmp_path: Path):
+    repo_dir = tmp_path / "repo"
+    repo_dir.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_dir, check=True, capture_output=True, text=True)
+    monkeypatch.delenv("BL_TODO_FILE", raising=False)
+    monkeypatch.chdir(repo_dir)
+
+    resolved = bltodo.resolve_todo_file_path()
+
+    assert resolved == (repo_dir / "docs/dev/work/TODO.md").resolve()
 
 
 def test_prioritized_returns_tasks_in_file_order(monkeypatch, tmp_path: Path):

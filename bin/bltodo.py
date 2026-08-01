@@ -17,6 +17,7 @@ import getpass
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -36,6 +37,21 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
+def _git_repo_root(cwd: str | Path | None = None) -> Path | None:
+    """Return git repo root for cwd, or None when cwd is not in a git repo."""
+    result = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        cwd=str(cwd) if cwd is not None else None,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    root = result.stdout.strip()
+    return Path(root).resolve() if root else None
+
+
 def _load_status_maps() -> tuple[mdgbdata.StatusMap, mdgbdata.StatusMap]:
     repo_root = _repo_root()
     story_map = mdgbdata.load_status_map(repo_root / "docs/dev/spec/story_status_metadata.json", StoryStatus)
@@ -52,6 +68,10 @@ def resolve_todo_file_path(todo_file: str | Path | None = None) -> Path:
     if env_path:
         return Path(env_path).expanduser().resolve()
 
+    git_root = _git_repo_root()
+    if git_root is not None:
+        return (git_root / "docs/dev/work/TODO.md").resolve()
+
     return (_repo_root() / "docs/dev/work/TODO.md").resolve()
 
 
@@ -62,7 +82,7 @@ def resolve_todo_file(todo_file: str | Path | None = None) -> Path:
 
 def _recovery_dir_for_todo(todo_file: str | Path | None = None) -> Path:
     todo_path = resolve_todo_file_path(todo_file)
-    temp_root = Path(tempfile.gettempdir()) / f"pytest-of-{getpass.getuser()}" / "bltodo-recovery"
+    temp_root = Path(tempfile.gettempdir()) / f"TODO-of-{getpass.getuser()}" / "bltodo-recovery"
     # Namespacing by TODO path avoids collisions across similarly named files.
     namespace = str(todo_path).replace(os.sep, "_").replace(":", "_")
     return temp_root / namespace
@@ -189,14 +209,18 @@ def build_command_result(todo_file: str | Path | None = None) -> BltodoCommandRe
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    default_todo = (_repo_root() / "docs/dev/work/TODO.md").resolve()
+    git_root = _git_repo_root()
+    if git_root is not None:
+        default_todo = (git_root / "docs/dev/work/TODO.md").resolve()
+    else:
+        default_todo = (_repo_root() / "docs/dev/work/TODO.md").resolve()
     parser = argparse.ArgumentParser(
         prog="bltodo",
         description="Default backlog provider reading stories/tasks from a TODO.md file",
         epilog=(
             "Environment variables:\n"
             "  BL_TODO_FILE  Absolute or relative path to the TODO markdown file.\n"
-            f"                If unset, bltodo uses: {default_todo}"
+            f"                If unset, bltodo uses git-root-relative path: {default_todo}"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

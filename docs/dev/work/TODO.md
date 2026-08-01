@@ -1,4 +1,3 @@
-
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into [TODO.md](http://TODO.md).
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
@@ -11,6 +10,7 @@ d \- build a dtask unpop subcommand and module capability to:
 - get the current work stories after ‘\#current work’ and before ‘\#completed work’  
 - load [TODO.md](http://TODO.md) as mdgbdata  
 - prepend the tasks to the TODO story list in memory, and write it back
+
 
 # d - Story: Document things - Doc a feature lifecycle
 ---
@@ -34,7 +34,10 @@ requires
  - dtask -- final improvement do.md back to TODO.md  
  - Story: Document things - Doc a feature lifecycle
 
-d - dtask init captures the original branch into front-matter as a default to merge back to.   
+d - dtask init captures the original branch into front-matter as a default to merge back to.
+---
+id: 579a01ed-abbe-7217-a81a-e48a522d698d-236a3170
+---
 	d - spec  
 	estimate: 2p  
 	d - run prompt and review  
@@ -42,7 +45,10 @@ d - dtask init captures the original branch into front-matter as a default to me
 	d - extra iteration to fix  
 	estimate: 2p
 
-d - merge the feature branch back to main  
+d - merge the feature branch back to main
+---
+id: 4cf320f7-214e-7c06-a52f-9b03019bfca2-fdb24a20
+---
  At this point, \--mergeback \<branch\> would be a command allowed with \--final, or it could be a front-matter attribute managed similar to the “actual commit message” which uses the front-matter value, but can be overridden with command line.  
 	d - spec  
 	estimate: 2p  
@@ -53,10 +59,13 @@ d - merge the feature branch back to main
 
 
 # d - Story: bugfix: dtask should allow existing branch with -b
-error when backlog-command branch already exists.
- $ dtask init -b backlog-command -i "simple Filesystem based backlog implementation using TODO.md" --dirty
+---
+id: 140748b0-1c3f-79e4-bb30-b20a7c8de67f-d89c4805
 fatal: a branch named 'backlog-command' already exists
 Error: git checkout -b backlog-command failed.
+---
+error when backlog-command branch already exists.
+ $ dtask init -b backlog-command -i "simple Filesystem based backlog implementation using TODO.md" --dirty
 
 
 # d - Story: Document things \- Do prerequisites.
@@ -108,6 +117,9 @@ estimate: '1p  '
 in principle, and with a lead to dtask help
 
 d - update use case documentation per comment in the google doc version of the spec.
+---
+id: 679a9b93-40dd-7dce-9171-207e9b01075f-088efbc0
+---
      - is it docs/dev/spec/mdgbdata-spec.md
      from spec:
      ##### Summary of Round trip handling of the story marker.
@@ -118,7 +130,9 @@ d - update use case documentation per comment in the google doc version of the s
             It is important for fast story capture, without the need to write in a story status, but to assure that the bltodo.py backlog plugin will pop stories that need elaboration and tasks identified.
 
 d - update help text in bltodo.py
+---
+id: fc55f6f0-4b0a-7552-b765-c98b69275bdc-3546b48d
+---
  - bltodo.py has knowledge of work queue management and is closer to the user, whereas mdgbdata.py is just a parser / serializer.
     - Text in the TODO file will be ignored for heading sections that do not represent work stories. 
- - users would interact with mdgbdata.py rarely if ever.  
-
+ - users would interact with mdgbdata.py rarely if ever.
