@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "feat: Streamline docs; remove obsolete files, consolidate\
-  \ architecture, add user doc structure, and clean up todos"
+"actualCommitMessage": "feat(bltodo.py) TODo specific pop behavior to save recovery to safely pop story content for insertion to do.md"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "dtask(Feat) to remove popped stories from backlog, but put\
@@ -10,10 +9,10 @@
 "workBranch": "pop-n-unpop"
 ---
 
-
-
 # Current work
 
+
+# Completed work
 
 # d - Story: finish dtask pop for the bltodo plugin to remove story from backlog file
 ---
@@ -40,14 +39,8 @@ update the bltodo.py spec within docs/dev/spec/backlog-spec.md so that: before r
      - remove the popped story from the list of stories.
      - save the revised list of stories to the backlog file (without the popped story)     
 
-    d - update spec and user docs to note that pop behavior may differ across plugin implementations.
-    - # pop behavior may differ across plugin implementations.
-    The bltodo backlog implementation relies on human direct editing to maintain the backlog, so i is important to avoid any need to maintain story content in both TODO.md and the do.md file.   For this reason, the pop_story implementation removes story content from the backlog.   Other plugin implementations with more sophisticated editing may still show the story in the backlog, marked as in progress.  In either case, dtask --final will 'unpop' incomplete work back into the backlog.
 
-    d - prompt: update bltodo.py per spec within docs/dev/spec/backlog-spec.md
-
-
-d - remove the popped story from the backlog file
+x - remove the popped story from the backlog file
 ---
 id: cc2de8ac-b996-702e-94df-00d06fe13017-2fb086c5
 ---
@@ -56,31 +49,14 @@ id: cc2de8ac-b996-702e-94df-00d06fe13017-2fb086c5
     a - add a feature to strip the id: attributes upon serialization by mdgbdata.py.   This avoids unnecessary noise in te TODO.md if there is no write back to the backlog.
         a - include a feature to eliminate the front-matter section if there are no attributes to write into it.
 
-d - write spec for pop remove from backlog TODO.md
- - dtask writes the popped story to do.md
-    - it should error if the write to do.md is unsuccessful
- - once it has been successfully written to do.md
- - extend the backlog protocol on backlog.py to support 'remove-story'
-    - dtask should call the backlog module with the id of the popped story to remove it from the backlog. 
-        - the call should error if unsuccessful.
-        at present the only plugin that exists is bltodo.py which must interpret the 'remove-story' as a removal from thw backlog file  (TODO.md by default)
-            - bltodo.py should
-                - save the backlog file to history using histcache.py as a module 
-                    - error if unable to save TODO.md to history
-                - read the backlog file, remove the task with the matching id from the list, and rewrite the backlog file.
 
 # d - story: bug fix
-d - update a line in the spec do TODO.md is based on git, not the script location.
+x - update a line in the spec do TODO.md is based on git, not the script location.
 
 update the bltodo.py spec within docs/dev/spec/backlog-spec.md 
 edit this:
 
 If BL_TODO_FILE is not set, default to the path relative to the running program file ../docs/dev/work/TODO.md.
-
-d - create a story that allows a project directory structure to be defined as a series of environment exports.
- - create an example file.
-
-# Completed work
 
 # d - story: list bug from quick test an make tasks.
 

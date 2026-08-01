@@ -1,3 +1,24 @@
+
+# pop enhancement
+d - address failed update of do.md for pop
+ - dtask writes the popped story to do.md
+    - it should error if the write to do.md is unsuccessful, and write the popped story to stderr
+
+# update dtask pop adr, spec, and user docs.
+
+d - initialize structure of user docs.
+docs/dev/spec/user-documentation-structure.md
+
+d - update spec and user docs to note that pop behavior may differ across plugin implementations.
+    - # pop behavior may differ across plugin implementations.
+    The bltodo backlog implementation relies on human direct editing to maintain the backlog, so i is important to avoid any need to maintain story content in both TODO.md and the do.md file.   For this reason, the pop_story implementation removes story content from the backlog.   Other plugin implementations with more sophisticated editing may still show the story in the backlog, marked as in progress.  In either case, dtask --final will 'unpop' incomplete work back into the backlog.
+
+
+# d - improve project directory structure user docs
+d - create a story that allows a project directory structure to be defined as a series of environment exports.
+ - create an example file.
+
+
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
