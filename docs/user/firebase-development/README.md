@@ -11,12 +11,14 @@ Navigation:
 
 - Restart local Firebase emulator stack after clearing stale listeners on emulator ports.
 - Auto-discover firebase.json from current directory ancestry before startup.
+- Support iterative project experimentation where repeated environment resets and local service restarts are part of short feature loops.
 
 ## Candidate Activities To Script Next
 
 - Profile-based emulator boot (dev, test, integration).
 - Optional selective restart of individual emulator services.
 - Port conflict report with suggested remapping patch for firebase.json.
+- Repeatable Firebase project skeleton cloning flow for A/B experiments (inspired by [proposed-dir-skel](../../dev/spec/usecases/proposed-dir-skel.md)).
 
 ## Script and Artifact Index
 

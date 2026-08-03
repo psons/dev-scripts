@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "docs: Refactor dev spec and use case documentation, removing\
-  \ old drafts, consolidating content, and fixing typos"
+"actualCommitMessage": "Docs: Refine user documentation structure for use cases, update\
+  \ READMEs with activities & proposals, fix typo"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "pop-doc"
 ---
+
 
 
 
@@ -55,6 +56,13 @@ id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 
 # Work Summary
 
+## 2026-08-03 15:14
+
+---
+workHeadline: "Docs: Refine user documentation structure for use cases, update READMEs with activities & proposals, fix typo"
+---
+
+This update refines the project's user documentation by adding a new structural guideline for integrating use case content, particularly "proposed" use cases, into "Activities Currently Facilitated" and "Candidate Activities To Script Next" sections. This involved updating several README files across different topical areas—AI Knowledge Skills, Feature Workflow, Firebase Development, Node.js Development, and Project Setup—to provide more detailed explanations of existing facilitated activities and to propose new scriptable activities, all with explicit cross-references to relevant design specifications and use case documents. A minor correction was also made, changing "rebatable" to "repeatable" in the documentation structure guidelines.
 ## 2026-08-03 15:04
 
 ---

@@ -12,12 +12,13 @@ Navigation:
 - Audit lockfile and node_modules hygiene across a project tree.
 - Add missing package-lock.json files in Node projects.
 - Safely remove node_modules only when lockfile preconditions are met.
+- Reuse saved command/file lists in shell-driven workflows that support repeatable Node maintenance tasks (see [tab-completion-lists](../../dev/spec/usecases/tab-completion-lists.md)).
 
 ## Candidate Activities To Script Next
 
 - Automated lockfile drift checks in CI with actionable fix suggestions.
 - Scripted node_modules cleanup for mono-repos with opt-in directory filters.
-- Preflight checks for npm version compatibility across projects.
+- Preflight checks for npm and runtime compatibility across projects.
 
 ## Script and Artifact Index
 
