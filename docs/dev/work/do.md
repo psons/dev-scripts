@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "docs: Introduce feature workflow guide and update user doc\
-  \ navigation"
+"actualCommitMessage": "docs: Refactor dev spec and use case documentation, removing\
+  \ old drafts, consolidating content, and fixing typos"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "pop-doc"
 ---
+
 
 
 
@@ -54,6 +55,13 @@ id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 
 # Work Summary
 
+## 2026-08-03 15:04
+
+---
+workHeadline: "docs: Refactor dev spec and use case documentation, removing old drafts, consolidating content, and fixing typos"
+---
+
+This update refactors several documentation files, primarily relocating content from temporary prompts and use case drafts into more permanent and contextually appropriate files. The `branch-strategy-prompt.md`, `dir-skel.md`, and `dtask-close-feature.md` files were removed, with their content being either integrated into `proposed-squash-n-detail-branch-strategy.md` as a source reference, or moved to newly created `proposed-dir-skel.md` and `proposed-dtask-close-feature.md` documents respectively. Additionally, minor typos were corrected in `development-description-format-uses.md` to improve clarity. These changes streamline the project's development specification and use case documentation.
 ## 2026-08-03 14:32
 
 ---

@@ -1,5 +1,4 @@
-
-# DDF usa and support in mdgbdata.py
+# DDF use and support in mdgbdata.py
 
 ## Dtask POP use case
 Read do.md into memory as a DDF document.  Also read a TODO.md into memory as a DDF document.  Extract the the top story from TODO document and insert it into do document.  Write both files back to disk as DDF text.
@@ -13,7 +12,7 @@ read a markdown document to the full DDF model and return the model to a calling
 
 # Higher level context: DDF High level usage possibile usage /
 
-DDF Documents may be gin with simple descriptions, but evolve as a project become better defined and gets built and run.
+DDF Documents may begin with simple descriptions, but evolve as a project become better defined and gets built and run.
 - there should be a refinement of them into more precise specifications and prompts that can be fed to AI.
 - they are a beginning of the relationship between:
     - ideas and problems
