@@ -7,6 +7,7 @@ This documentation set is organized by development activity so users can find th
 - [Node JS Based Development](node-js-development/README.md)
 - [Firebase Project Development](firebase-development/README.md)
 - [Development Project Setup](project-setup/README.md)
+- [Feature Based Work Story and Source Commit Workflows](feature-workflow/README.md)
 - [AI Knowledge Indexing and Skills](ai-knowledge-skills/README.md)
 
 ## Existing User Docs
@@ -18,4 +19,4 @@ This documentation set is organized by development activity so users can find th
 
 Update this page with the prompt below:
 
-"Refresh docs/user/README.md. Keep exactly four topical area links aligned to current folder names, keep references to existing user docs, and avoid duplicating tool details that already exist on topical or script pages."
+"Refresh docs/user/README.md. Keep the five topical area links aligned to current folder names, keep references to existing user docs, and avoid duplicating tool details that already exist on topical or script pages."

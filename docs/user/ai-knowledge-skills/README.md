@@ -5,6 +5,7 @@ Navigation:
 - [Node JS Based Development](../node-js-development/README.md)
 - [Firebase Project Development](../firebase-development/README.md)
 - [Development Project Setup](../project-setup/README.md)
+- [Feature Based Work Story and Source Commit Workflows](../feature-workflow/README.md)
 
 ## Activities Currently Facilitated
 

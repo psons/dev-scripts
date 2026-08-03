@@ -4,6 +4,7 @@ Navigation:
 - [User Docs Home](../README.md)
 - [Node JS Based Development](../node-js-development/README.md)
 - [Firebase Project Development](../firebase-development/README.md)
+- [Feature Based Work Story and Source Commit Workflows](../feature-workflow/README.md)
 - [AI Knowledge Indexing and Skills](../ai-knowledge-skills/README.md)
 
 ## Activities Currently Facilitated

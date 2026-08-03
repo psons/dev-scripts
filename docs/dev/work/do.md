@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "feat: Establish user documentation structure, refine task\
-  \ files, and add backlog usage guide"
+"actualCommitMessage": "docs: Introduce feature workflow guide and update user doc\
+  \ navigation"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "pop-doc"
 ---
+
 
 
 
@@ -53,6 +54,13 @@ id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 
 # Work Summary
 
+## 2026-08-03 14:32
+
+---
+workHeadline: "docs: Introduce feature workflow guide and update user doc navigation"
+---
+
+This update introduces a new top-level user documentation page for "Feature Based Work Story and Source Commit Workflows" located at `docs/user/feature-workflow/README.md`. This new page is now seamlessly integrated into the existing documentation architecture through updated navigation links across several `docs/user/` README files, including `docs/user/README.md`, `docs/user/ai-knowledge-skills/README.md`, `docs/user/firebase-development/README.md`, `docs/user/node-js-development/README.md`, and `docs/user/project-setup/README.md`. Additionally, the main `README.md` now includes a direct link to the overarching user documentation, and the `docs/dev/spec/user-documentation-structure.md` specification has been refined to align with these structural enhancements.
 ## 2026-08-03 14:16
 
 ---
