@@ -103,3 +103,9 @@ Here is a list of commands that can be executed via the `gemini` executable in y
 *   `gemini update-topic`
 *   `gemini web-fetch`
 *   `gemini write-file`
+
+# maintenance
+
+Update this page with the prompt below:
+
+"Refresh docs/user/gemini-scripting.md against current Gemini CLI command set and scripting guidance. Keep examples shell-oriented, keep security cautions for secrets and non-interactive runs, and prune commands that no longer exist."

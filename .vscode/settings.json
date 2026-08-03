@@ -23,9 +23,13 @@
         "Taskwarrior",
         "tojson",
         "tomd",
+        "unpops",
         "usecases",
         "UUIDV",
         "workbranch",
         "wsum"
-    ]
+    ],
+    "chat.tools.terminal.autoApprove": {
+        "printf": true
+    }
 }

@@ -1,39 +1,10 @@
-# d - Story: update dtask pop adr, spec, and user docs.
----
-id: 8cadd3ab-c2ef-7c1d-82f4-fc4be28de2ba-9e4c9c2b
----
-
-d - initialize structure of user docs.
----
-id: 6602af56-eb33-7c18-9fc9-fb25d78e1e14-9ee75a6a
----
-docs/dev/spec/user-documentation-structure.md
-
-d - update spec and user docs to note that pop behavior may differ across plugin implementations.
----
-id: 9c33da36-3202-7069-b4e7-683f1112dfd1-ea461ed2
----
-    - # pop behavior may differ across plugin implementations.
-    The bltodo backlog implementation relies on human direct editing to maintain the backlog, so i is important to avoid any need to maintain story content in both TODO.md and the do.md file.   For this reason, the pop_story implementation removes story content from the backlog.   Other plugin implementations with more sophisticated editing may still show the story in the backlog, marked as in progress.  In either case, dtask --final will 'unpop' incomplete work back into the backlog.
-
-
-# d - Story: improve project directory structure user docs
----
-id: f056719b-2221-7ff9-b3c8-e88dd19765eb-6681d6ea
----
-
-d - create a story that allows a project directory structure to be defined as a series of environment exports.
----
-id: 36177175-b1fc-7e9c-a746-aa19569fa116-8f65d6bf
----
- - create an example file.
-
 
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
 estimate: 4p
 ---
+
 Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from.   But if pop is taking them out of the DDF doc, it is getting ripped apart anyway.   This can be fixed when there are markers in the DDF doc.
 
 d \- build a dtask unpop subcommand and module capability to:  
@@ -51,7 +22,7 @@ estimate: '2p  '
 in user docs.  
 In a typical development environment, a developer:
 
-*  creates a git branch representing a feature.  
+* creates a git branch representing a feature.  
 * does several commit on the feature branch  
 * which maybe iterations of the ‘Task, Spec, and Prompt’ work flow, including results review.  
 * Does UAT, and merged back into the ‘main’ branch.
@@ -140,7 +111,7 @@ estimate: '2p '
 d \- AI to extract from some relevant docs  
 
 
-# d - Story: Document things \- Doc the bltodo flow around [TODO.md](http://TODO.md) and [do.md](http://do.md),
+# d - Story: Document things \- Doc the bltodo flow around TODO.md and do.md,
 ---
 id: ec63f72b-9071-75f1-95fe-8bdb337aca32-bc980987
 estimate: '1p  '
@@ -167,3 +138,21 @@ id: fc55f6f0-4b0a-7552-b765-c98b69275bdc-3546b48d
  - bltodo.py has knowledge of work queue management and is closer to the user, whereas mdgbdata.py is just a parser / serializer.
     - Text in the TODO file will be ignored for heading sections that do not represent work stories. 
  - users would interact with mdgbdata.py rarely if ever.
+
+
+# d - Story: improve project directory structure user docs
+---
+id: f056719b-2221-7ff9-b3c8-e88dd19765eb-6681d6ea
+---
+
+d - create a story that allows a project directory structure to be defined as a series of environment exports.
+---
+id: 36177175-b1fc-7e9c-a746-aa19569fa116-8f65d6bf
+---
+ - create an example file.
+ d - start by documenting my default project tree
+ - there should be a series of env exported names to define all the real locations that the tools in this suite use.
+    - this gives rise to two approached:
+        1 - scheme to find project root (based on git by default) and use default relative paths
+        2 - piecemeal scheme to absolutely define locations, or craft a layot with sever user provided base locations used to set the official script supported paths from, #1. 
+

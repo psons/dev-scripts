@@ -24,7 +24,7 @@ since dtask owns do.md, the backlog protocol can not make sure the do.md write s
 dtask owns do.md
 bltodo.py owns TODO.md
 
-sooo... 
+so... 
     bltodo.py should **carefully** update the TODO.md file with id for everything before it processes the pop.
         the bltodo.py will save recovery, then read and rewrite the backlog file in mdgbdf with the with IDs
 

@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "dtask pop: Improve error handling for failed writes to `do.md`,\
-  \ document error output, and add new test"
+"actualCommitMessage": "feat: Establish user documentation structure, refine task\
+  \ files, and add backlog usage guide"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
@@ -11,14 +11,39 @@
 
 
 
+
 # Current work
 
-# d - Story: pop enhancement
+# d - Story: update dtask pop adr, spec, and user docs.
+---
+id: 8cadd3ab-c2ef-7c1d-82f4-fc4be28de2ba-9e4c9c2b
+---
+
+x - initialize structure of user docs.
+---
+id: 6602af56-eb33-7c18-9fc9-fb25d78e1e14-9ee75a6a
+---
+prompt: implement docs/dev/spec/user-documentation-structure.md
+
+/ - update spec and user docs to note that pop behavior may differ across plugin implementations.
+---
+id: 9c33da36-3202-7069-b4e7-683f1112dfd1-ea461ed2
+---
+    put this in docs/user/project-setup/bltodo.md or docs/user/project-setup/backlog.md
+    - # pop behavior may differ across plugin implementations.
+    bltodo avoids duplicate story maintenance by removing popped stories from TODO.md. Other providers may keep popped stories marked in progress. In both cases, dtask --final unpops incomplete work back into the backlog.
+
+d - update dtask and backlog use case documentation for push
+ - docs/dev/spec/usecases/backlog-usage.md 
+
+# Completed Work
+
+# x - Story: pop enhancement
 ---
 id: 46f26a29-e798-7c1b-9b47-303d9b6e95e7-314de38f
 ---
 
-d - address failed update of do.md for pop
+x - address failed update of do.md for pop
 ---
 id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 ---
@@ -28,7 +53,13 @@ id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 
 # Work Summary
 
+## 2026-08-03 14:16
 
+---
+workHeadline: "feat: Establish user documentation structure, refine task files, and add backlog usage guide"
+---
+
+This update establishes a comprehensive user documentation structure under `docs/user/`, creating dedicated pages for development activities and individual scripts like `dtask`, `bltodo`, `wsum`, and `index-knowledge`. The new documentation aims to provide clear guidance on Node.js, Firebase, AI knowledge indexing, and project setup workflows. Alongside this, `TODO.md` and `do.md` were refined by removing obsolete tasks and reorganizing current work items, including updates to task descriptions for `dtask --final` and `bltodo.py` behavior. A new use case document for backlog usage was also added to `docs/dev/spec/usecases/backlog-usage.md`.
 ## 2026-08-01 15:31
 
 ---

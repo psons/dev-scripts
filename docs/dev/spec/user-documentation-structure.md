@@ -5,6 +5,7 @@ There should be a collection of process oriented documentation for the following
 * Node JS based development
 * Firebase project development
 * Development Project Setup
+* Feature based work story and source commit workflows.
 * AI Knowledge indexing and Skills
 
 Each topical area should have a subdirectory containing a main topical markdown page.  The markdown page with 
@@ -23,3 +24,6 @@ There should be a top level page with navigation to all the main topical markdow
 Each documentation page should have a '# maintenance' section at the bottom whose content is the prompt instructions to efficiently update the documentation for the page.
 
 The documentation set should embody the DRY principle and favor references to other content over repetition.
+
+# Updateing
+prompt: Refresh the project docs/user documentation per this structure.
