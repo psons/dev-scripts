@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Docs: Refine user documentation structure for use cases, update\
-  \ READMEs with activities & proposals, fix typo"
+"actualCommitMessage": "docs: Standardize process doc structure, add template & initial\
+  \ instance, update bltodo docstring"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "pop-doc"
 ---
+
 
 
 
@@ -56,6 +57,13 @@ id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 
 # Work Summary
 
+## 2026-08-14 10:44
+
+---
+workHeadline: "docs: Standardize process doc structure, add template & initial instance, update bltodo docstring"
+---
+
+The `bltodo.py` script's docstring was updated for clarity, specifying it as a "default backlog.py provider." A significant update to the `user-documentation-structure.md` introduces a new requirement: each main topical markdown page must now include a stubbed-in `process.md` document. This process document will follow a consistent filename and a generalized template, containing specific section headings and placeholder guidance for human authors. This change is supported by the creation of a new, empty template file, `docs/dev/spec/topical-area-process-doc-template.md`, and an initial instance of this process document, `docs/user/feature-workflow/f-w-process.md`, which was also created as an empty file.
 ## 2026-08-03 15:14
 
 ---

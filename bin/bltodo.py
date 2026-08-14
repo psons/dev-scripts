@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bltodo - default backlog provider backed by a markdown TODO file.
+"""bltodo - default backlog.py provider backed by a markdown TODO file.
 
 Public API:
 - resolve_todo_file_path: return the TODO path from argument/env/default.
