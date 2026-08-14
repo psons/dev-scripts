@@ -22,7 +22,7 @@ Navigation:
 
 ## Script and Artifact Index
 
-- [Task Workflow Status Meaning](../task-workflow/status-meaning.md)
+- [Task Workflow Status Meaning](task-workflow/status-meaning.md)
 - [dtask](../project-setup/dtask.md)
 - [backlog.py](../project-setup/backlog.md)
 - [bltodo.py](../project-setup/bltodo.md)

@@ -21,7 +21,7 @@ Reference: [Status Meaning](https://docs.google.com/document/d/1icAlbeXJwcYxlPvD
 
 Update this page with the prompt below:
 
-"Refresh docs/user/task-workflow/status-meaning.md from current status parsing and workflow conventions. Keep the status table authoritative, align regex/leader examples with parser behavior, and preserve the external reference link."
+"Refresh docs/user/feature-workflow/task-workflow/status-meaning.md from current status parsing and workflow conventions. Keep the status table authoritative, align regex/leader examples with parser behavior, and preserve the external reference link."
 
 
 

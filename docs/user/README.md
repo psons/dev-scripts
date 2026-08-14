@@ -13,7 +13,7 @@ This documentation set is organized by development activity so users can find th
 ## Existing User Docs
 
 - [Gemini Scripting Notes](gemini-scripting.md)
-- [Task Workflow Notes](task-workflow/status-meaning.md)
+- [Task Workflow Notes](feature-workflow/task-workflow/status-meaning.md)
 
 # maintenance
 

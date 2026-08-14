@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "docs: Standardize process doc structure, add template & initial\
-  \ instance, update bltodo docstring"
+"actualCommitMessage": "Docs: Refactor user docs, introduce process templates, relocate\
+  \ status-meaning, add feature workflow details"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
@@ -8,12 +8,6 @@
 "title": "do.md"
 "workBranch": "pop-doc"
 ---
-
-
-
-
-
-
 
 
 # Current work
@@ -29,13 +23,30 @@ id: 6602af56-eb33-7c18-9fc9-fb25d78e1e14-9ee75a6a
 ---
 prompt: implement docs/dev/spec/user-documentation-structure.md
 
-/ - update spec and user docs to note that pop behavior may differ across plugin implementations.
+x - update spec and user docs to note that pop behavior may differ across plugin implementations.
 ---
 id: 9c33da36-3202-7069-b4e7-683f1112dfd1-ea461ed2
 ---
+    x - update user documentation structure so there is a place to put the pop note.
+        reconcile  docs/user/feature-workflow/f-b-w-s-s-c-w-f-process.md and docs/user/feature-workflow/f-w-process.md and the spec to update them.
+
+        x - simplify and enumerate the process file prefixes
+
+        x - write content into the -x version of the file
+
+        # Feature Based Work Story and Source Commit Workflows Process Documentation.## Goals of the Feature Workflow Processes
+
+        x - complete this digression of dtask pop with a credible draft of docs/user/feature-workflow/f-w-process.md
+            x - write the 'Work tracking' section
+            x - clean and commit.
+
+
+    x - capture pop text 
     put this in docs/user/project-setup/bltodo.md or docs/user/project-setup/backlog.md
     - # pop behavior may differ across plugin implementations.
     bltodo avoids duplicate story maintenance by removing popped stories from TODO.md. Other providers may keep popped stories marked in progress. In both cases, dtask --final unpops incomplete work back into the backlog.
+
+
 
 d - update dtask and backlog use case documentation for push
  - docs/dev/spec/usecases/backlog-usage.md 
@@ -57,6 +68,13 @@ id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 
 # Work Summary
 
+## 2026-08-14 14:26
+
+---
+workHeadline: "Docs: Refactor user docs, introduce process templates, relocate status-meaning, add feature workflow details"
+---
+
+This change refactors the user documentation structure by introducing a new `topical-area-process-doc-template.md` and updating `user-documentation-structure.md` to standardize process document creation. The `status-meaning.md` file was relocated to `docs/user/feature-workflow/task-workflow/status-meaning.md`, with corresponding navigation link updates. New process documentation stubs, based on the template, were created for AI knowledge, Firebase development, Node.js development, and project setup. Additionally, significant content was added to the `docs/user/feature-workflow/f-w-process.md` to detail feature-based work story and source commit workflows, including a note on `dtask`'s pop behavior.
 ## 2026-08-14 10:44
 
 ---

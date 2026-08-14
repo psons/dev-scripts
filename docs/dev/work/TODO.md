@@ -27,6 +27,12 @@ In a typical development environment, a developer:
 * which maybe iterations of the ‘Task, Spec, and Prompt’ work flow, including results review.  
 * Does UAT, and merged back into the ‘main’ branch.
 
+d - address TODOs in user docs docs/user/feature-workflow/f-w-process.md
+
+d - Write AI controls user process documentation.
+    see docs/user/ai-knowledge-skills/ai-k-s-process.md
+        ### Specification ad Control Structures around AI
+        TODO write this section to honor a link from docs/user/feature-workflow/f-w-process.md
 
 # d - Story: Work on stuff \- improve dtask to support a full feature life cycle per the documented work flow
 ---
@@ -76,12 +82,13 @@ id: cd73dbad-9938-7298-a21d-c1f51e208296-af4f93fc
 ---
 
 
-# d - Story: Document things \- Create a README that points to user docs
+# / - Story: Document things \- Create a README that points to user docs
 ---
 id: 5630f069-1e53-7620-bdf4-47657822a6c3-391f807e
 ---
 without the non included things, but with a bin index, and higher level "applicability" info than the common help statements.
 
+This may be complete based on docs/dev/spec/user-documentation-structure.md
 
 # d - Story: Document things \- Do User Docs for all included script pieces
 ---
