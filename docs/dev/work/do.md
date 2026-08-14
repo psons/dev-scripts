@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Docs: Refactor user docs, introduce process templates, relocate\
-  \ status-meaning, add feature workflow details"
+"actualCommitMessage": "docs: Refine f-w-process.md, fix typos, format goals, and\
+  \ clarify dtask's plugin architecture for work tracking"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "pop-doc"
 ---
+
 
 
 # Current work
@@ -68,6 +69,13 @@ id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 
 # Work Summary
 
+## 2026-08-14 14:27
+
+---
+workHeadline: "docs: Refine f-w-process.md, fix typos, format goals, and clarify dtask's plugin architecture for work tracking"
+---
+
+This update to `f-w-process.md` refines the documentation for the feature workflow. Key improvements include correcting minor typos such as "itrem" to "item" and "temporariy" to "temporarily," and a small formatting adjustment for "Convenience level goals." More significantly, new content was added to the "Work tracking" section, clarifying that the `dtask` command utilizes a plugin architecture to integrate with external work tracking systems like Taskwarrior or Jira, enabling enhanced visibility into development progress.
 ## 2026-08-14 14:26
 
 ---

@@ -10,7 +10,7 @@ Navigation:
  - Enable developers to decompose a desired software feature into small development task that produce a series of git commits
  - Improve focus on exactly the next task, but with the flexibility to assure that it evolves is necessary to is sensibly efficiently aligned with intent of the feature and the bigger picture goals. 
  - encourage a 'specify and generate' work flow that feeds back to improved automation and a consistent project structure.
- #### Convenience level goals
+#### Convenience level goals
  - ease branch creation and management with features
  - Optionally provide visibility to outside work tracking systems (by flexibly plugging into work tracking systems)
  - Connect Features build out, Stories, and source commits in a consistent relationship
@@ -26,8 +26,8 @@ To reduce clutter and further keep focus, when a feature (or one or more stories
 dtask has a commit subcommand that wraps gitcommit to generate a reasonable commit message to avoid cognitive load and improve commit messages.  
 TODO - there is a backlog item to further improve the messages that wsum.py creates for dtask.
 TODO - There is a backlog item to wrap dtask in a "feature based" command that will know about branching strategy and tag the commit when it runs dtask --final.
-TODO - a backlog itrem may exist to support squashing commits from a detailed branch to the main branch on feature completion.
-TODO - There is a backlog item to pull the gshove pilot into the "feature based" command to quickly push the branch to a remote for temporariy storage safety.
+TODO - a backlog item may exist to support squashing commits from a detailed branch to the main branch on feature completion.
+TODO - There is a backlog item to pull the gshove pilot into the "feature based" command to quickly push the branch to a remote for temporarily storage safety.
 TODO - a new backlog item is needed to adjust task status in do.md and create a commit.
 TODO - there is a new backlog item needed to update a story status and report back to the work tracking system.
 
@@ -49,8 +49,9 @@ A feature then becomes a cycle of just a few generic tasks:
  Refer to [Specification and Control Structures around AI](../ai-knowledge-skills/ai-k-s-process.md#specification-and-control-structures-around-ai) for more information.
 
 ### Work tracking 
- - visibility to work planning
- 
+The dtask command uses a plugin architecture so that the simple TODO.md file backlog can be replaced with amn integration with a more sophisticated work tracking system, such as Taskwarrior or Jira.
+
+If desired, the plugins can be used to create visibility to progress, challenges or expanded effort on work. 
 
 TODO - write content if not already covered:
     - Describe the repeatable feature delivery and source-commit outcomes this process is meant to support.
