@@ -101,6 +101,10 @@ for each capability of each included piece.
 * 1 big piece of clean\_node\_modules  
 *  overall \+ 3 sm pieces \- ../enable\_env\_local.sh (3 small pieces)  / helper functions (2 small pieces)
 
+d - Improved framework for user docs to pilot dtask inprovements.
+    d - generate a configuration guide or added section in docs for dtask, incl ref to:
+     d - backlog config - setting env for any plugins, and history saving and usage of the todo plugin 
+     d - wsum config - Gemini setup.
 
 # d - Story: Document things \- Doc a Task Spec and Prompt Workflow
 ---
@@ -163,3 +167,26 @@ id: 36177175-b1fc-7e9c-a746-aa19569fa116-8f65d6bf
         1 - scheme to find project root (based on git by default) and use default relative paths
         2 - piecemeal scheme to absolutely define locations, or craft a layot with sever user provided base locations used to set the official script supported paths from, #1. 
 
+# Story: Formalize specification Flow
+backlogItem: This story should be pushed into and AI work flow backlog item.
+
+## Suitability
+It is observed that Vibe coding works best when there are foundational pieces such as APIs and data spec to provide constraints and guidance.
+For some critical or foundational software it is valuable to use a more controlled software engineering (Software Development Life Cycle, or SDLC) process with deeper integrity tests of what AI produces.
+It is hoped that skills and scripts can be built to accelerate the SDLC so that it has a vibe code speed and feel without losing integrity.   
+
+## High level Flow
+The Usage driven mechanism where by indented use is a check and a constraint against what gets built should be documented.
+High level process gets created and aligned with specific use cases of a Feature.
+Technical constraints and high level module designs are briefly authored.
+A Software Requirements Spec (SRS) gets created as an interactive collaboration between AI and human.
+Both the BDD tests, the software modules, and  are generated from the SRS.
+    The generated BDD must be audited against the Use cases (Human + AI collaboration)
+    The generated software modules get user tested (Human user acceptance tests)
+Iteration back to the SRS to correct flaws or integration problems from testing.
+
+## Flow mapped to artifacts and project structure
+Usecases such as: docs/dev/spec/usecases/backlog-usage.md should:
+ - spawn user process docs as elaborations in the '## Candidate Activities To Script Next' section of the Topical Area / README.md.
+    Since the features based on the use case are not built yet, the behavioral documentation can be created, but should appear un user documentation where it is clear that it is future state.
+    - there likely can be elaboration of te feature uses as the user docs are written. 

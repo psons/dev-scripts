@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "docs: Refine f-w-process.md, fix typos, format goals, and\
-  \ clarify dtask's plugin architecture for work tracking"
+"actualCommitMessage": "docs: Enhance backlog usage, formalize spec flow, and add\
+  \ wsum work planning & task-aware summary features"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "pop-doc"
 ---
+
 
 
 
@@ -47,10 +48,30 @@ id: 9c33da36-3202-7069-b4e7-683f1112dfd1-ea461ed2
     - # pop behavior may differ across plugin implementations.
     bltodo avoids duplicate story maintenance by removing popped stories from TODO.md. Other providers may keep popped stories marked in progress. In both cases, dtask --final unpops incomplete work back into the backlog.
 
-
-
-d - update dtask and backlog use case documentation for push
+x - update dtask and backlog use case documentation for push
  - docs/dev/spec/usecases/backlog-usage.md 
+
+
+# d - Story: wsum enhancements for features and to separate work planning.
+
+d - improve wsum prompt to keep work planning, specification, separate from everything else.
+prompt: 
+    update the spec docs/dev/spec/wsum-module-spec.md for wsum.py with an enhancement section to improve the full work summary to separate 3 areas of change:
+        work planning - files under docs/dev/work
+        specification - files under docs/dev/spec
+        implementation - everything else
+
+    Any of the areas of change may be absent, so that part of the full summary should be silently omitted.
+
+    The workHeadline should include elements of all 3 areas.
+    additional quoted YAML front-matter attributes should be provided if the areas have any changes:
+        specChanges is a single line summary of the specification changes.
+        workChanges is a single line summary of the work planning.
+
+# d - Story: task aware do.md parsing
+scripts that use do.md, such as especially wsum should recognize task syntax.
+Specifically, wsum, should be able to recognize changes in task status.  Perhapse a script can generate a summary of task changes?
+
 
 # Completed Work
 
@@ -69,13 +90,20 @@ id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 
 # Work Summary
 
+## 2026-08-16 15:07
+
+---
+workHeadline: "docs: Enhance backlog usage, formalize spec flow, and add wsum work planning & task-aware summary features"
+---
+
+This update clarifies and expands several documentation aspects and introduces new development stories. In `docs/dev/spec/usecases/backlog-usage.md`, the text now provides more specific use flows for managing incomplete tasks and deferring work to the backlog. `docs/dev/work/TODO.md` introduces a new "Story: Formalize specification Flow," detailing a structured software development life cycle process from use cases to BDD tests and software modules. Additionally, `docs/dev/work/do.md` adds two new stories: one for enhancing `wsum` to better separate work planning, specification, and implementation in its summaries, and another for making `wsum` task-aware to recognize and summarize changes in task status.
 ## 2026-08-14 14:27
 
 ---
 workHeadline: "docs: Refine f-w-process.md, fix typos, format goals, and clarify dtask's plugin architecture for work tracking"
 ---
 
-This update to `f-w-process.md` refines the documentation for the feature workflow. Key improvements include correcting minor typos such as "itrem" to "item" and "temporariy" to "temporarily," and a small formatting adjustment for "Convenience level goals." More significantly, new content was added to the "Work tracking" section, clarifying that the `dtask` command utilizes a plugin architecture to integrate with external work tracking systems like Taskwarrior or Jira, enabling enhanced visibility into development progress.
+This update to `f-w-process.md` refines the documentation for the feature workflow. Key improvements include correcting minor typos and a small formatting adjustment for "Convenience level goals." More significantly, new content was added to the "Work tracking" section, clarifying that the `dtask` command utilizes a plugin architecture to integrate with external work tracking systems like Taskwarrior or Jira, enabling enhanced visibility into development progress.git branch
 ## 2026-08-14 14:26
 
 ---
