@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "docs: Enhance backlog usage, formalize spec flow, and add\
-  \ wsum work planning & task-aware summary features"
+"actualCommitMessage": "docs(work): Reorganize do.md/TODO.md, enhance wsum task status\
+  \ recognition, complete dtask pop update"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
@@ -12,9 +12,15 @@
 
 
 
+
 # Current work
 
-# d - Story: update dtask pop adr, spec, and user docs.
+
+# Completed Work
+
+x - manually push incomplete work back to the TODO.md.
+
+# x - Story: update dtask pop adr, spec, and user docs.
 ---
 id: 8cadd3ab-c2ef-7c1d-82f4-fc4be28de2ba-9e4c9c2b
 ---
@@ -52,29 +58,6 @@ x - update dtask and backlog use case documentation for push
  - docs/dev/spec/usecases/backlog-usage.md 
 
 
-# d - Story: wsum enhancements for features and to separate work planning.
-
-d - improve wsum prompt to keep work planning, specification, separate from everything else.
-prompt: 
-    update the spec docs/dev/spec/wsum-module-spec.md for wsum.py with an enhancement section to improve the full work summary to separate 3 areas of change:
-        work planning - files under docs/dev/work
-        specification - files under docs/dev/spec
-        implementation - everything else
-
-    Any of the areas of change may be absent, so that part of the full summary should be silently omitted.
-
-    The workHeadline should include elements of all 3 areas.
-    additional quoted YAML front-matter attributes should be provided if the areas have any changes:
-        specChanges is a single line summary of the specification changes.
-        workChanges is a single line summary of the work planning.
-
-# d - Story: task aware do.md parsing
-scripts that use do.md, such as especially wsum should recognize task syntax.
-Specifically, wsum, should be able to recognize changes in task status.  Perhapse a script can generate a summary of task changes?
-
-
-# Completed Work
-
 # x - Story: pop enhancement
 ---
 id: 46f26a29-e798-7c1b-9b47-303d9b6e95e7-314de38f
@@ -90,6 +73,13 @@ id: 5830b9fc-3bf8-76ed-91f0-7eab2e535399-06e21a43
 
 # Work Summary
 
+## 2026-08-17 08:05
+
+---
+workHeadline: "docs(work): Reorganize do.md/TODO.md, enhance wsum task status recognition, complete dtask pop update"
+---
+
+This update primarily reorganizes work items related to the `wsum` utility and `do.md` parsing, moving two new stories from `do.md` to `TODO.md` for future development. The `wsum` enhancements aim to categorize changes into work planning, specification, and implementation, while also proposing a feature for `wsum` to recognize task status within `do.md`. Concurrently, a story concerning the update of dtask pop ADR, specification, and user documentation has been marked as completed in `do.md`, and a minor typo has been corrected in `TODO.md`.
 ## 2026-08-16 15:07
 
 ---

@@ -1,3 +1,26 @@
+d - finalize the pop-doc feature, and do the wsum enhancement story below.
+
+# d - Story: wsum enhancements for features and to separate work planning.
+
+d - improve wsum prompt to keep work planning, specification, separate from everything else.
+prompt: 
+    update the spec docs/dev/spec/wsum-module-spec.md for wsum.py with an enhancement section to improve the full work summary to separate 3 areas of change:
+        work planning - files under docs/dev/work
+        specification - files under docs/dev/spec
+        implementation - everything else
+
+    Any of the areas of change may be absent, so that part of the full summary should be silently omitted.
+
+    The workHeadline should include elements of all 3 areas.
+    additional quoted YAML front-matter attributes should be provided if the areas have any changes:
+        specChanges is a single line summary of the specification changes.
+        workChanges is a single line summary of the work planning.
+
+# d - Story: task aware do.md parsing
+scripts that use do.md, such as especially wsum should recognize task syntax.
+Specifically, wsum, should be able to recognize changes in task status.  Perhapse a script can generate a summary of task changes?
+
+
 
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
 ---
@@ -189,4 +212,4 @@ Iteration back to the SRS to correct flaws or integration problems from testing.
 Usecases such as: docs/dev/spec/usecases/backlog-usage.md should:
  - spawn user process docs as elaborations in the '## Candidate Activities To Script Next' section of the Topical Area / README.md.
     Since the features based on the use case are not built yet, the behavioral documentation can be created, but should appear un user documentation where it is clear that it is future state.
-    - there likely can be elaboration of te feature uses as the user docs are written. 
+    - there likely can be elaboration of the feature uses as the user docs are written. 
