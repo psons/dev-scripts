@@ -1,12 +1,12 @@
 ---
-"actualCommitMessage": "docs(work): Reorganize do.md/TODO.md, enhance wsum task status\
-  \ recognition, complete dtask pop update"
+"actualCommitMessage": "Establish User doc structure. bltodo.py plugin error handling and recovery for dtask pop"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "documentation and pop enhancement for do.md error"
 "priorCommit": "6f29f54a3463170ce6b6b7c7dcaec26597c71ef7"
 "title": "do.md"
 "workBranch": "pop-doc"
+"git-feature-tag": "user-doc+bltodo-recovery"
 ---
 
 
@@ -15,8 +15,9 @@
 
 # Current work
 
-
 # Completed Work
+user-doc+bltodo-recovery
+
 
 x - manually push incomplete work back to the TODO.md.
 

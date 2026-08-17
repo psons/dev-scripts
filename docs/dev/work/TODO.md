@@ -1,9 +1,18 @@
+
 d - finalize the pop-doc feature, and do the wsum enhancement story below.
 
+
+
 # d - Story: wsum enhancements for features and to separate work planning.
+---
+id: 9eb4ee8e-717a-779b-aa31-39af5113c86a-2e2b8f4f
+---
 
 d - improve wsum prompt to keep work planning, specification, separate from everything else.
-prompt: 
+---
+id: bafda5c9-ae5f-7503-af80-68079a558b51-359d55b7
+prompt: ''
+---
     update the spec docs/dev/spec/wsum-module-spec.md for wsum.py with an enhancement section to improve the full work summary to separate 3 areas of change:
         work planning - files under docs/dev/work
         specification - files under docs/dev/spec
@@ -17,9 +26,11 @@ prompt:
         workChanges is a single line summary of the work planning.
 
 # d - Story: task aware do.md parsing
+---
+id: 91a26399-8297-714a-a897-7495e0fb9e2e-087a353f
+---
 scripts that use do.md, such as especially wsum should recognize task syntax.
 Specifically, wsum, should be able to recognize changes in task status.  Perhapse a script can generate a summary of task changes?
-
 
 
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
@@ -27,7 +38,6 @@ Specifically, wsum, should be able to recognize changes in task status.  Perhaps
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
 estimate: 4p
 ---
-
 Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from.   But if pop is taking them out of the DDF doc, it is getting ripped apart anyway.   This can be fixed when there are markers in the DDF doc.
 
 d \- build a dtask unpop subcommand and module capability to:  
@@ -51,11 +61,18 @@ In a typical development environment, a developer:
 * Does UAT, and merged back into the ‘main’ branch.
 
 d - address TODOs in user docs docs/user/feature-workflow/f-w-process.md
+---
+id: a636fa4f-ebff-7e92-953e-6cc3ea0443e6-fbd53821
+---
 
 d - Write AI controls user process documentation.
+---
+id: b8eab0af-0c10-7a59-a7f5-36d4b8758762-01b7294c
+---
     see docs/user/ai-knowledge-skills/ai-k-s-process.md
         ### Specification ad Control Structures around AI
         TODO write this section to honor a link from docs/user/feature-workflow/f-w-process.md
+
 
 # d - Story: Work on stuff \- improve dtask to support a full feature life cycle per the documented work flow
 ---
@@ -113,6 +130,7 @@ without the non included things, but with a bin index, and higher level "applica
 
 This may be complete based on docs/dev/spec/user-documentation-structure.md
 
+
 # d - Story: Document things \- Do User Docs for all included script pieces
 ---
 id: 3a75ebb3-0db9-7a52-8321-c59cac40676e-e6481463
@@ -125,9 +143,13 @@ for each capability of each included piece.
 *  overall \+ 3 sm pieces \- ../enable\_env\_local.sh (3 small pieces)  / helper functions (2 small pieces)
 
 d - Improved framework for user docs to pilot dtask inprovements.
+---
+id: 76cd1e75-48d3-7669-af6b-28beaa476665-0cbc13eb
+---
     d - generate a configuration guide or added section in docs for dtask, incl ref to:
      d - backlog config - setting env for any plugins, and history saving and usage of the todo plugin 
      d - wsum config - Gemini setup.
+
 
 # d - Story: Document things \- Doc a Task Spec and Prompt Workflow
 ---
@@ -190,9 +212,12 @@ id: 36177175-b1fc-7e9c-a746-aa19569fa116-8f65d6bf
         1 - scheme to find project root (based on git by default) and use default relative paths
         2 - piecemeal scheme to absolutely define locations, or craft a layot with sever user provided base locations used to set the official script supported paths from, #1. 
 
-# Story: Formalize specification Flow
-backlogItem: This story should be pushed into and AI work flow backlog item.
 
+# d - Story: Formalize specification Flow
+---
+id: f453644d-f1ef-7e94-aeca-a5fe23f4cf9b-5af5051a
+backlogItem: This story should be pushed into and AI work flow backlog item.
+---
 ## Suitability
 It is observed that Vibe coding works best when there are foundational pieces such as APIs and data spec to provide constraints and guidance.
 For some critical or foundational software it is valuable to use a more controlled software engineering (Software Development Life Cycle, or SDLC) process with deeper integrity tests of what AI produces.
@@ -212,4 +237,4 @@ Iteration back to the SRS to correct flaws or integration problems from testing.
 Usecases such as: docs/dev/spec/usecases/backlog-usage.md should:
  - spawn user process docs as elaborations in the '## Candidate Activities To Script Next' section of the Topical Area / README.md.
     Since the features based on the use case are not built yet, the behavioral documentation can be created, but should appear un user documentation where it is clear that it is future state.
-    - there likely can be elaboration of the feature uses as the user docs are written. 
+    - there likely can be elaboration of the feature uses as the user docs are written.
