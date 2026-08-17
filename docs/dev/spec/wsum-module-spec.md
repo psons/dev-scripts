@@ -43,13 +43,13 @@ Output markdown formatted like the following example.  The data is the first 3 e
 
 Command behavior requirements:
 - Default invocation summarizes staged changes versus HEAD.
-- A command option aligned with dtask --all must include unstaged changes to tracked files and untracked files. (revised 2026-05-15)
+- A command option aligned with dtask --all must include unstaged changes to tracked files and untracked files.
 - An optional base ref argument may be provided to compare against a branch, tag, or commit.
 - Command should support stdin diff input; when stdin is provided, stdin takes precedence over internal git diff generation.
 - Support explicit git diff options; do not implement unrestricted pass-through of arbitrary git diff arguments.
 - If an escape hatch is provided, validate and document allowed values for extra_diff_args.
 
-### wsum option alignment with dtask (revised 2026-05-15)
+### wsum option alignment with dtask
 #### --all, -a
 - The file inclusion of --all should be the same for dtask init is for git add.  
 - wsum  --all should also align with git add and dtask init to allow user inference of how wsum works to be easy based on how dtask works.
@@ -149,11 +149,23 @@ Action completed in this spec: a core function contract and CLI-wrapper pattern 
 Split implementation into pure functions for formatting and prompt assembly, plus adapter functions for git and Gemini execution. Then add tests for: staged-only default behavior, base ref comparisons, stdin-fed diffs, empty diff handling, and markdown output format compatibility with `do.md`.
 Action completed in this spec: testability architecture and required test coverage are now specified.
 
-# Past revisions
-Update the wsum command as described in bullet items and sections marked (revised 2026-05-15) and make updates to the help-text also.
 
-# Revision prompt
-Refactor and implement the headline_from_summary function to use gemini again to generate a shorter summary as described in bullet items and sections marked (revised 2026-05-15 - 09:46).
 
 ## Enhancements for workHeadline as quoted YAML frontmatter 2026-06-03
 the workHeadline in the markdown in WorkSummaryResult returned by summarize_work() should be correctly quoted YAML, and all on a single line
+
+## Enhancement: Detailed Work Summary Categorization
+
+To improve the clarity and utility of the full work summary, `wsum.py` should be enhanced to categorize changes into three distinct areas:
+
+1.  **Work Planning**: Summarize changes specifically within files located under `docs/dev/work`.
+2.  **Specification**: Summarize changes specifically within files located under `docs/dev/spec`.
+3.  **Implementation**: Summarize changes in all other files.
+
+If any of these areas have no relevant content changes, their respective summary part should be silently omitted from the full summary.
+
+The `workHeadline` should be a concise synthesis that incorporates elements from all three areas if they are present.
+
+Additionally, the YAML front-matter should include new attributes if there are changes in the respective areas:
+-   `specChanges`: A single-line summary of changes related to specifications (from `docs/dev/spec`).
+-   `workChanges`: A single-line summary of changes related to work planning (from `docs/dev/work`).

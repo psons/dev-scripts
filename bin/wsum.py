@@ -60,6 +60,8 @@ class WorkSummaryResult:
     headline: str
     summary: str
     markdown: str
+    work_changes: str | None = None
+    spec_changes: str | None = None
 
 
 def build_summary_prompt(max_sentences: int = 6) -> str:
@@ -112,16 +114,34 @@ def headline_from_summary(summary: str, max_len: int = 130, model: str | None = 
     return headline
 
 
-def render_markdown(timestamp: str, headline: str, summary: str) -> str:
+def render_markdown(
+    timestamp: str,
+    headline: str,
+    summary: str,
+    spec_changes: str | None = None,
+    work_changes: str | None = None,
+) -> str:
     """Render a do.md-compatible work summary markdown block."""
     # Use JSON string encoding, which is valid YAML double-quoted scalar syntax,
     # to ensure a single-line and safely escaped workHeadline value.
     yaml_quoted_headline = json.dumps(headline)
+    frontmatter_lines = [f"workHeadline: {yaml_quoted_headline}"]
+    
+    if spec_changes:
+        yaml_quoted_spec = json.dumps(spec_changes)
+        frontmatter_lines.append(f"specChanges: {yaml_quoted_spec}")
+    
+    if work_changes:
+        yaml_quoted_work = json.dumps(work_changes)
+        frontmatter_lines.append(f"workChanges: {yaml_quoted_work}")
+    
+    frontmatter = "\n".join(frontmatter_lines)
+    
     return (
         "\n"
         f"## {timestamp}\n\n"
         "---\n"
-        f"workHeadline: {yaml_quoted_headline}\n"
+        f"{frontmatter}\n"
         "---\n\n"
         f"{summary.strip()}\n"
     )
@@ -271,6 +291,150 @@ def run_gemini(diff_text: str, *, model: str | None = None, max_sentences: int =
     return summary
 
 
+def categorize_diff_by_path(diff_text: str) -> dict[str, str]:
+    """Split diff into categories based on file paths.
+    
+    Returns a dict with keys: 'work', 'spec', 'implementation'
+    Each value is the diff content for that category, or empty string if no changes.
+    """
+    categories = {
+        'work': [],
+        'spec': [],
+        'implementation': []
+    }
+    
+    # Split diff into file chunks (each starting with 'diff --git')
+    diff_chunks = re.split(r'(?=diff --git)', diff_text)
+    
+    for chunk in diff_chunks:
+        if not chunk.strip():
+            continue
+            
+        # Extract file path from diff header
+        # Matches patterns like: diff --git a/path/to/file b/path/to/file
+        match = re.search(r'diff --git a/(.+?) b/', chunk)
+        if not match:
+            # If we can't determine the path, default to implementation
+            categories['implementation'].append(chunk)
+            continue
+            
+        file_path = match.group(1)
+        
+        # Categorize based on path
+        if file_path.startswith('docs/dev/work/'):
+            categories['work'].append(chunk)
+        elif file_path.startswith('docs/dev/spec/'):
+            categories['spec'].append(chunk)
+        else:
+            categories['implementation'].append(chunk)
+    
+    # Join chunks back into diff text
+    return {
+        'work': ''.join(categories['work']),
+        'spec': ''.join(categories['spec']),
+        'implementation': ''.join(categories['implementation'])
+    }
+
+
+def generate_single_line_summary(full_summary: str, *, model: str | None = None) -> str:
+    """Generate a single-line summary from a full summary using Gemini."""
+    prompt = (
+        "Condense the following summary into a single concise line (one sentence, no quotes). "
+        "Be specific and information-dense.\n\nSUMMARY:\n" + full_summary.strip()
+    )
+    cmd = ["gemini", "-p", prompt]
+    if model:
+        cmd.extend(["-m", model])
+
+    env = os.environ.copy()
+    if not env.get("GEMINI_API_KEY") and env.get("GOOGLE_API_KEY"):
+        env["GEMINI_API_KEY"] = env["GOOGLE_API_KEY"]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+    except FileNotFoundError as exc:
+        raise WsumError(
+            "Error: gemini CLI not found in PATH. Install Gemini CLI first."
+        ) from exc
+
+    if result.returncode != 0:
+        stderr = result.stderr.strip()
+        if stderr:
+            raise WsumError(f"Error: gemini CLI failed: {stderr}")
+        raise WsumError("Error: gemini CLI failed to generate single-line summary.")
+
+    single_line = result.stdout.strip().replace('\n', ' ')
+    # Remove quotes
+    single_line = re.sub(r'^["\']|["\']$', '', single_line).strip()
+    return single_line
+
+
+def synthesize_headline_from_categories(
+    work_summary: str | None,
+    spec_summary: str | None,
+    impl_summary: str | None,
+    *,
+    max_len: int = 130,
+    model: str | None = None
+) -> str:
+    """Synthesize a single headline from multiple category summaries."""
+    # Combine all available summaries
+    summaries = []
+    if work_summary:
+        summaries.append(f"Work Planning: {work_summary}")
+    if spec_summary:
+        summaries.append(f"Specification: {spec_summary}")
+    if impl_summary:
+        summaries.append(f"Implementation: {impl_summary}")
+    
+    combined = " ".join(summaries)
+    
+    prompt = (
+        "You are an expert developer. Write a single-line, information-dense summary suitable as a git commit message, "
+        f"no more than {max_len} characters, that synthesizes the following categorized work summaries. "
+        "Do not use quotes or trailing punctuation. Be specific and concise.\n\n" + combined
+    )
+    cmd = ["gemini", "-p", prompt]
+    if model:
+        cmd.extend(["-m", model])
+
+    env = os.environ.copy()
+    if not env.get("GEMINI_API_KEY") and env.get("GOOGLE_API_KEY"):
+        env["GEMINI_API_KEY"] = env["GOOGLE_API_KEY"]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+    except FileNotFoundError as exc:
+        raise WsumError(
+            "Error: gemini CLI not found in PATH. Install Gemini CLI first."
+        ) from exc
+
+    if result.returncode != 0:
+        stderr = result.stderr.strip()
+        if stderr:
+            raise WsumError(f"Error: gemini CLI failed: {stderr}")
+        raise WsumError("Error: gemini CLI failed to generate headline.")
+
+    headline = result.stdout.strip().replace('\n', ' ')
+    # Remove quotes and trailing punctuation, enforce max_len
+    headline = re.sub(r'^["\']|["\']$', '', headline).strip()
+    if len(headline) > max_len:
+        headline = headline[:max_len].rstrip()
+        if " " in headline:
+            headline = headline.rsplit(" ", 1)[0]
+    return headline
+
+
 def summarize_work(
     *,
     diff_text: str | None = None,
@@ -299,16 +463,60 @@ def summarize_work(
     if not diff_text.strip():
         raise WsumError("No changes found in diff. Nothing to summarize.")
 
-    summary = run_gemini(diff_text, model=model, max_sentences=max_sentences)
+    # Categorize the diff by file paths
+    categorized = categorize_diff_by_path(diff_text)
+    
+    # Generate summaries for each category that has changes
+    work_summary = None
+    spec_summary = None
+    impl_summary = None
+    
+    work_single_line = None
+    spec_single_line = None
+    
+    if categorized['work'].strip():
+        work_summary = run_gemini(categorized['work'], model=model, max_sentences=max_sentences)
+        work_single_line = generate_single_line_summary(work_summary, model=model)
+    
+    if categorized['spec'].strip():
+        spec_summary = run_gemini(categorized['spec'], model=model, max_sentences=max_sentences)
+        spec_single_line = generate_single_line_summary(spec_summary, model=model)
+    
+    if categorized['implementation'].strip():
+        impl_summary = run_gemini(categorized['implementation'], model=model, max_sentences=max_sentences)
+    
+    # Combine the summaries into a full summary
+    summary_parts = []
+    if work_summary:
+        summary_parts.append(f"**Work Planning**: {work_summary}")
+    if spec_summary:
+        summary_parts.append(f"**Specification**: {spec_summary}")
+    if impl_summary:
+        summary_parts.append(f"**Implementation**: {impl_summary}")
+    
+    full_summary = "\n\n".join(summary_parts)
+    
+    # Synthesize headline from all categories
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    headline = headline_from_summary(summary, model=model)
-    markdown = render_markdown(timestamp, headline, summary)
+    headline = synthesize_headline_from_categories(
+        work_summary, spec_summary, impl_summary, model=model
+    )
+    
+    markdown = render_markdown(
+        timestamp, 
+        headline, 
+        full_summary,
+        spec_changes=spec_single_line,
+        work_changes=work_single_line,
+    )
 
     return WorkSummaryResult(
         timestamp=timestamp,
         headline=headline,
-        summary=summary,
+        summary=full_summary,
         markdown=markdown,
+        work_changes=work_single_line,
+        spec_changes=spec_single_line,
     )
 
 
