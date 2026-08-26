@@ -22,7 +22,12 @@ DO_MD_DESCRIPTION = (
 )
 DO_MD_TITLE = ("do.md")
 
-DO_MD_BODY = """
+DO_MD_BODY = """# Current work
+
+
+# Completed work
+
+
 # Work Summary
 
 """

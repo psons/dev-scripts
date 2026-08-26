@@ -68,7 +68,14 @@ priorCommit: <latest_git_commit_hash_>
 intendedCommitMessage: <description_of_planned_work>
 actualCommitMessage: <description_of_completed_work>
 ---
-<task_text>
+# Current work
+<incomplete_mdgbdf_syntax_Stories_and_tasks>
+
+# Completed work
+<completed_mdgbdf_syntax_Stories_and_tasks>
+
+# Work Summary
+<work_summaries>
 ```
 
 The 'description:' is constant to for do.md to help understand what is in the do.md file, and may be linked from other project mark down files to help agents discover it.

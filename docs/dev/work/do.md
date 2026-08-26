@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "Refactor DDF docs for AI integration; update do.md with story\
-  \ ID, DDF parsing details & 'Completed' section"
+"actualCommitMessage": "feat: update dtask/do.md template. with Current and Completed work sections"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "wsum.py split out work planning and specification"
@@ -9,9 +8,6 @@
 "workBranch": "wsum-sep-work-spec"
 ---
 
-
-
-
 # Current work
 
 # x - Story: wsum enhancements for features and to separate work planning.
@@ -19,18 +15,6 @@
 id: 9eb4ee8e-717a-779b-aa31-39af5113c86a-2e2b8f4f
 ---
 
-# d - Story: task aware do.md parsing
----
-id: 91a26399-8297-714a-a897-7495e0fb9e2e-087a353f
----
-scripts that use do.md, such as especially wsum should recognize task syntax.
-Specifically, wsum, should be able to recognize changes in task status.  Perhapse a script can generate a summary of task changes?
-    this would be examining previous task status against current task status; parsing the git diff output, or actually reading the file from the prior commit, and comparing the task statuses... I do not think this is what I really want.  
-     - (longer term)It would be good to know the elaboration;the improvement in task definition
-     - (shorter term) I just want the work summary to stop confusing work actually done from work plan definition.
-Prerequisite, do.md parsing should be as mdgbdf and wsum should recognize task status changes in do.md
-
-depends on parsing do.md as DDF to objects.  
 
 # Completed work
 
@@ -58,6 +42,17 @@ update the spec docs/dev/spec/wsum-module-spec.md for wsum.py with an enhancemen
 
 
 # Work Summary
+
+## 2026-08-26 08:03
+
+---
+workHeadline: "feat: update dtask/do.md template. with Current and Completed work sections"
+specChanges: "`dtask-spec.md` was refactored to replace explicit commit-related fields with \"Current work,\" \"Completed work,\" and \"Work Summary\" sections, enhancing its structure for tracking development and improving clarity in `do.md`."
+---
+
+**Specification**: The `dtask-spec.md` file has been updated to enhance its structure for tracking development work. Previously, it included explicit fields for prior commit hashes, intended commit messages, and actual commit messages. These have been replaced with new, distinct sections titled "Current work," "Completed work," and "Work Summary." The addition of placeholder markdown syntax within these new sections suggests a move towards a more organized and potentially automated system for documenting ongoing and finished tasks, improving clarity and discoverability within the `do.md` file.
+
+**Implementation**: The `DO_MD_BODY` constant in `bin/dtask` has been updated to include new sections: "Current work" and "Completed work". This modification provides a more structured template for the `do.md` file, enabling users to better organize and delineate their ongoing tasks from completed ones, leading to improved task management and clarity within their work summaries.
 
 ## 2026-08-26 07:17
 

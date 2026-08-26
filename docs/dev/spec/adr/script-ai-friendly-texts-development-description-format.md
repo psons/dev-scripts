@@ -9,7 +9,7 @@ The idea is that when writing markdown documents for specs and other things, sto
 DDF extends MDGBDF to include text that are not Stories, in that they have no tasks or status to track.
 
 The content of this file below describes some usages for supporting MDGBDF in DDF files that are in a state of flux (2026-08-24)
- - this tect should be migrated related to the {dev-scripts-backlog}stories/Specify-development-description-format.md or 
+ - this text should be migrated related to the {dev-scripts-backlog}stories/Specify-development-description-format.md or 
 
 
 ## File Scoped Story

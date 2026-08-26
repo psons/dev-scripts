@@ -108,7 +108,7 @@ for each capability of each included piece.
 * 1 big piece of clean\_node\_modules  
 *  overall \+ 3 sm pieces \- ../enable\_env\_local.sh (3 small pieces)  / helper functions (2 small pieces)
 
-d - Improved framework for user docs to pilot dtask inprovements.
+d - Improved framework for user docs to pilot dtask improvements.
 ---
 id: 76cd1e75-48d3-7669-af6b-28beaa476665-0cbc13eb
 ---
@@ -176,8 +176,9 @@ id: 36177175-b1fc-7e9c-a746-aa19569fa116-8f65d6bf
  - there should be a series of env exported names to define all the real locations that the tools in this suite use.
     - this gives rise to two approached:
         1 - scheme to find project root (based on git by default) and use default relative paths
-        2 - piecemeal scheme to absolutely define locations, or craft a layot with sever user provided base locations used to set the official script supported paths from, #1. 
+        2 - piecemeal scheme to absolutely define locations, or craft a layout with sever user provided base locations used to set the official script supported paths from, #1. 
 
+d - document the project directory structure in user documentation.
 
 # d - Story: Formalize specification Flow
 ---
@@ -204,3 +205,16 @@ Usecases such as: docs/dev/spec/usecases/backlog-usage.md should:
  - spawn user process docs as elaborations in the '## Candidate Activities To Script Next' section of the Topical Area / README.md.
     Since the features based on the use case are not built yet, the behavioral documentation can be created, but should appear un user documentation where it is clear that it is future state.
     - there likely can be elaboration of the feature uses as the user docs are written.
+
+# d - Story: task aware do.md parsing
+---
+id: 91a26399-8297-714a-a897-7495e0fb9e2e-087a353f
+---
+scripts that use do.md, such as especially wsum should recognize task syntax.
+Specifically, wsum, should be able to recognize changes in task status.  Perhaps a script can generate a summary of task changes?
+    this would be examining previous task status against current task status; parsing the git diff output, or actually reading the file from the prior commit, and comparing the task statuses... I do not think this is what I really want.  
+     - (longer term)It would be good to know the elaboration;the improvement in task definition
+     - (shorter term) I just want the work summary to stop confusing work actually done from work plan definition.
+Prerequisite, do.md parsing should be as mdgbdf and wsum should recognize task status changes in do.md
+
+depends on parsing do.md as DDF to objects.  
