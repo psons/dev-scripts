@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/dev-scripts-backlog/stories/spec/ddf-object-structure.schema.json",
+  "title": "DDF Object Structure",
+  "description": "Schema for the simplified DDF object structure described in stories/spec/proposed-ddf-spec.md.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Optional document name."
+    },
+    "attributes": {
+      "$ref": "#/$defs/attributes"
+    },
+    "preamble": {
+      "type": "string",
+      "description": "Text before the first parsed section heading."
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/section"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "attributes": {
+      "type": "object",
+      "description": "Parsed front-matter attributes.",
+      "additionalProperties": {
+        "$ref": "#/$defs/jsonValue"
+      }
+    },
+    "section": {
+      "type": "object",
+      "properties": {
+        "heading": {
+          "type": "string",
+          "description": "Markdown heading line including leading # markers.",
+          "pattern": "^#{1,6}(?:\\s.*)?$"
+        },
+        "attributes": {
+          "$ref": "#/$defs/attributes"
+        },
+        "preamble": {
+          "type": "string"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/section"
+          }
+        }
+      },
+      "required": [
+        "heading"
+      ],
+      "additionalProperties": false
+    },
+    "jsonValue": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        }
+      ]
+    }
+  }
+}
