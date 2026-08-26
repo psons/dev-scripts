@@ -1,9 +1,16 @@
 # Development Description Format (DDF)
-Development Description Format (DDF) should be a human author friendly text convention on top of Markdown to synthesize what do.md is being used for and TODO.md is being used for (writing stories and tasks).
+
+Development Description Format DDF is being define to enable simple fast scripts to operate on the same specification files that AI may be using to build a project as it becomes more clearly defined over time.  With DDF, the benefits of loose AI specification subject to interpretation and elaboration is complimentary to more formal SDLC processes. 
+
+Development Description Format (DDF) is a human author friendly text convention on top of Markdown to incorporate fast scripts into work processes such as to synthesize story and task definition into specs similar to do.md and TODO.md.
 
 The idea is that when writing markdown documents for specs and other things, stories and tasks can be included inline.
 
 DDF extends MDGBDF to include text that are not Stories, in that they have no tasks or status to track.
+
+The content of this file below describes some usages for supporting MDGBDF in DDF files that are in a state of flux (2026-08-24)
+ - this tect should be migrated related to the {dev-scripts-backlog}stories/Specify-development-description-format.md or 
+
 
 ## File Scoped Story
 Files should be viewed as containing the following structure, which can be structured as a list of section / story objects:

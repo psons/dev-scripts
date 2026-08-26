@@ -1,5 +1,6 @@
 ---
-"actualCommitMessage": "wsum.py split out work planning and specification"
+"actualCommitMessage": "Refactor DDF docs for AI integration; update do.md with story\
+  \ ID, DDF parsing details & 'Completed' section"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "wsum.py split out work planning and specification"
@@ -10,17 +11,35 @@
 
 
 
+
 # Current work
 
-
-
-
-# d - Story: wsum enhancements for features and to separate work planning.
+# x - Story: wsum enhancements for features and to separate work planning.
 ---
 id: 9eb4ee8e-717a-779b-aa31-39af5113c86a-2e2b8f4f
 ---
 
-d - improve wsum to keep work planning, specification, separate from everything else.
+# d - Story: task aware do.md parsing
+---
+id: 91a26399-8297-714a-a897-7495e0fb9e2e-087a353f
+---
+scripts that use do.md, such as especially wsum should recognize task syntax.
+Specifically, wsum, should be able to recognize changes in task status.  Perhapse a script can generate a summary of task changes?
+    this would be examining previous task status against current task status; parsing the git diff output, or actually reading the file from the prior commit, and comparing the task statuses... I do not think this is what I really want.  
+     - (longer term)It would be good to know the elaboration;the improvement in task definition
+     - (shorter term) I just want the work summary to stop confusing work actually done from work plan definition.
+Prerequisite, do.md parsing should be as mdgbdf and wsum should recognize task status changes in do.md
+
+depends on parsing do.md as DDF to objects.  
+
+# Completed work
+
+x - finalize the pop-doc feature, and do the wsum enhancement story below.
+---
+id: 2e684872-603d-7142-978b-4b3f0cdc7b26-ba07e445
+---
+
+x - improve wsum to keep work planning, specification, separate from everything else.
 ---
 id: bafda5c9-ae5f-7503-af80-68079a558b51-359d55b7
 ---
@@ -38,21 +57,20 @@ update the spec docs/dev/spec/wsum-module-spec.md for wsum.py with an enhancemen
         workChanges is a single line summary of the work planning.
 
 
-# d - Story: task aware do.md parsing
----
-id: 91a26399-8297-714a-a897-7495e0fb9e2e-087a353f
----
-scripts that use do.md, such as especially wsum should recognize task syntax.
-Specifically, wsum, should be able to recognize changes in task status.  Perhapse a script can generate a summary of task changes?
-
-
-x - finalize the pop-doc feature, and do the wsum enhancement story below.
----
-id: 2e684872-603d-7142-978b-4b3f0cdc7b26-ba07e445
----
-
-
 # Work Summary
+
+## 2026-08-26 07:17
+
+---
+workHeadline: "Refactor DDF docs for AI integration; update do.md with story ID, DDF parsing details & 'Completed' section"
+specChanges: "DDF documentation has been refactored, replacing `dev-description-format.md` with `script-ai-friendly-texts-development-description-format.md` to define DDF's integration of fast scripts with AI specification files, and `spec-mechanics-with-ddf-and-skills.md` introduces DDF's role in templating AI skill output for structured development workflows."
+workChanges: "`TODO.md` was formatted by removing a blank line, while `do.md` had a story identifier changed from 'd' to 'x' for \"wsum enhancements,\" with new text added to distinguish work from work plan definitions and a DDF parsing prerequisite, and a \"Completed work\" section created to move an existing task."
+---
+
+**Work Planning**: The `TODO.md` file saw a minor formatting adjustment with the removal of a blank line. More significantly, the `do.md` file was updated to change a story identifier from 'd' to 'x' for "wsum enhancements." This story was further elaborated with new text clarifying the need to distinguish between actual work and work plan definitions, and a prerequisite for parsing `do.md` as DDF. Additionally, a new "Completed work" section was added to `do.md`, and an existing task related to finalizing the pop-doc feature and wsum enhancement was moved into this new section.
+
+**Specification**: The Development Description Format (DDF) documentation has been refactored, removing the `docs/dev/spec/adr/dev-description-format.md` file in favor of an updated and more comprehensive definition. The file `docs/dev/spec/adr/script-ai-friendly-texts-development-description-format.md` now clarifies DDF's role in integrating fast scripts with AI-driven specification files, balancing AI flexibility with formal SDLC processes. Additionally, a new document, `docs/dev/spec/usecases/spec-mechanics-with-ddf-and-skills.md`, introduces how DDF will facilitate templated AI skill output to ensure structured, consistent, and easily reviewable content within development workflows.
+
 
 ## 2026-08-17 17:56
 

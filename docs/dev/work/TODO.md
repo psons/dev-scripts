@@ -5,7 +5,8 @@ estimate: 4p
 ---
 Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from.   But if pop is taking them out of the DDF doc, it is getting ripped apart anyway.   This can be fixed when there are markers in the DDF doc.
 
-d \- build a dtask unpop subcommand and module capability to:  
+
+d - build a dtask unpop subcommand and module capability to:  
 
 - get the current work stories after ‘\#current work’ and before ‘\#completed work’  
 - load TODO.md as mdgbdata  
