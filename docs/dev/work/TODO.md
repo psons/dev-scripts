@@ -1,7 +1,23 @@
+
+# d - Story: introduce basic DDF parsing
+---
+epic: dtask can update do.md and TODO.md
+---
+
+# d - Story: DDF parsing with MDGBDF sections supported.
+---
+epic: dtask can update do.md and TODO.md
+---
+d - template used by dtask for do.md can find the MDGBDF section '# Current Work'
+    d - do design to work out how dtask can manipulate the do.md model loaded into memory ads DDF.
+
+
+
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
 estimate: 4p
+epic: dtask --final does not lose incomplete work in do.md
 ---
 Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from.   But if pop is taking them out of the DDF doc, it is getting ripped apart anyway.   This can be fixed when there are markers in the DDF doc.
 

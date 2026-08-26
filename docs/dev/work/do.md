@@ -1,5 +1,5 @@
 ---
-"actualCommitMessage": "feat: update dtask/do.md template. with Current and Completed work sections"
+"actualCommitMessage": "wsum.py split out work planning and specification"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "wsum.py split out work planning and specification"
@@ -8,15 +8,17 @@
 "workBranch": "wsum-sep-work-spec"
 ---
 
+
 # Current work
+
+
+
+# Completed work
 
 # x - Story: wsum enhancements for features and to separate work planning.
 ---
 id: 9eb4ee8e-717a-779b-aa31-39af5113c86a-2e2b8f4f
 ---
-
-
-# Completed work
 
 x - finalize the pop-doc feature, and do the wsum enhancement story below.
 ---
