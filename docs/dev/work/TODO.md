@@ -1,15 +1,25 @@
-
-# d - Story: introduce basic DDF parsing
----
-epic: dtask can update do.md and TODO.md
----
-
 # d - Story: DDF parsing with MDGBDF sections supported.
 ---
+id: 6ef8e760-6efb-76f5-b56f-c6bb09e1f751-d8018269
 epic: dtask can update do.md and TODO.md
 ---
+
 d - template used by dtask for do.md can find the MDGBDF section '# Current Work'
-    d - do design to work out how dtask can manipulate the do.md model loaded into memory ads DDF.
+---
+id: 1e585069-3e8d-77bb-bdd1-5fc6513846a0-33d44846
+---
+    d - do design to work out how dtask can manipulate the do.md model loaded into memory as DDF.
+        d - update the spec to explain how a document template looks to cause mdgbdf to be used to parse a section.
+        the spec should have the heading patterns that are stories, such as '^# Story:' or whatever is in the mdgbdf parser, updated to account for the fact that they might not always be H1s.
+            How does dtask have a role in defining the format of do.md, and the mdgbdf module knows about stories?
+                - I think dtask tells ddf to use the mdgbdf parser for the H1 sections that have stories...
+                    dtask passes the template pattern for do.md, which should also tell dtask where to find the stories and tasks in the DDF object of do.md
+                        - Is this the ' # Current Work' section?
+                        - do some forward looking thinking as to whether a template can be re-structured without any code changes to make a story list where work summaries are together with tasks.  No, I think perhaps a work summary can have a task ID that was completed when wsum becomes task aware a lit of tasks that are now changed to in progress of completed can be paired with te work summary.  If dtask commit is run frequently and task statuses are updated, then the work summary will naturally be summarizing the work to complete the tasks.  At some point, perhaps an LLM can be trained to figure out work based on historical completed tasks.    
+
+# Story: d - Update the dtask treatment of do.md to be DDF.
+
+
 
 
 
@@ -21,9 +31,15 @@ epic: dtask --final does not lose incomplete work in do.md
 ---
 Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from.   But if pop is taking them out of the DDF doc, it is getting ripped apart anyway.   This can be fixed when there are markers in the DDF doc.
 
+d - Story: stories should normalize to H3
+this will work better 
+ - in do.md, which has an H1 section structure
+ - when they naturally are under goals as an H2, and the Goals themselves are some organizational H1, maybe even in do.md.
 
-d - build a dtask unpop subcommand and module capability to:  
-
+d - build a dtask unpop subcommand and module capability to:
+---
+id: 179a9ab8-61d9-78a8-bf4e-8e2a0b043d1a-4955bfec
+---
 - get the current work stories after ‘\#current work’ and before ‘\#completed work’  
 - load TODO.md as mdgbdata  
 - prepend the tasks to the TODO story list in memory, and write it back
@@ -195,6 +211,10 @@ id: 36177175-b1fc-7e9c-a746-aa19569fa116-8f65d6bf
         2 - piecemeal scheme to absolutely define locations, or craft a layout with sever user provided base locations used to set the official script supported paths from, #1. 
 
 d - document the project directory structure in user documentation.
+---
+id: b85fdbba-9743-7baf-ba5d-d93c95a05ee2-5ef6d7c3
+---
+
 
 # d - Story: Formalize specification Flow
 ---
@@ -222,6 +242,7 @@ Usecases such as: docs/dev/spec/usecases/backlog-usage.md should:
     Since the features based on the use case are not built yet, the behavioral documentation can be created, but should appear un user documentation where it is clear that it is future state.
     - there likely can be elaboration of the feature uses as the user docs are written.
 
+
 # d - Story: task aware do.md parsing
 ---
 id: 91a26399-8297-714a-a897-7495e0fb9e2e-087a353f
@@ -233,4 +254,4 @@ Specifically, wsum, should be able to recognize changes in task status.  Perhaps
      - (shorter term) I just want the work summary to stop confusing work actually done from work plan definition.
 Prerequisite, do.md parsing should be as mdgbdf and wsum should recognize task status changes in do.md
 
-depends on parsing do.md as DDF to objects.  
+depends on parsing do.md as DDF to objects.

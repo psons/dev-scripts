@@ -1,0 +1,33 @@
+{
+  "attributes": {
+    "attribute1": "This is an attribute of the DDF document"
+  },
+  "preamble": "This is text that is part of the document preamble because it is before any section headings.",
+  "sections": [
+    {
+      "heading": "### Non H-1 for Document.sections",
+      "preamble": "Because this H-2 is before any H1, it this Section goes in the Document.sections[] list.\nThis text is part of the It should be Document.sections[0].preamble",
+      "sections": [
+        {
+          "heading": "#### Descending Header Content",
+          "attributes": {
+            "attribute1": "This is section front-mater.  In the DDF object it is Document.sections[0].sections[0].attributes.attribute1"
+          },
+          "preamble": "Because this is descending to a lower level, it this section is part of the first entry in Document.sections.\nIt should be Document.sections[0].sections[0].  This text is part of the It should be Document.sections[0].preamble"
+        }
+      ]
+    },
+    {
+      "heading": "## Ascending Section header.",
+      "preamble": "Because this H-2 is an ascending level (higher than any H-n level so far) it goes in the Document.sections[] list\nas Document.sections[1].  This block of text is the Document.sections[1].preamble"
+    },
+    {
+      "heading": "# First H1 Section header.",
+      "preamble": "This section header is the first H1, so no further Ascension of the heading level is possible, and all subsequent entries in the \nDocument.sections list will be H1 level.  Further, all lower section levels will be nested within those sections.\nThis texti is part of is Document.sections[2].preamble"
+    },
+    {
+      "heading": "# Second H1 Section header",
+      "preamble": "This section header is the second H1, but would be Document.sections[3]."
+    }
+  ]
+}
