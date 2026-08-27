@@ -23,7 +23,7 @@
     },
     {
       "heading": "# First H1 Section header.",
-      "preamble": "This section header is the first H1, so no further Ascension of the heading level is possible, and all subsequent entries in the \nDocument.sections list will be H1 level.  Further, all lower section levels will be nested within those sections.\nThis texti is part of is Document.sections[2].preamble"
+      "preamble": "This section header is the first H1, so no further Ascension of the heading level is possible, and all subsequent entries in the\nDocument.sections list will be H1 level.  Further, all lower section levels will be nested within those sections.\nThis texti is part of is Document.sections[2].preamble"
     },
     {
       "heading": "# Second H1 Section header",

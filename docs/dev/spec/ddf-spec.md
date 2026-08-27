@@ -1,407 +1,1137 @@
-# ddf.py Code-Ready Specification (Markdown Parsing)
+# ddf.py Phase 1 Specification: Development Description Format Parser and Serializer
+
+## Document Status
+
+**Status**: Authoritative  
+**Version**: Phase 1  
+**Last Updated**: 2026-08-27
+
+This specification is the sole authoritative source for implementing `bin/ddf.py` Phase 1 in this repository. If any rule here differs from referenced source documents, this file takes precedence.
+
+---
+
+## Table of Contents
+
+1. [Purpose](#purpose)
+2. [Python Requirements](#python-requirements)
+3. [DDF Object Model](#ddf-object-model)
+4. [Markdown Parsing Rules](#markdown-parsing-rules)
+5. [Front-Matter Handling](#front-matter-handling)
+6. [Serialization Rules](#serialization-rules)
+7. [API Surface](#api-surface)
+8. [Command-Line Interface](#command-line-interface)
+9. [Examples](#examples)
+10. [Error Handling](#error-handling)
+11. [Implementation Guidelines](#implementation-guidelines)
+12. [Test Requirements](#test-requirements)
+13. [Acceptance Criteria](#acceptance-criteria)
+
+---
 
 ## Purpose
-### Purpose of Doc
-This specification should be the sole specification for the ddf.py module.
 
-A goal of this spec is to get a Development Description Format (DDF) parser / serializer that will accept all markdown so that it could be parsed to an in memory object model and then re-serialized as either markdown or json with no loss of content from the originally read document.  
+### Purpose of This Document
+
+This specification defines the complete requirements for the `ddf.py` module Phase 1: a Python-based parser and serializer for Development Description Format (DDF) markdown documents.
+
+**Key Goal**: Enable lossless round-trip conversion between markdown and structured object representation, so that any markdown document can be:
+1. Parsed into an in-memory object model (`DDFDoc`)
+2. Re-serialized to markdown with no content loss
+3. Serialized to JSON for integration with APIs and services
 
 ### Purpose of ddf.py
 
-When complete and tested, the ddf module is to be called in all cases that currently call mdgbdf.py.
-There adoption will be in phases as functional improvements are iteratively made to the basic ddf capability.
+The `ddf.py` module provides foundational document structure parsing that preserves all document content (front-matter, headings, nested sections, and body text) as structured data. This enables:
 
-#### Implementation Phases
-ddf.py will allow markdown documents to be read into an object model to be used by scripts, and then serialized back to markdown, or serialized to JSON to integrate local documents with service APIs 
+- **Script automation**: Local scripts can read, manipulate, and write structured markdown documents
+- **AI integration**: Documents can be processed by AI while maintaining their original structure
+- **Work management**: Tools like `dtask` can programmatically manage task lists in [do.md](../work/do.md) and [TODO.md](../work/TODO.md)
+- **API integration**: Documents can be serialized to JSON for service APIs
 
-In the end phase, ddf.py will have the capability to invoke mdgbdata.py as a module to parse sections of text to the object model it supports. 
+### Implementation Phases
 
-The first phase, currently covered by this spec addresses only the ability to parse and serialize a basic DDF object model specified here.
+**Phase 1** (this spec): Basic DDF parsing and serialization
+- Parse markdown documents to `DDFDoc` object model
+- Support document and section front-matter (YAML)
+- Support arbitrary heading nesting (H1-H6)
+- Serialize to markdown and JSON with lossless round-trip
 
-A second phase will allow ddf.py to call mdgbdata.py as a module to parse and serialize document sections to its more specialized object model, and include them in context as objects within the DDF model. 
+**Phase 2** (future - see [plugin-ddf-spec.md](./plugin-ddf-spec.md)): Plugin architecture
+- Register plugins for specialized formats (e.g., MDGBDF for stories/tasks)
+- Plugin-based section parsing via `ddfType` attribute
+- Preserve specialized object models within DDF structure
 
-A third phase will support the needs of scripts that currently use mdgbdata.py, enabling them to call ddf.py instead to preserve the DDF document content, and also efficiently extract and update MDGBDF data in documents.
+**Phase 3** (future): Full MDGBDF compatibility
+- Replace `mdgbdata.py` with `ddf.py` for all existing use cases
+- Support story and task extraction/manipulation
+- Backward compatibility with existing MDGBDF workflows
 
+### Source Documents
 
-### Sources
+This specification consolidates and supersedes content from:
+- [ddf-basic-spec.md](./ddf-basic-spec.md)
+- [development-description-format-uses.md](./usecases/development-description-format-uses.md)
+- [script-ai-friendly-texts-development-description-format.md](./adr/script-ai-friendly-texts-development-description-format.md)
 
-This document uses the following sources and is to be maintained as the single source of truth for implementation of `bin/mdgbdata.py` in this repository.:
+These documents provide background context only. This document is normative and self-contained for implementation.
 
-- [Basic Spec](../spec/ddf-basic-spec.md)
-- [docs/dev/spec/usecases/development-description-format-uses.md](http://./usecases/development-description-format-uses.md)  
-- [docs/dev/spec/adr/script-ai-friendly-texts-development-description-format.md](http://./adr/script-ai-friendly-texts-development-description-format.md)  
-- [docs/dev/spec/gbdata-spec-2.md](http://./gbdata-spec-2.md)
+---
 
-Source files above are background context only. This document is normative and intentionally self-contained for implementation and test work.
+## Python Requirements
 
-### Output
+### Python Version and Dependencies
 
-`bin/mdgbdata.py` must be generated from this document.
+- **Target Python**: 3.11+
+- **Required external libraries**: 
+  - `PyYAML` >= 6.0 (same library used by `bin/dtask`)
+- **Required stdlib modules**: 
+  - `typing`, `pathlib`, `json`, `re`, `dataclasses`, `sys`, `argparse`
 
-`bin/mdgbdata.py` owns the implementation of MDGBDF parsing and serialization, and JSON parsing and serialization for the shared gb-data model.
+### Installation
 
-### Module Requirements
+```bash
+pip install pyyaml
+```
 
-The module must:
+---
 
-- Provide status metadata loading and status detection utilities using repository metadata files.  
-- Provide MDGBDF markdown parsing that builds ordered `Story` objects containing optional `Task` objects.  
-- Provide MDGBDF serialization that outputs markdown text from ordered `Story` objects and preserves non-task informational story content.  
-- Provide JSON parsing and serialization for the gb-data schema representation of those objects.  
-- Import domain classes from `bin/gbdata.py` so parsing output uses the shared gb-data model.  
-- Expose an API to external modules to   
-  - write json given a file name and an ordered list of story objects  
-  - write markdown given a file name and an ordered list of story objects  
-  - return a list of story objects given a markdown file.  
-  - return a list of story objects given a JSON file.  
-  - allow optional filtering of story objects to include only work stories for methods that return lists of stories.
+## DDF Object Model
 
-The format described in this document that will be read and written by `bin/mdgbdata.py` will be referred to in other specifications as 'Markdown GB Data Form' (MDGBDF).
+### Type Definitions
 
-### Command line Requirements
+The DDF object model consists of two core types: `DDFDoc` (document) and `DDFSection` (section).
 
-Commandline support should be provided by `bin/mdgbdata.py`for the following sub commands:
+#### DDFDoc
 
-tojson
+Represents a complete DDF document.
 
-   will read a file whose path is given as a command line argument, or is read from stdin if no path argument is given, and is presumed to be 'Markdown Development Description Format' and output JSON text representing a DDF Documet object conforming to the schema https://github.com/psons/dev-scripts/blob/main/docs/dev/spec/ddf-object-structure.schema.json
+```python
+from dataclasses import dataclass, field
+from typing import Any
 
-tomd
+@dataclass
+class DDFDoc:
+    """A complete DDF document with optional front-matter, preamble, and nested sections."""
+    attributes: dict[str, Any] | None = None
+    preamble: str | None = None
+    sections: list['DDFSection'] = field(default_factory=list)
+```
 
-   will read a file whose path is given as a command line argument, or is read from stdin if no path argument is given, and is presumed to be json conforming to the schema https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json and output Markdown Development Description Format'
+**Properties:**
 
-   if the input file is not valid json, raise an error. 
+- `attributes` (optional): Dictionary of YAML front-matter key-value pairs from the document start
+- `preamble` (optional): Text content before the first heading (after front-matter if present)
+- `sections`: Ordered list of top-level sections
 
-help
+**Rules:**
 
-   will print a command usage summary for all subcommands and subcommand options.
+- If the document begins with `---` delimited YAML front-matter, it populates `attributes`
+- Text between front-matter (or file start) and the first heading becomes `preamble`
+- If no headings exist, all non-front-matter content is `preamble` with empty `sections`
+- Document-level sections can be any heading level (H1-H6); nesting is determined by relative levels
+- Empty preamble or attributes should be `None`, not empty string or empty dict
 
-   The help output must include every supported subcommand and, for each subcommand,
-   list all supported options for that subcommand.
+#### DDFSection
 
-   Example requirement: if `--option` is supported by `tojson` and `tomd`, then help
-   output must show `--option` under both `tojson` and `tomd`.
+Represents a markdown section (any heading level H1-H6) with optional nested subsections.
 
-Subcommand options should be supported as follows:
+```python
+@dataclass
+class DDFSection:
+    """A markdown section with heading, optional attributes, preamble, and nested sections."""
+    heading: str
+    attributes: dict[str, Any] | None = None
+    preamble: str | None = None
+    sections: list['DDFSection'] = field(default_factory=list)
+```
 
-    There are no subcommand options at this time.
+**Properties:**
 
-## Module Boundary
+- `heading` (required): The complete heading line including markers (e.g., `"## My Section"`)
+- `attributes` (optional): Dictionary of YAML section front-matter key-value pairs
+- `preamble` (optional): Text content after front-matter and before first subsection
+- `sections`: Ordered list of nested subsections (lower heading levels)
 
-`ddf.py` owns markdown/text parsing and serialization behavior for DDF.
+**Rules:**
 
-for the future plugin architecture `mdgbdata.py` owns markdown/text parsing and serialization behavior for MDGBDF.
+- Heading level is determined by counting leading `#` characters (1-6)
+- Lines with >6 `#` characters are not valid headings and treated as regular text
+- Section nesting follows heading hierarchy:
+  - Lower-level headings (more `#`) nest within higher-level sections
+  - Same or higher-level headings close the current section
+  - Example: H3 nests under H2, but another H2 or H1 closes the current H2 section
+- The `heading` property must store the complete heading line including `#` characters and text
 
-## Inputs and Dependencies
+### JSON Schema Reference
 
+The canonical JSON schema is maintained at:  
+[ddf-object-structure.schema.json](./ddf-object-structure.schema.json)
 
-### Python Version and Libraries
+This schema should be kept synchronized with the object model defined above.
 
-- Target Python: 3.11+  
-- Required libraries include: `PyYAML` (same library used by `bin/dtask`).  
-- Required stdlib modules include: `typing`, `pathlib`, `json`, `re`, `hashlib`.
+---
 
-`bin/ddf.py` requires `PyYAML` for front-matter parsing and serialization.
+## Markdown Parsing Rules
 
-### Required Functions
+### Heading Detection
 
-Implement utility functions:
+**Heading Pattern**: `^#{1,6}\s+(.+)$`
 
+- Headings must start at the left margin (column 0)
+- 1-6 `#` characters followed by at least one whitespace, then heading text
+- Lines with >6 leading `#` characters are NOT headings and treated as regular text
+- Trailing `#` characters in headings should be preserved as part of the heading text
 
-## Markdown Parsing Requirements: definition of DDF
-### =========================================================================
+**Heading Level**:
+- Count leading `#` characters: H1 = `#`, H2 = `##`, ..., H6 = `######`
+- Heading level determines nesting behavior
 
-Development Description Format (DDF) is defined here.
+**Examples**:
+```markdown
+# H1 Heading           → level 1
+## H2 Heading          → level 2
+### H3 Heading         → level 3
+#### H4 with trailing ##   → level 4 (trailing ## preserved in text)
+####### Not a heading  → regular text (>6 #)
+  ## Not a heading     → regular text (not at margin)
+```
 
-A Goal of this spec is to allow for lower section parsing below the H1 level, such as for do.md, which has 'Current work' and 'Completed work' as H1 sections, After more advanced phases of ddf.py,  stories in do.md can be nested under the H1 '# Current Work' or '#Completed Work' sections andstill be treated as MDGBDF. H2 or lower.
+### Section Nesting Rules
 
-Consistent with this goal, *Object Front-matter* will be parsed after any level of H section.  In  mdgbdata-spec.md terms, all *Object Front-matter* becomes *parsed object front-matter*. (i.e. there is no longer any distinction between H1 an other heading levels) 
+Sections nest based on **relative** heading levels:
 
-### Sections before the First H1
-Sections before the first H1 are added to the Sections list.
+**Rule 1: Lower-level headings nest**
+- When a heading has MORE `#` than current section → create nested subsection
 
-Once an H-n section is encountered, that is not an H1, 
-    - Sections lower than that level should be passed as text to the parser for that section. i.e. descending sections should be nested.
-    - Same or ascending sections are not nested.  
+**Rule 2: Same/higher-level headings close**
+- When a heading has SAME or FEWER `#` than current section → close current, create sibling/parent
 
-#### DDF Sections deduce their h-level 
-DDF Sections deduce their h-level objects in the memory model by pattern matching the heading string, thus it is not necessary to create empty nesting levels for an H6 to directly follow an H1.
-This is why the heading string is required. If it were niot required, all sections would need an attribute in serialized text to indicate the heading level. 
+**Rule 3: First heading determines document sections**
+- The first heading encountered defines the base level for `DDFDoc.sections`
+- All subsequent same-level headings create sibling sections in `DDFDoc.sections`
 
-## DDF Object Structure
+**Example**:
+```markdown
+### First heading (H3)      → DDFDoc.sections[0]
+#### Nested (H4)            → DDFDoc.sections[0].sections[0]
+### Second heading (H3)     → DDFDoc.sections[1]
+## Higher level (H2)        → DDFDoc.sections[2]
+```
 
-The object schema docs/dev/spec/ddf-object-structure.schema.json should be maintained from this section of the spec.
-DDF documents have the shape
-{
-attributes?: {},
-preamble?: String,
-sections?: [],
-}
+**Important**: The first heading can be ANY level (H1-H6). All subsequent headings nest relative to it.
 
-A trailing `?` means the property is optional and may be omitted.
+### Document Preamble
 
-The sections list is a list of objects.
-
-Sections have an object shape: 
-    {
-        heading: String
-        attributes?: {}
-        preamble?: String,
-        sections?: [],
-    }
-
-The sections list is a list of objects.
-
-
-##### The Document Object
-    may or may not have a name.
-    Document front-matter defines the attributes.
-    Text before any H-n headings is the Document.preamble.
-
-    Any H-n heading causes a section object to be created and appended to the section list by passing in all text until an H- line is detected at the same or higher -n level, or end of input is reached.
-        lines with more that 6 '#' characters should be treated as part of Document.text, not as section headings.   Creating a section with such headings will cause an error.
-    
-    When a same or higher -n level is found, a new section object is created by passing in all subsequent text until an H- line is detected at the same or higher -n level, or end of input is reached.
-    
-Observe that the H-n levels in the Document.sections list are always the same or ascending.
-
-##### Sections Objects 
-    Must have a heading, even if it is only a string of '#' characters.
-        The number of '#' character determines the -n level of the section and may not be larger than 6.
-        More than 6 '#' characters beginning a heading are an error an should not have been passed into a section constructor.
-
-    Section front-matter defines the attributes.
-
-    Any H-n heading causes a section object to be created and appended to the section list by passing in all text until any H- line is detected, or end of input is reached.
-        If an H- line was detected and is at the same or higher -n level, an error should be raised. (It should not have been passed in ti his Section)
-        If an H- line was detected and is at a lower -n level, a sub Section object should be created and appended to the Section.sections list, by passing in all subsequent text until another H- line of the new lower -n level is detected, or end of input is reached.
-    
-Observe that the H-n levels in the Section.sections list are always the same level, because lower -n levels cause nesting into Section.sections.sections.  Higher level will not be passed in.
-
-
-## DDF parsing design
-
-### Parser behaviors
-The calling program (module or script) will tell the parser that this is by default document to be parsed as text/markdown/DDF.
-
-The DDF will by default parse documents as DDF, a top level object 
-
-An additional spec docs/dev/spec/plugin-ddf-spec.md will address how sections may be passed to more specialized parsers and serializers to create and serialize specialized objects.
-
-
-#### Future issue
-The document object has no tracking of the parsed section levels if the  
-
-## No Headings
-If a document has no H1 headings, all of it's non-front-matter text is the preamble 
-
-The first H1 and all subsequent H1 lines define the document sections
-
-## Cases
-
-### Basic File example
-The ddf parser should parse the contents of docs/dev/spec/usecases/ddf/normal-ddf.md to yield the 
-JSON contents in docs/dev/spec/usecases/ddf/normal-ddf.json
-
-### Additional examples
-File begins with two front-matter blocks (not separated by content or a header)
-
-File has front-matter, then raw text, then front-matter
-    The second front-matter block is treated as raw text in the document preamble. 
+Text before the first heading (excluding front-matter) becomes `DDFDoc.preamble`:
 
 ```markdown
-    ---
-    attrib1: value1
-    ---
-    raw text
-    ---
-    attrib2: value2
-    ---
-    ## a section
-```
-```json
-    {
-    "attributes": {
-        "attrib1": "value1",
-    },
-    "preamble": "raw text
-    ---
-    attrib2: value2
-    ---
-    ",
-    "sections": [
-        {
-          "heading": "## a section"  
-        }
-    ],
-    }
+---
+title: My Doc
+---
+This is preamble text.
+It appears before any heading.
+
+# First Heading
+This is in the section.
 ```
 
-# =========================================================================
-### Standalone Contract
+Result:
+```python
+DDFDoc(
+    attributes={"title": "My Doc"},
+    preamble="This is preamble text.\nIt appears before any heading.\n",
+    sections=[DDFSection(heading="# First Heading", preamble="This is in the section.\n")]
+)
+```
 
-This section is sufficient to implement and test `bin/ddf.py` without reading other documents. If any rule here differs from referenced source documents, this file takes precedence for this repository.
+### Section Preamble
 
-### Scope
+Text after section front-matter and before first subsection becomes `DDFSection.preamble`:
 
-`ddf.py` must include a parser focused on producing full ddf documents structures from markdown content.
+```markdown
+## Section
 
-Required entry points:
+---
+key: value
+---
 
-1. `parse_from_markdown(text: str) -> DDFDoc`  
+This is section preamble.
 
-2. `parse_from_markdown_file(path: str | Path, encoding: str = "utf-8") -> DDFDoc`
+### Subsection
+This is in the subsection.
+```
 
-1. `parse_from_json(text: str) -> DDFDoc`  
+Result:
+```python
+DDFSection(
+    heading="## Section",
+    attributes={"key": "value"},
+    preamble="This is section preamble.\n",
+    sections=[DDFSection(heading="### Subsection", preamble="This is in the subsection.\n")]
+)
+```
 
-2. `parse_from_json_file(path: str | Path, encoding: str = "utf-8") -> DDFDoc`
+### Empty Document Handling
 
-The file variant reads text then delegates to the text variant.
+**No headings**: Document with no headings has all non-front-matter text as preamble
 
-DDF parser/serializer scope must preserve whole-document information as a DDF Document.
+```markdown
+---
+title: Simple
+---
+Just some text.
+No headings here.
+```
 
-### Markdown Interpretation Rules DDF
+Result:
+```python
+DDFDoc(
+    attributes={"title": "Simple"},
+    preamble="Just some text.\nNo headings here.\n",
+    sections=[]
+)
+```
 
-All markdown behavior required for implementation is specified below.
+---
 
-Any markdown H1 to H6 line starts a new section. 
+## Front-Matter Handling
 
-Interpretation details:
+### YAML Front-Matter Format
 
-- Heading marker must be at left margin to be considered a heading (`^#{1,6}\\s+`).  
+Front-matter is a YAML block delimited by `---` lines:
 
+```markdown
+---
+key1: value1
+key2: value2
+nested:
+  subkey: subvalue
+---
+```
 
-#### Section
+### Document Front-Matter
 
-- Parsed markdown Sections default `attributes` to `None` if no Ad hoc attributes are found.
+**Location**: Must be at the very start of the file (column 0, line 1)
 
-#### Properties and Attributes For Sections 
-##### Model Terminology
+**Rules**:
+1. Opens with `---` on its own line
+2. Contains valid YAML mapping (dict/object)
+3. Closes with `---` on its own line
+4. Parsed with `yaml.safe_load()`
+5. Becomes `DDFDoc.attributes`
 
-***definition***: object property \- any key and its value that is explicitly supported in the data model schema.
+**Invalid front-matter** (treated as regular text):
+- Missing closing `---`
+- YAML parsing error
+- Not a mapping (e.g., YAML list or scalar)
+- Not at file start (e.g., preceded by text)
 
-***definition***: object attribute \- any key and its value that is not explicitly supported in the data model schema, but rather stored in the set of keys and values comprising an attributes object. 
+### Section Front-Matter
 
-YAML key/value pairs embedded in object front-matter are considered Object properties and Object attributes for DDFDoc and Section.
+**Location**: Immediately after section heading
 
-##### Parsing Terminology
+**Rules**:
+1. Same format as document front-matter
+2. Opens with `---` on its own line immediately after heading
+3. Contains valid YAML mapping
+4. Closes with `---` on its own line
+5. Parsed with `yaml.safe_load()`
+6. Becomes `DDFSection.attributes`
 
-###### *Informal key: value notation*
+**Example**:
+```markdown
+## My Section
 
-- Informal Markdown input must support a single-line `key: value` form.  
-- A  `key: value`  line is recognized when non-whitespace text begins at the left margin and is followed by a colon.  
-- The key is the non-whitespace text starting at the beginning of the line and ending with the character before the colon.  
-- The value is the text after the colon up to the end of the line.  
-- informal `key: value` definitions may appear anywhere in a task or story other than the header or the object front-matter section.
+---
+status: active
+priority: high
+---
 
-Informal ‘key: value’ notation can be used to parse object attributes and object properties, but will not be used for serializing object attributes and object properties. 
+Section content here.
+```
 
-###### *Object Front-matter*
+### Multiple Front-Matter Blocks
 
-***definition***:   
-object front-matter \- a block of text that is 
+**Rule**: Only the FIRST valid front-matter block after a heading (or at document start) is parsed as attributes.
 
-- delimited by lines matching the regex '`^---\W*$`'   
-- as the first line excluding the header of a Story or a Task
+**Example - Second block becomes text**:
+```markdown
+---
+doc: front-matter
+---
 
-  Object front-matter is to be interpreted as YAML
+Some text.
 
-***definition***: parsed object front-matter \- object front-matter that is used for properties and attributes and is removed from text used for preamble values. 
+---
+not: parsed
+---
 
-In markdown documents, conventional front-matter is the special sub case of Object front-matter where there is no text before the first front-matter delimiter.
+# Heading
+```
 
-Formal Markdown input rules use real YAML parsing through `yaml.safe_load` (PyYAML), matching the YAML library usage in `bin/dtask`.
+Result: The second `---` block is part of `preamble` as regular text.
 
-Front-matter parsing behavior:
+### YAML Parsing Semantics
 
-- Parse the block as YAML object mapping.  
-- Parse all keys and scalar values for properties and attributes using normal YAML semantics from `yaml.safe_load`.  
-- Property and attribute values stored in the data model must be the parsed YAML values, not raw markdown token text.  
-- A `---`\-delimited block qualifies as object front-matter only when it closes with a matching `---` delimiter and parses as a YAML object mapping.  
-- If a `---`\-delimited block does not qualify as object front-matter (for example: missing closing delimiter, YAML parse error, or non-mapping YAML), it must be preserved as ordinary markdown text in the current section preamble
+- Use `yaml.safe_load()` from PyYAML
+- All YAML types supported: strings, numbers, booleans, nulls, lists, nested maps
+- Attribute values store parsed YAML objects, not raw text
+- Quote delimiters in YAML are syntax only, not part of values
 
-Pattern:  
-```` ``` ````  
-`# Section Heading`  
-`---`  
-`key: value`  
-`key2: value2`  
-`---`  
-`Section body text.`  
-`Example (a work summary entry inside # Work Summary):`
+**Example**:
+```yaml
+---
+string: "hello"
+number: 42
+boolean: true
+null_value: null
+list: [1, 2, 3]
+---
+```
 
-`# 2026-05-19 12:26`  
-`---`  
-`"workHeadline": "refactor(dtask): simplify do.md work summary insertion"`  
-`---`  
-`This update streamlines the dtask script's handling of work summary insertions.`  
-```` ``` ````
+Parsed attributes:
+```python
+{
+    "string": "hello",        # str (quotes removed)
+    "number": 42,              # int
+    "boolean": True,           # bool
+    "null_value": None,        # None
+    "list": [1, 2, 3]          # list
+}
+```
 
-##### Front-matter 
-Object front-matter notation can be used to parse object attributes and object properties, and is also the way to serialize object attributes and object properties.
+---
 
+## Serialization Rules
 
+### Markdown Serialization
 
-#### Task Header Detection
+Convert `DDFDoc` back to markdown text with identical structure.
 
+#### Document Front-Matter Output
 
-#### Formal Markdown Output Rules for properties and attributes
+If `DDFDoc.attributes` is not `None`:
+```python
+output = "---\n"
+output += yaml.safe_dump(doc.attributes, default_flow_style=False, allow_unicode=True)
+output += "---\n"
+```
 
-When attributes are serialized as markdown, they must be written as YAML front-matter using the object front-matter rules above.
+#### Preamble Output
 
-Serialization behavior:
+If `DDFDoc.preamble` is not `None`:
+```python
+output += doc.preamble
+if not doc.preamble.endswith('\n'):
+    output += '\n'
+```
 
-- Section or Document attributes are serialized inside a front-matter block immediately after the story header.  
-- A front-matter block opens with `---` and closes with `---` on the left margin.  
-- Front-matter is serialized with PyYAML (`yaml.safe_dump`) using block-style mapping and insertion-order key preservation.  
-- Attribute serialization must follow normal YAML scalar quoting behavior as emitted by `yaml.safe_dump`.
+#### Section Output (Recursive)
 
-JSON serialization behavior for YAML-derived attributes:
+For each section in `sections`:
+```python
+def serialize_section(section: DDFSection) -> str:
+    output = section.heading
+    if not output.endswith('\n'):
+        output += '\n'
+    
+    # Section front-matter
+    if section.attributes:
+        output += "\n---\n"
+        output += yaml.safe_dump(section.attributes, ...)
+        output += "---\n"
+    
+    # Section preamble
+    if section.preamble:
+        output += "\n" + section.preamble
+    
+    # Nested sections
+    for subsection in section.sections:
+        output += "\n" + serialize_section(subsection)
+    
+    return output
+```
 
-- Values parsed from YAML front-matter must be serialized to JSON using their parsed property and attribute values from the gb-data model.  
-- JSON output must reflect YAML parsing semantics (for example, quote delimiters used only for YAML syntax are not part of the resulting string value).
+### JSON Serialization
 
+Convert `DDFDoc` to JSON using standard Python `json.dumps()`:
+
+```python
+def doc_to_dict(doc: DDFDoc) -> dict:
+    result = {}
+    if doc.attributes is not None:
+        result["attributes"] = doc.attributes
+    if doc.preamble is not None:
+        result["preamble"] = doc.preamble
+    if doc.sections:
+        result["sections"] = [section_to_dict(s) for s in doc.sections]
+    return result
+
+def section_to_dict(section: DDFSection) -> dict:
+    result = {"heading": section.heading}
+    if section.attributes is not None:
+        result["attributes"] = section.attributes
+    if section.preamble is not None:
+        result["preamble"] = section.preamble
+    if section.sections:
+        result["sections"] = [section_to_dict(s) for s in section.sections]
+    return result
+```
+
+Output with `json.dumps(doc_to_dict(doc), indent=2, ensure_ascii=False)`.
+
+### JSON Deserialization
+
+Parse JSON back to `DDFDoc`:
+
+```python
+def dict_to_doc(data: dict) -> DDFDoc:
+    return DDFDoc(
+        attributes=data.get("attributes"),
+        preamble=data.get("preamble"),
+        sections=[dict_to_section(s) for s in data.get("sections", [])]
+    )
+
+def dict_to_section(data: dict) -> DDFSection:
+    return DDFSection(
+        heading=data["heading"],  # required
+        attributes=data.get("attributes"),
+        preamble=data.get("preamble"),
+        sections=[dict_to_section(s) for s in data.get("sections", [])]
+    )
+```
+
+---
 
 ## API Surface
 
+### Core Parsing Functions
 
+#### parse_from_markdown
+
+```python
+def parse_from_markdown(text: str) -> DDFDoc:
+    """
+    Parse markdown text into a DDFDoc object.
+    
+    Args:
+        text: Markdown text to parse
+        
+    Returns:
+        DDFDoc object representing the parsed document
+        
+    Raises:
+        ValueError: If YAML front-matter is invalid
+    """
+```
+
+#### parse_from_markdown_file
+
+```python
+def parse_from_markdown_file(
+    path: str | Path, 
+    encoding: str = "utf-8"
+) -> DDFDoc:
+    """
+    Parse a markdown file into a DDFDoc object.
+    
+    Args:
+        path: Path to markdown file
+        encoding: File encoding (default: utf-8)
+        
+    Returns:
+        DDFDoc object representing the parsed document
+        
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        UnicodeDecodeError: If file can't be decoded
+        ValueError: If YAML front-matter is invalid
+    """
+```
+
+#### parse_from_json
+
+```python
+def parse_from_json(text: str) -> DDFDoc:
+    """
+    Parse JSON text into a DDFDoc object.
+    
+    Args:
+        text: JSON text conforming to DDF schema
+        
+    Returns:
+        DDFDoc object
+        
+    Raises:
+        json.JSONDecodeError: If JSON is invalid
+        ValueError: If JSON doesn't match DDF schema
+    """
+```
+
+#### parse_from_json_file
+
+```python
+def parse_from_json_file(
+    path: str | Path,
+    encoding: str = "utf-8"
+) -> DDFDoc:
+    """
+    Parse a JSON file into a DDFDoc object.
+    
+    Args:
+        path: Path to JSON file
+        encoding: File encoding (default: utf-8)
+        
+    Returns:
+        DDFDoc object
+        
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        json.JSONDecodeError: If JSON is invalid
+        ValueError: If JSON doesn't match DDF schema
+    """
+```
+
+### Core Serialization Functions
+
+#### serialize_to_markdown
+
+```python
+def serialize_to_markdown(doc: DDFDoc) -> str:
+    """
+    Serialize a DDFDoc object to markdown text.
+    
+    Args:
+        doc: DDFDoc object to serialize
+        
+    Returns:
+        Markdown text representation
+    """
+```
+
+#### serialize_to_markdown_file
+
+```python
+def serialize_to_markdown_file(
+    doc: DDFDoc,
+    path: str | Path,
+    encoding: str = "utf-8"
+) -> None:
+    """
+    Serialize a DDFDoc object to a markdown file.
+    
+    Args:
+        doc: DDFDoc object to serialize
+        path: Path to output file
+        encoding: File encoding (default: utf-8)
+    """
+```
+
+#### serialize_to_json
+
+```python
+def serialize_to_json(doc: DDFDoc, indent: int = 2) -> str:
+    """
+    Serialize a DDFDoc object to JSON text.
+    
+    Args:
+        doc: DDFDoc object to serialize
+        indent: JSON indentation (default: 2)
+        
+    Returns:
+        JSON text representation
+    """
+```
+
+#### serialize_to_json_file
+
+```python
+def serialize_to_json_file(
+    doc: DDFDoc,
+    path: str | Path,
+    encoding: str = "utf-8",
+    indent: int = 2
+) -> None:
+    """
+    Serialize a DDFDoc object to a JSON file.
+    
+    Args:
+        doc: DDFDoc object to serialize
+        path: Path to output file
+        encoding: File encoding (default: utf-8)
+        indent: JSON indentation (default: 2)
+    """
+```
+
+---
+
+## Command-Line Interface
+
+### Script Name
+
+`bin/ddf.py` (or `bin/ddf`)
+
+### Subcommands
+
+#### tomd
+
+Convert JSON to markdown.
+
+```bash
+ddf.py tomd [OPTIONS] [FILE]
+```
+
+**Arguments**:
+- `FILE` (optional): Path to JSON file. If omitted, reads from stdin.
+
+**Behavior**:
+- Parse JSON as DDF document
+- Output markdown to stdout
+- Exit code 0 on success, 1 on error
+
+**Example**:
+```bash
+# From file
+ddf.py tomd input.json > output.md
+
+# From stdin
+cat input.json | ddf.py tomd > output.md
+```
+
+#### tojson
+
+Convert markdown to JSON.
+
+```bash
+ddf.py tojson [OPTIONS] [FILE]
+```
+
+**Arguments**:
+- `FILE` (optional): Path to markdown file. If omitted, reads from stdin.
+
+**Behavior**:
+- Parse markdown as DDF document
+- Output JSON to stdout (pretty-printed with 2-space indent)
+- Exit code 0 on success, 1 on error
+
+**Example**:
+```bash
+# From file
+ddf.py tojson input.md > output.json
+
+# From stdin
+cat input.md | ddf.py tojson > output.json
+```
+
+#### help
+
+Display help message.
+
+```bash
+ddf.py help
+ddf.py --help
+ddf.py -h
+```
+
+**Behavior**:
+- Print usage summary
+- List all subcommands with descriptions
+- Exit code 0
+
+**Required Output Format**:
+```
+usage: ddf.py <subcommand> [options] [file]
+
+Development Description Format (DDF) parser and serializer.
+
+subcommands:
+  tomd      Convert JSON to markdown
+  tojson    Convert markdown to JSON
+  help      Show this help message
+
+For markdown ↔ JSON conversion with lossless round-trip.
+Read from FILE or stdin if FILE is omitted.
+
+Examples:
+  ddf.py tojson doc.md > doc.json
+  ddf.py tomd doc.json > doc.md
+  cat doc.md | ddf.py tojson
+```
+
+### Error Handling
+
+**Errors should output to stderr** with descriptive messages:
+
+```bash
+# File not found
+ddf.py tojson missing.md
+# stderr: Error: File not found: missing.md
+# exit code: 1
+
+# Invalid JSON
+echo "not json" | ddf.py tomd
+# stderr: Error: Invalid JSON: Expecting value: line 1 column 1 (char 0)
+# exit code: 1
+
+# Invalid YAML front-matter
+echo -e "---\nnot: valid: yaml\n---" | ddf.py tojson
+# stderr: Error: Invalid YAML front-matter: <yaml error details>
+# exit code: 1
+```
+
+---
+
+## Examples
+
+### Example 1: Basic Document
+
+**Input Markdown** ([normal-ddf.md](./usecases/ddf/normal-ddf.md)):
+```markdown
+---
+attribute1: This is an attribute of the DDF document
+---
+
+This is text that is part of the document preamble because it is before any section headings.
+
+### Non H-1 for Document.sections
+Because this H-2 is before any H1, it this Section goes in the Document.sections[] list.
+This text is part of the It should be Document.sections[0].preamble
+
+#### Descending Header Content
+---
+attribute1: This is section front-mater.  In the DDF object it is Document.sections[0].sections[0].attributes.attribute1
+--- 
+Because this is descending to a lower level, it this section is part of the first entry in Document.sections.  
+It should be Document.sections[0].sections[0].  This text is part of the It should be Document.sections[0].preamble
+
+## Ascending Section header.
+Because this H-2 is an ascending level (higher than any H-n level so far) it goes in the Document.sections[] list
+as Document.sections[1].  This block of text is the Document.sections[1].preamble
+
+# First H1 Section header.
+This section header is the first H1, so no further Ascension of the heading level is possible, and all subsequent entries in the 
+Document.sections list will be H1 level.  Further, all lower section levels will be nested within those sections.
+This texti is part of is Document.sections[2].preamble
+
+# Second H1 Section header
+This section header is the second H1, but would be Document.sections[3].
+```
+
+**Output JSON** ([normal-ddf.json](./usecases/ddf/normal-ddf.json)):
+```json
+{
+  "attributes": {
+    "attribute1": "This is an attribute of the DDF document"
+  },
+  "preamble": "This is text that is part of the document preamble because it is before any section headings.",
+  "sections": [
+    {
+      "heading": "### Non H-1 for Document.sections",
+      "preamble": "Because this H-2 is before any H1, it this Section goes in the Document.sections[] list.\nThis text is part of the It should be Document.sections[0].preamble",
+      "sections": [
+        {
+          "heading": "#### Descending Header Content",
+          "attributes": {
+            "attribute1": "This is section front-mater.  In the DDF object it is Document.sections[0].sections[0].attributes.attribute1"
+          },
+          "preamble": "Because this is descending to a lower level, it this section is part of the first entry in Document.sections.\nIt should be Document.sections[0].sections[0].  This text is part of the It should be Document.sections[0].preamble"
+        }
+      ]
+    },
+    {
+      "heading": "## Ascending Section header.",
+      "preamble": "Because this H-2 is an ascending level (higher than any H-n level so far) it goes in the Document.sections[] list\nas Document.sections[1].  This block of text is the Document.sections[1].preamble"
+    },
+    {
+      "heading": "# First H1 Section header.",
+      "preamble": "This section header is the first H1, so no further Ascension of the heading level is possible, and all subsequent entries in the \nDocument.sections list will be H1 level.  Further, all lower section levels will be nested within those sections.\nThis texti is part of is Document.sections[2].preamble"
+    },
+    {
+      "heading": "# Second H1 Section header",
+      "preamble": "This section header is the second H1, but would be Document.sections[3]."
+    }
+  ]
+}
+```
+
+### Example 2: Multiple Front-Matter Blocks
+
+**Input**:
+```markdown
+---
+attrib1: value1
+---
+raw text
+---
+attrib2: value2
+---
+## a section
+```
+
+**Output**:
+```json
+{
+  "attributes": {
+    "attrib1": "value1"
+  },
+  "preamble": "raw text\n---\nattrib2: value2\n---\n",
+  "sections": [
+    {
+      "heading": "## a section"
+    }
+  ]
+}
+```
+
+**Explanation**: Only the first front-matter block is parsed. The second becomes part of preamble text.
+
+### Example 3: No Headings
+
+**Input**:
+```markdown
+---
+title: Simple Doc
+---
+Just plain text.
+No sections.
+```
+
+**Output**:
+```json
+{
+  "attributes": {
+    "title": "Simple Doc"
+  },
+  "preamble": "Just plain text.\nNo sections.\n"
+}
+```
+
+### Example 4: Section with Front-Matter
+
+**Input**:
+```markdown
+# My Section
+
+---
+status: active
+priority: high
+---
+
+Section content here.
+
+## Subsection
+More content.
+```
+
+**Output**:
+```json
+{
+  "sections": [
+    {
+      "heading": "# My Section",
+      "attributes": {
+        "status": "active",
+        "priority": "high"
+      },
+      "preamble": "Section content here.\n",
+      "sections": [
+        {
+          "heading": "## Subsection",
+          "preamble": "More content.\n"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
 
 ## Error Handling
 
-- Invalid metadata entry object shape: raise `ValueError` naming key and missing field.  
-- File decode errors in markdown file parser: propagate `UnicodeDecodeError`.  
-- Invalid YAML front-matter blocks: raise `ValueError`.
+### Required Error Behavior
 
-Parser robustness rules:
+1. **Invalid YAML front-matter**: Raise `ValueError` with YAML error details
+2. **File not found**: Raise `FileNotFoundError` with path
+3. **Encoding errors**: Propagate `UnicodeDecodeError`
+4. **Invalid JSON**: Raise `json.JSONDecodeError`
+5. **Missing required fields in JSON**: Raise `ValueError` naming the field
 
-- Never raise for unmatched lines; treat as descriptive text.  
-- Never raise for empty markdown; return empty list.  
+### Parser Robustness
 
-## Implementation Notes
+**Never raise errors for**:
+- Unmatched markdown lines (treat as text)
+- Empty documents
+- Documents with no headings
+- Missing optional properties (attributes, preamble)
+- Any valid markdown structure
 
-- Keep parsing algorithm single-pass over input lines (`O(n)`).  
-- Avoid recursive parser design; use explicit state variables.  
-- Compile regex once per parse call.  
-- include this doc string for the file:  
-  - “The program name mdgbdata is a mnemonic that stands for *Mark Down / Goal Blotter Data* since it is a parser and serializer for the 'Markdown GB Data Form' (MDGBDF)”
+### CLI Error Output
 
-## Test Requirements for `tests/`
+- Write errors to **stderr**, not stdout
+- Include descriptive error messages
+- Exit with code **1** on error, **0** on success
 
-At minimum, include tests for:
+---
 
-5. YAML property mapping  
-        
-9. DDF whole-document preservation  
-     
-   - content before first any H level is preserved in Document preamble  
-   - file with no H level headings is represented aDDF Document with no sections  
-   - parsing then serializing preserves preamble text 
+## Implementation Guidelines
+
+### Performance
+
+- **Single-pass parsing**: Parse input in O(n) time with one pass over lines
+- **Avoid recursion**: Use iterative parsing with explicit state
+- **Compile regex once**: Compile heading pattern once per parse call
+
+### Code Organization
+
+**Recommended structure**:
+```python
+# bin/ddf.py
+
+# 1. Imports and dataclasses
+from dataclasses import dataclass, field
+from typing import Any
+import yaml, json, re, sys, argparse
+from pathlib import Path
+
+# 2. Data model
+@dataclass
+class DDFDoc: ...
+@dataclass
+class DDFSection: ...
+
+# 3. Parsing functions
+def parse_from_markdown(text: str) -> DDFDoc: ...
+def parse_from_markdown_file(path, encoding) -> DDFDoc: ...
+def parse_from_json(text: str) -> DDFDoc: ...
+def parse_from_json_file(path, encoding) -> DDFDoc: ...
+
+# 4. Serialization functions
+def serialize_to_markdown(doc: DDFDoc) -> str: ...
+def serialize_to_markdown_file(doc, path, encoding): ...
+def serialize_to_json(doc: DDFDoc, indent) -> str: ...
+def serialize_to_json_file(doc, path, encoding, indent): ...
+
+# 5. Helper functions
+def _extract_front_matter(lines: list[str]) -> tuple[dict | None, int]: ...
+def _get_heading_level(line: str) -> int | None: ...
+def _parse_sections(lines: list[str], start: int, base_level: int) -> list[DDFSection]: ...
+
+# 6. CLI
+def main(argv: list[str] | None = None) -> int: ...
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+### Module Docstring
+
+Include this at the top of `bin/ddf.py`:
+
+```python
+"""ddf.py - Development Description Format parser and serializer.
+
+This module provides lossless parsing and serialization for DDF markdown documents.
+DDF preserves all document structure (front-matter, headings, sections, text) as
+structured data for script automation and API integration.
+
+Usage as module:
+    from ddf import parse_from_markdown, serialize_to_json
+    doc = parse_from_markdown(text)
+    json_output = serialize_to_json(doc)
+
+Usage as command:
+    python ddf.py tojson doc.md > doc.json
+    python ddf.py tomd doc.json > doc.md
+"""
+```
+
+---
+
+## Test Requirements
+
+### Test Coverage
+
+Implement tests in `tests/test_ddf.py` covering:
+
+#### 1. Basic Parsing
+- Document with front-matter
+- Document without front-matter
+- Document with preamble
+- Document without headings
+- Single section
+- Multiple sections at same level
+- Nested sections
+
+#### 2. Heading Nesting
+- H3 as first heading
+- H1 following H3 (ascending)
+- H4 following H2 (descending)
+- Multiple nesting levels
+- Adjacent same-level sections
+
+#### 3. Front-Matter
+- Valid YAML object
+- YAML with nested structures
+- YAML with lists
+- YAML with various scalar types
+- Invalid YAML (should fail)
+- Missing closing `---` (treated as text)
+- Second front-matter block (treated as text)
+
+#### 4. Section Front-Matter
+- Section with front-matter
+- Multiple sections with front-matter
+- Nested section with front-matter
+
+#### 5. Round-Trip
+- Parse markdown → serialize markdown (should match)
+- Parse markdown → serialize JSON → parse JSON → serialize markdown (should match)
+
+#### 6. Edge Cases
+- Empty file
+- File with only front-matter
+- File with only preamble
+- Lines with >6 `#` characters
+- Headings not at margin
+- Unicode content
+- Windows line endings (`\r\n`)
+
+#### 7. Error Handling
+- Invalid YAML syntax
+- Invalid JSON input
+- Missing file
+
+#### 8. Acceptance Test
+- Parse [normal-ddf.md](./usecases/ddf/normal-ddf.md)
+- Verify output matches [normal-ddf.json](./usecases/ddf/normal-ddf.json)
+
+### Test Framework
+
+Use `pytest`:
+
+```bash
+pytest tests/test_ddf.py -v
+```
+
+---
 
 ## Acceptance Criteria
 
-This spec is accepted when:
+This specification is considered complete and implementation is accepted when:
 
-1. A generated `bin/mdgbdata.py` exposes all required functions/types with required signatures.  
-2. Parsing behavior follows this document.  
-4. Tests covering parsing and metadata behavior pass under `pytest`.  
+1. ✅ `bin/ddf.py` implements all required functions with correct signatures
+2. ✅ Parsing behavior follows all rules in this specification
+3. ✅ Serialization produces correct markdown and JSON output
+4. ✅ Round-trip conversion is lossless (markdown → object → markdown preserves content)
+5. ✅ Command-line interface works as specified
+6. ✅ All test cases pass under `pytest`
+7. ✅ Acceptance test parses [normal-ddf.md](./usecases/ddf/normal-ddf.md) correctly
+8. ✅ Error handling behaves as specified
 
+---
+
+## Version History
+
+- **2026-08-27**: Phase 1 specification created (this document)
+- Earlier drafts: [ddf-basic-spec.md](./ddf-basic-spec.md), [ddf-spec.md](./ddf-spec.md)
