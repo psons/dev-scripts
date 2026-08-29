@@ -56,7 +56,7 @@ The `ddf.py` module provides foundational document structure parsing that preser
 - Support arbitrary heading nesting (H1-H6)
 - Serialize to markdown and JSON with lossless round-trip
 
-**Phase 2** (future - see [plugin-ddf-spec.md](./plugin-ddf-spec.md)): Plugin architecture
+**Phase 2** (future - see [ddf-plugin-spec.md](./ddf-plugin-spec.md)): Plugin architecture
 - Register plugins for specialized formats (e.g., MDGBDF for stories/tasks)
 - Plugin-based section parsing via `ddfType` attribute
 - Preserve specialized object models within DDF structure

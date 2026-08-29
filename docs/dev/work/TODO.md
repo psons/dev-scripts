@@ -17,7 +17,29 @@ id: 1e585069-3e8d-77bb-bdd1-5fc6513846a0-33d44846
                         - Is this the ' # Current Work' section?
                         - do some forward looking thinking as to whether a template can be re-structured without any code changes to make a story list where work summaries are together with tasks.  No, I think perhaps a work summary can have a task ID that was completed when wsum becomes task aware a lit of tasks that are now changed to in progress of completed can be paired with te work summary.  If dtask commit is run frequently and task statuses are updated, then the work summary will naturally be summarizing the work to complete the tasks.  At some point, perhaps an LLM can be trained to figure out work based on historical completed tasks.    
 
+    ### Implementation Phases (from docs/dev/spec/ddf-spec.md)
+
+    **Phase 1** (this spec): Basic DDF parsing and serialization
+    - Parse markdown documents to `DDFDoc` object model
+    - Support document and section front-matter (YAML)
+    - Support arbitrary heading nesting (H1-H6)
+    - Serialize to markdown and JSON with lossless round-trip
+
+    **Phase 2** (future - see [ddf-plugin-spec.md](./ddf-plugin-spec.md)): Plugin architecture
+    - Register plugins for specialized formats (e.g., MDGBDF for stories/tasks)
+    - Plugin-based section parsing via `ddfType` attribute
+    - Preserve specialized object models within DDF structure
+
+
+
 # Story: d - Update the dtask treatment of do.md to be DDF.
+
+    ### Implementation Phases (from docs/dev/spec/ddf-spec.md)
+
+    **Phase 3** (future): Full MDGBDF compatibility
+    - Replace `mdgbdata.py` with `ddf.py` for all existing use cases
+    - Support story and task extraction/manipulation
+    - Backward compatibility with existing MDGBDF workflows
 
 
 

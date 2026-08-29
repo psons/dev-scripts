@@ -75,7 +75,7 @@ The calling program (module or script) will tell the parser that this is by defa
 
 The DDF will by default parse documents as DDF, a top level object 
 
-An additional spec docs/dev/spec/plugin-ddf-spec.md will address how sections may be passed to more specialized parsers and serializers to create and serialize specialized objects.
+An additional spec docs/dev/spec/ddf-plugin-spec.md will address how sections may be passed to more specialized parsers and serializers to create and serialize specialized objects.
 
 
 ### Future issue
