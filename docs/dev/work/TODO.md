@@ -1,35 +1,3 @@
-# d - Story: DDF parsing with MDGBDF sections supported.
----
-id: 6ef8e760-6efb-76f5-b56f-c6bb09e1f751-d8018269
-epic: dtask can update do.md and TODO.md
----
-
-d - template used by dtask for do.md can find the MDGBDF section '# Current Work'
----
-id: 1e585069-3e8d-77bb-bdd1-5fc6513846a0-33d44846
----
-    d - do design to work out how dtask can manipulate the do.md model loaded into memory as DDF.
-        d - update the spec to explain how a document template looks to cause mdgbdf to be used to parse a section.
-        the spec should have the heading patterns that are stories, such as '^# Story:' or whatever is in the mdgbdf parser, updated to account for the fact that they might not always be H1s.
-            How does dtask have a role in defining the format of do.md, and the mdgbdf module knows about stories?
-                - I think dtask tells ddf to use the mdgbdf parser for the H1 sections that have stories...
-                    dtask passes the template pattern for do.md, which should also tell dtask where to find the stories and tasks in the DDF object of do.md
-                        - Is this the ' # Current Work' section?
-                        - do some forward looking thinking as to whether a template can be re-structured without any code changes to make a story list where work summaries are together with tasks.  No, I think perhaps a work summary can have a task ID that was completed when wsum becomes task aware a lit of tasks that are now changed to in progress of completed can be paired with te work summary.  If dtask commit is run frequently and task statuses are updated, then the work summary will naturally be summarizing the work to complete the tasks.  At some point, perhaps an LLM can be trained to figure out work based on historical completed tasks.    
-
-    ### Implementation Phases (from docs/dev/spec/ddf-spec.md)
-
-    **Phase 1** (this spec): Basic DDF parsing and serialization
-    - Parse markdown documents to `DDFDoc` object model
-    - Support document and section front-matter (YAML)
-    - Support arbitrary heading nesting (H1-H6)
-    - Serialize to markdown and JSON with lossless round-trip
-
-    **Phase 2** (future - see [ddf-plugin-spec.md](./ddf-plugin-spec.md)): Plugin architecture
-    - Register plugins for specialized formats (e.g., MDGBDF for stories/tasks)
-    - Plugin-based section parsing via `ddfType` attribute
-    - Preserve specialized object models within DDF structure
-
 
 
 # Story: d - Update the dtask treatment of do.md to be DDF.
@@ -41,8 +9,8 @@ id: 1e585069-3e8d-77bb-bdd1-5fc6513846a0-33d44846
     - Support story and task extraction/manipulation
     - Backward compatibility with existing MDGBDF workflows
 
-
-
+d - prompt copilot for a design recommendation on how dtask should use the DDF template to locate the sections it uses in te do.md ddf document.
+    refer to docs/dev/spec/ddf-plugin-spec.md:#### Document template creation
 
 
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
@@ -51,7 +19,10 @@ id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
 estimate: 4p
 epic: dtask --final does not lose incomplete work in do.md
 ---
-Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from.   But if pop is taking them out of the DDF doc, it is getting ripped apart anyway.   This can be fixed when there are markers in the DDF doc.
+Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from, depending on how much other document material and layout is supported in TODO.md (Text stories for example are not popped, even if they are at the top of the document).   But if pop is taking them out of the DDF doc, it is getting ripped apart anyway.   This can be fixed when there are markers in the DDF doc.
+
+    d - build out a new story: popping a story from the backlog by dtask to todo.md puts it in progress, and probably dtask, via the backlog API needs to tell the backlog it is in progress.
+     - later, when dtask sees it as completed and --final is tying off the feature, the backlog should be told the story is complete and disappearing from the work que and the git working Tree. working tree.  
 
 d - Story: stories should normalize to H3
 this will work better 

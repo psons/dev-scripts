@@ -1,0 +1,95 @@
+{
+  "attributes": {
+    "actualCommitMessage": "This is the actual commit message to be used by dtask commit",
+    "description": "A list of small, focused tasks guiding the current commit with detailed microsected activities.",
+    "intendedCommitMessage": "The grand plan commit that is hoped to match the current feature commit at the end!",
+    "priorCommit": "52763a3a8c405c92465d29758e0e081768e1457f",
+    "title": "do.md",
+    "workBranch": "some-git-branch"
+  },
+  "sections": [
+    {
+      "heading": "# Current work",
+      "ddfType": "MDGBDF",
+      "stories": [
+        {
+          "id": "cd1bf913-c5ac-7358-9209-26a59ce0ba78-243f3bcb",
+          "name": "Header that should make a story object using te MDGBDF plugin",
+          "status": "do",
+          "description": "This is some preamble text about the story",
+          "tasks": [
+            {
+              "id": "199bc970-f667-71f6-9cd7-94950564bc13-2e438a3a",
+              "status": "do",
+              "name": "do some design to work."
+            },
+            {
+              "id": "986a566a-f7b7-7b68-a4ce-a4c1da6e28c3-dae0e13c",
+              "status": "do",
+              "name": "update the spec to explain how things work"
+            },
+            {
+              "id": "30de4781-1520-7116-8e26-594500837e40-701cb60e",
+              "status": "completed",
+              "name": "**Phase 1** (this spec): ..."
+            },
+            {
+              "id": "2f3fbd7c-d1f7-7014-9ac4-4dd9b878f2ea-54d4469b",
+              "status": "in_progress",
+              "name": "**Phase 2** (future - ...):",
+              "detail": "    / - write the spec\n    / add do.md example to spec.\n    d - merge the plugin spec into the code ready spec.\n    d - implement the code"
+            }
+          ],
+          "attributes": {
+            "epic": "The is a bigger picture than the work being done here."
+          }
+        }
+      ]
+    },
+    {
+      "heading": "# Completed work",
+      "ddfType": "MDGBDF",
+      "stories": [
+        {
+          "id": "08de6878-8f5e-7ff3-9b8f-c472544ec177-6a7e38b4",
+          "name": "file-input",
+          "status": "do",
+          "tasks": [
+            {
+              "id": "ff63bb99-c178-7af3-a951-0c6c1e7b7106-9b38d4a5",
+              "status": "completed",
+              "name": "some completed task"
+            },
+            {
+              "id": "aeed26c2-5086-7a04-a587-8326957e5af8-75fe9f25",
+              "status": "completed",
+              "name": "some other completed task"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "# Work Summary",
+      "preamble": "",
+      "sections": [
+        {
+          "heading": "## 2026-08-29 11:17",
+          "attributes": {
+            "workHeadline": "Did some stuff",
+            "workChanges": "A new story was made"
+          },
+          "preamble": "**Work Planning**: A new story ... has been added to `docs/dev/work/do.md`"
+        },
+        {
+          "heading": "## 2026-08-29 11:12",
+          "attributes": {
+            "workHeadline": "Refactor some things ",
+            "specChanges": "Refactored specs"
+          },
+          "preamble": "**Work Planning**: The `TODO.md` file was updated...\n\n**Specification**: This commit refactors the documentation."
+        }
+      ]
+    }
+  ]
+}

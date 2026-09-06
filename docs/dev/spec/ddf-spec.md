@@ -142,7 +142,7 @@ class DDFSection:
     heading: str
     attributes: dict[str, Any] | None = None
     preamble: str | None = None
-    sections: list['DDFSection'] = field(default_factory=list)
+  sections: list['DDFSection'] | None = field(default_factory=list)
 ```
 
 **Properties:**
@@ -150,7 +150,7 @@ class DDFSection:
 - `heading` (required): The complete heading line including markers (e.g., `"## My Section"`)
 - `attributes` (optional): Dictionary of YAML section front-matter key-value pairs
 - `preamble` (optional): Text content after front-matter and before first subsection
-- `sections`: Ordered list of nested subsections (lower heading levels)
+- `sections` (optional): Ordered list of nested subsections (lower heading levels), or `None` when there are no nested subsections
 
 **Rules:**
 
@@ -161,6 +161,7 @@ class DDFSection:
   - Same or higher-level headings close the current section
   - Example: H3 nests under H2, but another H2 or H1 closes the current H2 section
 - The `heading` property must store the complete heading line including `#` characters and text
+- Parsers may use either an empty list or `None` when a section has no nested subsections
 
 ### JSON Schema Reference
 
@@ -446,7 +447,7 @@ def serialize_section(section: DDFSection) -> str:
         output += "\n" + section.preamble
     
     # Nested sections
-    for subsection in section.sections:
+    for subsection in section.sections or []:
         output += "\n" + serialize_section(subsection)
     
     return output
@@ -493,11 +494,12 @@ def dict_to_doc(data: dict) -> DDFDoc:
     )
 
 def dict_to_section(data: dict) -> DDFSection:
+  sections = data.get("sections", [])
     return DDFSection(
         heading=data["heading"],  # required
         attributes=data.get("attributes"),
         preamble=data.get("preamble"),
-        sections=[dict_to_section(s) for s in data.get("sections", [])]
+    sections=None if sections is None else [dict_to_section(s) for s in sections]
     )
 ```
 

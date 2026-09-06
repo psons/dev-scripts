@@ -13,6 +13,10 @@ The content of this file below describes some usages for supporting MDGBDF in DD
 
 
 ## File Scoped Story
+---
+sectionSstatus: obsolete
+statusNote: With full DDF as an improvemet over MDGBDF, it is no longer necessary to force everything to be a "Story" in the MDGBDF model.  DDF supports "DDFSection" objects.
+---
 Files should be viewed as containing the following structure, which can be structured as a list of section / story objects:
 
 '''

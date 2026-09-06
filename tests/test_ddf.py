@@ -591,6 +591,17 @@ def test_serialize_section_with_no_subsections():
     assert "sections" not in data["sections"][0]
 
 
+def test_section_sections_may_be_none():
+    """A section may represent no subsections with None."""
+    doc = DDFDoc(sections=[DDFSection(heading="# Test", sections=None)])
+
+    assert serialize_to_markdown(doc) == "# Test\n"
+    assert "sections" not in json.loads(serialize_to_json(doc))["sections"][0]
+
+    parsed = parse_from_json('{"sections": [{"heading": "# Test", "sections": null}]}')
+    assert parsed.sections[0].sections is None
+
+
 def test_markdown_serialization_blank_lines():
     """Markdown serialization should have proper blank lines."""
     doc = DDFDoc(

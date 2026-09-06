@@ -50,7 +50,7 @@ class DDFSection:
     heading: str
     attributes: dict[str, Any] | None = None
     preamble: str | None = None
-    sections: list[DDFSection] = field(default_factory=list)
+    sections: list[DDFSection] | None = field(default_factory=list)
 
 
 # ============================================================================
@@ -337,12 +337,14 @@ def _dict_to_section(data: dict) -> DDFSection:
     """Convert dict to DDFSection."""
     if "heading" not in data:
         raise ValueError("Section missing required 'heading' field")
+
+    sections = data.get("sections", [])
     
     return DDFSection(
         heading=data["heading"],
         attributes=data.get("attributes"),
         preamble=data.get("preamble"),
-        sections=[_dict_to_section(s) for s in data.get("sections", [])]
+        sections=None if sections is None else [_dict_to_section(s) for s in sections]
     )
 
 
@@ -420,7 +422,7 @@ def _serialize_section(section: DDFSection) -> str:
         output.append(section.preamble.rstrip())
     
     # Nested sections
-    for subsection in section.sections:
+    for subsection in section.sections or []:
         output.append("")
         output.append(_serialize_section(subsection).rstrip())
     
