@@ -43,6 +43,9 @@ These plugin protocols are not to be implemented yet, but are enumerated here fo
 
 * UpdateStory implements update_story which finds the Story with same id as the required Story argument and replaces it in the backlog attribute by attribute including the full list of tasks.  The previous state will be save in some TBD way.
 
+* PushStory implements push_story which places the pushed story at the top of the backlog and if the story already existed in the backlog, does a task wise upsert of the pushed story. Task wise upsert means that new tasks are added, and existing tasks are updated, but no tasks are deleted. The previous state will be save in some TBD way, which may be specific to the plugin implementation.
+
+
 d - update this spec to say what the load function does. Does it find the story or task by id?  Ir is it to load a local file system cache such as TODO.md
 -/t
 

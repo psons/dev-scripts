@@ -31,6 +31,7 @@ MDGBDF Sections are data first, and may appear at different H-levels in differen
 
 
 ## issue: Bare task lists in DDF documents
+See backlog stories/d-bare-task-lists-in-ddf.md
 
 The use case for this feature is to allow a file to be a very simple list of tasks, without any stories, to be parsed as MDGBDF.  
 

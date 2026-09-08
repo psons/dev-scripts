@@ -23,7 +23,7 @@ bl*.py plugins
  - returns types defined in gbdata.py to callers of the 'Backlog Plugin Protocols'.  
 
 gbdata.py
- - implements goal, story, and task related domain model types used bt the API contract between backlog.py and its plugins.
+ - implements goal, story, and task related domain model types used b the API contract between backlog.py and its plugins.
  - owns the shared status enum(s).
 
 `mdgbdata.py`
