@@ -34,9 +34,9 @@ MDGBDF Sections are data first, and may appear at different H-levels in differen
 
 The use case for this feature is to allow a file to be a very simple list of tasks, without any stories, to be parsed as MDGBDF.  
 
-For a simple new project being built out rapidly, a user should be able to just start typing tasks in TODO.md.   The user surely will eventually elaborate and make some of them stories wit headings, but they shouldn't have to.  Quick prototyping for exampe may just be a bunch of tasks.  This would be a core use od dev-scripts, and a key start for users.
+For a simple new project being built out rapidly, a user should be able to just start typing tasks in TODO.md.   The user surely will eventually elaborate and make some of them stories wit headings, but they shouldn't have to.  Quick prototyping for example may just be a bunch of tasks.  This would be a core use of dev-scripts, and a key start for users.
 
-Can the template design, call for a plugin for preamble, or should it be passed in as a setting from the caller?
+Can the template design, call for a plugin for preamble, or should it be passed in as a setting from the caller? In any case, the calling program is responsible.
 
 ### DDF Markdown parsing
 For a DDF markdown document, that has front matter at the beginning of the file, that set of front-matter key value pairs defines the attributes for the top level document.
@@ -52,11 +52,67 @@ A parser should accept an argument or command line parameter to tel it what the 
 
 ## issue: subsections in a single plugin call pass or separate calls?
 Should a section with a special plugin be passed all subsections at lower levels to be parsed also? Or should each subsection be a call to the plugin to parse?
-Answer: Each section should call a plugin if there is one.  The vision is that documents can commingle different types of sections.
- - some how, an app that uses a ddf document has to do what it is supposed to do with the sections it has a functional responsibility for.
-    - get the tasks and stories.  dtask pop ans push
-    - read a business process and build a document (using AI) to propose the 
+Answer: For current Feature iteration, same or descending H levels should be passed to the same plugin call.  MDGBDF will make gbdataStory and gbdata.Task structures preserving sub heading levels in the description text.
 
+The future vision is that documents can commingle different types of sections.
+ - some how, an app that uses a ddf document has to do what it is supposed to do with the sections it has a functional responsibility for.
+    - get the tasks and stories.  dtask pop and push
+    - read a business process and build a document (using AI) to propose the Business Process Information Graph (BPIG). 
+    - what other analytical steps and artifacts might run scripts as side affects and might use DDF to anchor those scripts?
+
+### Thinking:
+From A DDF perspective and a user expectation, any Section object will have any subsection nested inside of it.  So the returned objects **should** be nested within it in the domain model.
+Presently no gbdata.Story within a gbdata.Story  
+- gb-data.Story does not have any 'sections?: [],' property, and can not store Stories (or any other sections) within Stories.  Elsewhere (such as in Goal Blotter) there is some desire to have more, or even un unbounded number of levels to the decomposition model TPB->Goal(s)->Story(ies)->Task(s).  
+  - HTML and Markdown imposes a practical constraint of 6 heading levels
+  - Stories nested within another story must drop down one heading level.
+  - There is no need to limit to the number of stories that may appear at the 1 level down nesting level.
+  - gb-data should be enhanced in the future to have something like a 'sections?: [],' property.  Perhaps it would be good to use a name like "subParts" to escape the markdown sections and headers semantic.
+  - there is no support for higher parts of the gb-data model such as "Goal" or "Time Priority Block:" (TPB) in MDGBDF, but it could be added formally or in user structures to DDF by callng the file or directory the TPB, and using a file or H1 as the Goal.  These things could also be managed as attributes on stories or even tasks.   A Task Warrior plugin likely would use attributes, and not support the nesting of stories within stories. 
+    - See https://github.com/psons/gb-data/blob/main/docs/ar-spec/Work-Hierarchy-Goal-Story-Task.md   
+#### for the current iteration
+---
+status: accepted
+statusNote: check the rules against existing MDGBDF behavior and try to align.
+statusDate: 2026-09-06
+---
+##### Current state Story
+ - A story may have subsections (Lower H level headings)
+    - currently MDGBDF only supports H1 level stories, and that has to change as part of this work.
+        1 - - Stories cannot nest. A heading deeper than current story level is part of description text, 
+
+##### Current state Task
+
+    - A task may have headings, but they must be lower than the H-level of the story 
+ not a new story, and they are not parsed
+        2 - Task detail definition:
+        
+```
+- `detail` is all subsequent lines excluding parsed object front-matter, until one of: 
+    -a heading at the same or higher level than the current story. 
+```
+### Decisions
+
+#### For the current iteration (Feature "workBranch": "plugin-ddf" )
+By default, any section encountered uses the same parser and context as the "parent object" and enclosing section.  This means by default it is the same object as MDGBDF currently does.
+ - New, the Story pattern won't always be an H1, as already specified elsewhere.
+
+The gb-data model remains unchanged, so there is no nested sections still.
+
+With no nested Object model, or separate lower down plugins called by plugins, the whole section text will be passed to the plugin according to the rules DDF rules, but the object model built is different:
+    - Descending H levels are passes to the parser, but the MDGBDF plugin puts the text in gbdata.Story.Description text, and sifts out the tasks to  gbdata.Story.tasks
+    - Same or ascending sections begin a new Section object.
+For comparison, this excerpt from ddf-spec.md
+``` 
+    - Sections lower than that level should be passed as text to the parser for that section. i.e. descending sections should be nested.
+    - Same or ascending sections are not nested.  
+
+```
+
+#### For future 
+Parsing should check each time a section header is encountered to see if a template match, or a ddfType attribute is calling for a different parser plugin, and such parsing would return an object with a  'sections?: [],' list.
+    - This would define full DDF compatibility and implies a needed improvement either to make the gb-data model to be an extension of the DDF model, or to duck type the DDFSection and the gbdata.Story and gbdata.Task together into objects that still serialize ad Markdown, and JSON, andstill can interact with the Goal Blotter API(s)s. 
+    - This would require likely enhancements to the state that get's passed to a DDF plugin:  For example would a call to DDF plugin by MDGBDF be allowed, and could it create a story under a Task?  It would either need to know to throw an error, or support it with a new set of business rules allowing a whole hierarchy to be nested with in another hierarchy.  Markdown H levels would run out quickly and it may amount o embedding a document within a document. 
 
 
 
