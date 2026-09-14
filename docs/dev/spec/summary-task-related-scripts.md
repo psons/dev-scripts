@@ -9,7 +9,7 @@ backlog.py
  - has a top level user CLI 
 - implements a module API for callers to use (such as dtask).
  - uses bl*.py plugins to interact with a backlog of tasks
-    - bltodo.py is the default plungin.
+    - bltodo.py is the default plugin.
 
 bltodo.py
  - implements a module API for callers.

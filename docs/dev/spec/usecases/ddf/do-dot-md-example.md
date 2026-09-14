@@ -9,7 +9,7 @@
 ---
 
 # Current work
-## d - Story: Header that should make a story object using te MDGBDF plugin
+## d - Story: Header that should make a story object using the MDGBDF plugin
 ---
 epic: The is a bigger picture than the work being done here.
 ---

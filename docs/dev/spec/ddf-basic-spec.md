@@ -15,7 +15,7 @@ Once an H-n section is encountered, that is not an H1,
 
 ### DDF Sections deduce their h-level 
 DDF Sections deduce their h-level objects in the memory model by pattern matching the heading string, thus it is not necessary to create empty nesting levels for an H6 to directly follow an H1.
-This is why the heading string is required. If it were niot required, all sections would need an attribute in serialized text to indicate the heading level. 
+This is why the heading string is required. If it were not required, all sections would need an attribute in serialized text to indicate the heading level. 
 
 # DDF Object Structure
 

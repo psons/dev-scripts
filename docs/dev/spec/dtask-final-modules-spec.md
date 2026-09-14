@@ -40,7 +40,7 @@ graph TD
   backlog --> bltodo[bin/bltodo.py]
   bltodo --> gbops
   bltodo --> mdgbdata
-  gbops --> gbdata[bin/gbdata.py generated from gbdata-spec-2.md]
+  gbops --> gbdata[bin/gbdata.py vendored]
   mdgbdata --> gbdata
 ```
 
@@ -160,7 +160,9 @@ Rules:
 - The existing implicit file-scope story (content before the first story heading) is unchanged and
   is still produced when text precedes the first heading at `story_heading_level`.
 - The parser records the observed level on each story so that a story parsed at H2 and re-serialized
-  with the same `story_heading_level` round-trips byte-for-byte.
+  with the same `story_heading_level` round-trips.
+   - round trips are byte-for-byte if MDGBDF content only uses formal attribute syntax.
+   - informal attribute syntax converts to formal attribute syntax
 
 ### 3.2 Serialization
 
@@ -184,7 +186,7 @@ Rules:
 - Task rendering, front-matter blocks, and the `file-input` suppressed-header rule are unchanged;
   tasks are not headings and are unaffected by the offset.
 - JSON serialization is unaffected: heading level is a markdown presentation concern and is **not**
-  stored on the `Story` model (which is schema-governed and must not gain repo-local fields).
+  stored on the `Story` model (which is vendored and must not change).
 
 ### 3.3 Bare task list rendering
 

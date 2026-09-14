@@ -14,7 +14,7 @@
       "stories": [
         {
           "id": "cd1bf913-c5ac-7358-9209-26a59ce0ba78-243f3bcb",
-          "name": "Header that should make a story object using te MDGBDF plugin",
+          "name": "Header that should make a story object using the MDGBDF plugin",
           "status": "do",
           "description": "This is some preamble text about the story",
           "tasks": [
