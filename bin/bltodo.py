@@ -4,7 +4,7 @@
 Public API:
 - resolve_todo_file_path: return the TODO path from argument/env/default.
 - load_todo_stories: parse TODO markdown into Story objects.
-- prioritized / pop_task / pop_story: backlog provider protocol methods.
+- prioritized / pop_task / pop_story / push_story: backlog provider protocol methods.
 - build_command_result / parse_args / main: CLI entry points.
 """
 
@@ -21,6 +21,7 @@ import subprocess
 import sys
 import tempfile
 
+import gbops
 import mdgbdata
 from gbdata import Story, StoryStatus, Task, TaskStatus
 
@@ -196,6 +197,26 @@ def pop_story(todo_file: str | Path | None = None) -> Story | None:
     del stories[pop_index]
     _write_stories_to_backlog(backlog_path, stories)
     return popped_story
+
+
+def push_story(story: Story, todo_file: str | Path | None = None) -> Story:
+    """Lift story to the top of the backlog, upserting its tasks if it already exists.
+
+    Guarantees ids on existing stories via normalize_backlog, saves a recovery copy of the
+    backlog before writing, and never deletes a task (see gbops.upsert_tasks).
+    """
+    backlog_path = resolve_todo_file_path(todo_file)
+
+    normalize_backlog(backlog_path)
+    stories = _read_stories_from_backlog(backlog_path)
+
+    save_recovery(backlog_path)
+
+    match = gbops.find_story(stories, story)
+    merged = gbops.upsert_story(match, story) if match is not None else story
+    remaining = [existing for existing in stories if existing is not match]
+    _write_stories_to_backlog(backlog_path, gbops.lift_story_to_top(remaining, merged))
+    return merged
 
 
 def build_command_result(todo_file: str | Path | None = None) -> BltodoCommandResult:

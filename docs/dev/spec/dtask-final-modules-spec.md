@@ -86,9 +86,11 @@ STORY_ID_ATTR = "storyID"
 STORY_NAME_ATTR = "storyName"
 
 INCOMPLETE_TASK_STATUSES = frozenset({
-    TaskStatus.DO, TaskStatus.IN_PROGRESS, TaskStatus.SCHEDULED, TaskStatus.UNFINISHED,
+    TaskStatus.DO, TaskStatus.IN_PROGRESS, TaskStatus.SCHEDULED,
 })
-DONE_TASK_STATUSES = frozenset({TaskStatus.COMPLETED, TaskStatus.ABANDONED})
+HARVEST_TASK_STATUSES = frozenset({
+    TaskStatus.COMPLETED, TaskStatus.ABANDONED, TaskStatus.UNFINISHED,
+})
 
 def with_attributes(obj: Task | Story, **kv) -> Task | Story
 def tag_task_with_story(task: Task, story: Story) -> Task
@@ -342,7 +344,7 @@ def finalize(path, *, provider: str | None = None) -> DoMdCommandResult
 
 - `load` parses `do.md` with `ddf.parse_from_markdown(text, template=DO_MD_TEMPLATE)`; the matched
   sections come back as `MDGBDFSection` objects carrying `stories`.
-- `harvest_completed` removes tasks whose status is in `gbops.DONE_TASK_STATUSES` from the current
+- `harvest_completed` removes tasks whose status is in `gbops.HARVEST_TASK_STATUSES` from the current
   work stories, tags them via `gbops.tag_tasks_with_story`, and appends them to the completed work
   section as a bare list.
 - `stories_to_push_back` is `gbops.stories_with_incomplete_tasks(doc.current_work_stories())`.

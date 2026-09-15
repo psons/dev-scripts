@@ -92,6 +92,52 @@ def test_main_help_returns_zero(capsys):
     assert "usage:" in out
 
 
+def test_run_backlog_pushstory_lifts_and_upserts(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "todo.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+    monkeypatch.delenv("BACKLOG_PROVIDER", raising=False)
+
+    input_text = (
+        "# d - Story: Beta\n"
+        "---\n"
+        "id: story-b\n"
+        "---\n"
+        "x - second task\n"
+        "---\n"
+        "id: task-2\n"
+        "---\n"
+    )
+
+    result = backlog.run_backlog_command(
+        command="pushstory",
+        output_format="mdgbdf",
+        input_text=input_text,
+        input_format="mdgbdf",
+    )
+
+    assert "Story: Beta" in result.output_text
+
+    bltodo = sys.modules["bltodo"]
+    stories = bltodo.load_todo_stories()
+    assert stories[0].id == "story-b"
+    assert stories[0].tasks[0].status.value == "completed"
+
+
+def test_pushstory_raises_when_provider_lacks_protocol(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "todo.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    class _NoPushProvider:
+        pass
+
+    monkeypatch.setattr(backlog, "load_provider_module", lambda name: _NoPushProvider())
+
+    with pytest.raises(ValueError, match="PushStory"):
+        backlog.run_backlog_command(command="pushstory", input_text="# Story\n", input_format="mdgbdf")
+
+
 def test_unknown_provider_raises_value_error():
     with pytest.raises(ValueError, match="Unknown backlog provider"):
         backlog.load_provider_module("does_not_exist_provider")

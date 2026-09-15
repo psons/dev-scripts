@@ -64,6 +64,10 @@ _STORY_FORMAL_KEYS = {"id", "status", "name", "description", "maxTasks"}
 _TASK_FORMAL_KEYS = {"id", "status", "name", "detail"}
 
 
+class MdgbdataHeadingLevelError(ValueError):
+    """Raised when a story heading level is invalid or violates story_heading_level."""
+
+
 def load_status_map(path: str | Path, status_enum: type[StoryStatus] | type[TaskStatus]) -> StatusMap:
     """Load status metadata from a JSON file."""
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -351,8 +355,18 @@ def parse_stories_from_markdown(
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
     work_stories_only: bool = False,
+    story_heading_level: int = 1,
 ) -> list[Story]:
-    """Parse stories and tasks from markdown text in a single pass."""
+    """Parse stories and tasks from markdown text in a single pass.
+
+    story_heading_level is the heading level (1-6) at which a story heading is recognized.
+    Headings deeper than story_heading_level are content of the current story/task. A heading
+    shallower than story_heading_level raises MdgbdataHeadingLevelError, since a plugin-parsed
+    DDF section only ever receives the text of one section.
+    """
+    if not 1 <= story_heading_level <= 6:
+        raise MdgbdataHeadingLevelError(f"story_heading_level must be in 1..6, got {story_heading_level}")
+
     if not text:
         return []
 
@@ -561,6 +575,12 @@ def parse_stories_from_markdown(
                     current_story_description_lines.append(line)
                 continue
 
+            if heading_level < story_heading_level:
+                raise MdgbdataHeadingLevelError(
+                    f"Heading level {heading_level} is shallower than story_heading_level="
+                    f"{story_heading_level}: {line!r}"
+                )
+
             if current_story_name is not None:
                 finalize_story()
 
@@ -575,7 +595,7 @@ def parse_stories_from_markdown(
                 start_story(story_name, _coerce_story_status(story_status), heading_level)
                 continue
 
-            if heading_level == 1:
+            if heading_level == story_heading_level:
                 if _has_story_marker(heading_text):
                     start_story(_story_heading_name(heading_text), StoryStatus.DO, heading_level)
                 else:
@@ -740,6 +760,7 @@ def parse_stories_from_markdown_file(
     task_status_map: TaskStatusMap,
     encoding: str = "utf-8",
     work_stories_only: bool = False,
+    story_heading_level: int = 1,
 ) -> list[Story]:
     """Read a markdown file and parse story/task structures from it."""
     md_path = Path(path)
@@ -749,6 +770,7 @@ def parse_stories_from_markdown_file(
         story_status_map,
         task_status_map,
         work_stories_only=work_stories_only,
+        story_heading_level=story_heading_level,
     )
     if stories and stories[0].name == "file-input":
         stories[0] = Story(
@@ -918,14 +940,16 @@ def _render_markdown_story(
     task_status_map: TaskStatusMap,
     *,
     suppress_header: bool = False,
+    story_heading_level: int = 1,
 ) -> list[str]:
     lines: list[str] = []
     if not suppress_header:
+        heading_prefix = "#" * story_heading_level
         if story.status is None:
-            lines.append(f"# {story.name}")
+            lines.append(f"{heading_prefix} {story.name}")
         else:
             story_entry = _story_status_entry(story.status, story_status_map)
-            lines.append(f"# {story_entry.val} - Story: {story.name}")
+            lines.append(f"{heading_prefix} {story_entry.val} - Story: {story.name}")
     story_frontmatter: dict[str, object] = {"id": story.id}
     if story.maxTasks is not None:
         story_frontmatter["maxTasks"] = story.maxTasks
@@ -960,8 +984,15 @@ def stories_to_markdown_text(
     stories: list[Story],
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
+    story_heading_level: int = 1,
 ) -> str:
-    """Serialize Story objects to MDGBDF markdown text."""
+    """Serialize Story objects to MDGBDF markdown text.
+
+    story_heading_level (1-6) is the heading level used for each story's heading.
+    """
+    if not 1 <= story_heading_level <= 6:
+        raise MdgbdataHeadingLevelError(f"story_heading_level must be in 1..6, got {story_heading_level}")
+
     lines: list[str] = []
     total_stories = len(stories)
     for index, story in enumerate(stories):
@@ -972,6 +1003,7 @@ def stories_to_markdown_text(
                 story_status_map,
                 task_status_map,
                 suppress_header=suppress_header,
+                story_heading_level=story_heading_level,
             )
         )
         if index < total_stories - 1:
@@ -985,6 +1017,7 @@ def convert_markdown_file_to_json_text(
     task_status_map: TaskStatusMap,
     encoding: str = "utf-8",
     work_stories_only: bool = False,
+    story_heading_level: int = 1,
 ) -> str:
     """Convert a Markdown GB Data file to JSON text."""
     markdown_text = Path(path).read_text(encoding=encoding)
@@ -993,6 +1026,7 @@ def convert_markdown_file_to_json_text(
         story_status_map,
         task_status_map,
         work_stories_only=work_stories_only,
+        story_heading_level=story_heading_level,
     )
 
 
@@ -1001,6 +1035,7 @@ def convert_markdown_text_to_json_text(
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
     work_stories_only: bool = False,
+    story_heading_level: int = 1,
 ) -> str:
     """Convert Markdown GB Data text to JSON text."""
     task_patterns = compile_status_patterns(task_status_map)
@@ -1011,6 +1046,7 @@ def convert_markdown_text_to_json_text(
         story_status_map,
         task_status_map,
         work_stories_only=work_stories_only,
+        story_heading_level=story_heading_level,
     )
     return stories_to_json_text(stories)
 
@@ -1021,6 +1057,7 @@ def convert_json_file_to_markdown_text(
     task_status_map: TaskStatusMap,
     encoding: str = "utf-8",
     work_stories_only: bool = False,
+    story_heading_level: int = 1,
 ) -> str:
     """Convert a JSON file of Story objects to MDGBDF markdown text."""
     return convert_json_text_to_markdown_text(
@@ -1028,6 +1065,7 @@ def convert_json_file_to_markdown_text(
         story_status_map,
         task_status_map,
         work_stories_only=work_stories_only,
+        story_heading_level=story_heading_level,
     )
 
 
@@ -1036,12 +1074,13 @@ def convert_json_text_to_markdown_text(
     story_status_map: StoryStatusMap,
     task_status_map: TaskStatusMap,
     work_stories_only: bool = False,
+    story_heading_level: int = 1,
 ) -> str:
     """Convert JSON text of Story objects to MDGBDF markdown text."""
     stories = _stories_from_json_text(json_text)
     if work_stories_only:
         stories = _filter_work_stories(stories)
-    return stories_to_markdown_text(stories, story_status_map, task_status_map)
+    return stories_to_markdown_text(stories, story_status_map, task_status_map, story_heading_level=story_heading_level)
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
@@ -1058,6 +1097,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Return only work stories (stories with status or tasks)",
     )
+    tojson_parser.add_argument(
+        "--story-heading-level",
+        type=int,
+        default=1,
+        help="Heading level (1-6) at which a story heading is recognized (default: 1)",
+    )
 
     tomd_parser = subparsers.add_parser("tomd", help="Convert JSON to Markdown GB Data Form")
     tomd_parser.add_argument("path", nargs="?", help="Optional path to a JSON file; reads stdin when omitted")
@@ -1065,6 +1110,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         "--work",
         action="store_true",
         help="Return only work stories (stories with status or tasks)",
+    )
+    tomd_parser.add_argument(
+        "--story-heading-level",
+        type=int,
+        default=1,
+        help="Heading level (1-6) to use for story headings (default: 1)",
     )
 
     subparsers.add_parser("help", help="Show command usage summary")
@@ -1130,6 +1181,7 @@ def main(argv: list[str] | None = None) -> int:
                     story_status_map,
                     task_status_map,
                     work_stories_only=args.work,
+                    story_heading_level=args.story_heading_level,
                 )
             else:
                 output_text = convert_markdown_text_to_json_text(
@@ -1137,6 +1189,7 @@ def main(argv: list[str] | None = None) -> int:
                     story_status_map,
                     task_status_map,
                     work_stories_only=args.work,
+                    story_heading_level=args.story_heading_level,
                 )
         elif args.command == "tomd":
             if args.path:
@@ -1145,6 +1198,7 @@ def main(argv: list[str] | None = None) -> int:
                     story_status_map,
                     task_status_map,
                     work_stories_only=args.work,
+                    story_heading_level=args.story_heading_level,
                 )
             else:
                 output_text = convert_json_text_to_markdown_text(
@@ -1152,6 +1206,7 @@ def main(argv: list[str] | None = None) -> int:
                     story_status_map,
                     task_status_map,
                     work_stories_only=args.work,
+                    story_heading_level=args.story_heading_level,
                 )
         else:
             raise ValueError(f"Unknown command: {args.command}")
@@ -1172,6 +1227,7 @@ __all__ = [
     "StoryStatusMap",
     "TaskStatusMap",
     "StatusMap",
+    "MdgbdataHeadingLevelError",
     "load_status_map",
     "compile_status_patterns",
     "detect_status",

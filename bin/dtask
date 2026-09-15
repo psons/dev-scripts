@@ -694,6 +694,21 @@ def cmd_commit(args):
         print(f"Committed on '{current_branch}': {commit_message}")
 
     if args.final:
+        # Before removing do.md, find incomplete work in '# Current work' and push whole
+        # stories with incomplete tasks back to the backlog. Fatal on failure: do.md must
+        # not be modified or removed if a push fails (see docs/dev/spec/dtask-final-modules-spec.md).
+        bin_dir = os.path.dirname(os.path.abspath(__file__))
+        if bin_dir not in sys.path:
+            sys.path.insert(0, bin_dir)
+        try:
+            import domd
+            finalize_result = domd.finalize(do_md_path)
+        except Exception as exc:
+            print(f"Error: failed to finalize {DO_MD_RELATIVE} before removal: {exc}", file=sys.stderr)
+            sys.exit(1)
+        if finalize_result.pushed_stories:
+            print(finalize_result.output_text, end="")
+
         # Remove do.md and make a second commit
         os.remove(do_md_path)
         rm_result = subprocess.run(

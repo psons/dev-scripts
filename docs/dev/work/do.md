@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Cross reference dtask-final-modules-spec.md to ADR decisions\
-  \ in ddf-issues.md"
+"actualCommitMessage": "Generated full build out of 'dtask --final' to push incomplete\
+  \ tasks from do.md back to backlog"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Complete specs and generate ddf.py enhancement to parse\
@@ -9,8 +9,6 @@
 "title": "do.md"
 "workBranch": "plugin-ddf"
 ---
-
-
 
 
 # Acceptance criteria
@@ -29,34 +27,13 @@ use cases:
         Tasks have a storyID attribute set to indicate the ID of the story they are part of.
         Tasks have a storyName attribute set to indicate the name of the story they are part of. 
 
+## External integration wih Goal Blotter
+Goal Blotter is not planned to support documents like DDF documents in its data domain, but will rather have some scheme to support links in description fields to documents and resources needed to complete Tasks and Stories.  
+
 # Current work
 
 
 ## dtask final design with DDF
-x - design specs for the dtask --final updates 
-prompt: given the Acceptance criteria which describes how the dtask command needs to read and write do.md files and TODO.md files.   Propose a module structure to implement the operations to upsert tasks and implement the pushStory protocol, and add the attributes.storyID and attributes.storyName.  Note that some of these operations would be hidden from dtask behind the backlog.py and bltodo.py modules.  Others would be called by dtask working with a DDF object representing do.md.  Take into consideration ease of update when the gbdata.py module must be updated to incorporate infrequent changes from the externally managed github.com/gb-data repository 
-
-x - review the generated spec:
-docs/dev/spec/dtask-final-modules-spec.md
-
-d - ask AI to verify that the spec still matches [ADR](../spec/adr/ddf/ddf-issues.md) decisions
-
-x - resolve issues with # dtask commit --final module structure spec.## 3. bin/mdgbdata.py — heading-level offset support.### 3.1 Parsing
-
-around line 160 ...
-
-```markdown
-- The existing implicit file-scope story (content before the first story heading) is unchanged and
-  is still produced when text precedes the first heading at `story_heading_level`.
-```
-When mdgbdata is called to parse a section called in a ddf document, a DDFSection is needed by the caller, so the content before the first story needs to be saved.  DDF would save this as preamble text, however in a section parsed by mdgbdata, it will be saves as a text only story at the beginning of the Story list.  The Story list will be saves as the sections attribute in the DDFSection returned by the mdgbdata  should be set as the preamble text in that DDFSection.
-    affects:
-        docs/dev/spec/dtask-final-modules-spec.md:
-            # dtask commit --final module structure spec.## 5. bin/ddfmdgbdf.py — NEW: the MDGBDF plugin
-When mdgbdata is used to parse a document, which may be a file, the ddf module is not involved, the object model only uses gbdata.py types (not DDFSection), and the return is a list of Story objects, so a file scoped text story is needed at the beginning of the list to store that content. 
-
-## External integration wih Goal Blotter
-Goal Blotter is not planned to support documents like DDF documents in its data domain, but will rather have some scheme to support links in description fields to documents and resources needed to complete Tasks and Stories.  
 
 ## d - Story: DDF parsing with MDGBDF sections supported.
 ---
@@ -78,7 +55,9 @@ from === Implementation Phases (from docs/dev/spec/ddf-spec.md)
     x carefully review: docs/dev/spec/usecases/ddf/do-dot-md-example.json 
     a - merge the plugin spec into the code ready spec.
         for now, docs/dev/spec/dtask-final-modules-spec.md can remain a freestanding code ready spec for the integrated DDF plugin solution. 
-    d - implement the code
+        - implement the code as part of dtask --final AI step.
+        
+d - Implement the code ready spec docs/dev/spec/dtask-final-modules-spec.md
 
 ## Story: dtask module refactor to use bin/domd.py for do.md reading writing / formatting.
 This module was created as part of --final pushing back to TODO.py and now knows some of te required structure of do.md.  It should own all of te required structure of do.md.
@@ -96,6 +75,31 @@ d - file this analysis for organizing tasks and work summaries together
 
 
 # Completed work
+
+x - design specs for the dtask --final updates 
+prompt: given the Acceptance criteria which describes how the dtask command needs to read and write do.md files and TODO.md files.   Propose a module structure to implement the operations to upsert tasks and implement the pushStory protocol, and add the attributes.storyID and attributes.storyName.  Note that some of these operations would be hidden from dtask behind the backlog.py and bltodo.py modules.  Others would be called by dtask working with a DDF object representing do.md.  Take into consideration ease of update when the gbdata.py module must be updated to incorporate infrequent changes from the externally managed github.com/gb-data repository 
+
+x - review the generated spec:
+docs/dev/spec/dtask-final-modules-spec.md
+
+x - ask AI to verify that the spec still matches [ADR](../spec/adr/ddf/ddf-issues.md) decisions
+
+x - resolve issues with # dtask commit --final module structure spec.## 3. bin/mdgbdata.py — heading-level offset support.### 3.1 Parsing
+
+around line 160 ...
+
+```markdown
+- The existing implicit file-scope story (content before the first story heading) is unchanged and
+  is still produced when text precedes the first heading at `story_heading_level`.
+```
+When mdgbdata is called to parse a section called in a ddf document, a DDFSection is needed by the caller, so the content before the first story needs to be saved.  DDF would save this as preamble text, however in a section parsed by mdgbdata, it will be saves as a text only story at the beginning of the Story list.  The Story list will be saves as the sections attribute in the DDFSection returned by the mdgbdata  should be set as the preamble text in that DDFSection.
+    affects:
+        docs/dev/spec/dtask-final-modules-spec.md:
+            # dtask commit --final module structure spec.## 5. bin/ddfmdgbdf.py — NEW: the MDGBDF plugin
+When mdgbdata is used to parse a document, which may be a file, the ddf module is not involved, the object model only uses gbdata.py types (not DDFSection), and the return is a list of Story objects, so a file scoped text story is needed at the beginning of the list to store that content. 
+
+
+
 
 x - **Phase 1** (this spec): Basic DDF parsing and serialization
 from === Implementation Phases (from docs/dev/spec/ddf-spec.md)

@@ -2,10 +2,11 @@
 """backlog - command module for querying prioritized backlog data via plugins.
 
 Public API:
-- Prioritized / PopTask / PopStory: runtime-checkable plugin protocols.
+- Prioritized / PopTask / PopStory / PushStory: runtime-checkable plugin protocols.
 - resolve_provider_name: choose provider from CLI arg, env, or default.
 - load_provider_module: import a provider plugin module.
 - run_backlog_command: run a backlog subcommand and return structured output.
+- push_story: programmatic entry point to push a Story object to the configured provider.
 - parse_args / main: CLI entry points.
 """
 
@@ -48,6 +49,14 @@ class PopStory(Protocol):
 
     def pop_story(self) -> Story | None:
         """Return the highest-priority story, if any."""
+
+
+@runtime_checkable
+class PushStory(Protocol):
+    """Protocol for providers that can push a story to the top of the backlog."""
+
+    def push_story(self, story: Story) -> Story:
+        """Lift story to the top of the backlog, upserting it if it already exists."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,21 +133,58 @@ def load_provider_module(provider: str):
         raise ValueError(f"Unknown backlog provider '{provider}'") from exc
 
 
+def _story_from_text(
+    text: str,
+    input_format: OutputFormat,
+    story_map: mdgbdata.StatusMap,
+    task_map: mdgbdata.StatusMap,
+) -> Story:
+    """Parse a single Story (with its tasks) out of MDGBDF or JSON input text."""
+    if input_format == "json":
+        stories = mdgbdata._stories_from_json_text(text)
+    else:
+        stories = mdgbdata.parse_stories_from_markdown(text, story_map, task_map)
+    if not stories:
+        raise ValueError("No story found in pushstory input")
+    return stories[0]
+
+
+def push_story(story: Story, *, provider: str | None = None) -> Story:
+    """Push story to the configured provider's backlog via the PushStory protocol."""
+    provider_name = resolve_provider_name(provider)
+    plugin = load_provider_module(provider_name)
+    if not isinstance(plugin, PushStory):
+        raise ValueError("Configured provider does not implement PushStory protocol")
+    return plugin.push_story(story)
+
+
 def run_backlog_command(
     *,
     command: str,
     provider: str | None = None,
     output_format: OutputFormat = "mdgbdf",
+    input_text: str | None = None,
+    input_format: OutputFormat = "mdgbdf",
 ) -> BacklogCommandResult:
     """Execute a backlog subcommand and render output text.
 
     The provider module is selected using `provider`, then `BACKLOG_PROVIDER`, then
-    defaulting to `bltodo`.
+    defaulting to `bltodo`. For `command="pushstory"`, `input_text` (MDGBDF or JSON, per
+    `input_format`) is required and is parsed into the Story to push.
     """
     provider_name = resolve_provider_name(provider)
     plugin = load_provider_module(provider_name)
-    stories = _stories_from_command_result(command, plugin)
     story_map, task_map = _load_status_maps()
+
+    if command == "pushstory":
+        if input_text is None:
+            raise ValueError("pushstory requires input_text (MDGBDF or JSON story content)")
+        if not isinstance(plugin, PushStory):
+            raise ValueError("Configured provider does not implement PushStory protocol")
+        story = _story_from_text(input_text, input_format, story_map, task_map)
+        stories = [plugin.push_story(story)]
+    else:
+        stories = _stories_from_command_result(command, plugin)
 
     if output_format == "json":
         output_text = mdgbdata.stories_to_json_text(stories)
@@ -178,6 +224,12 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("prioritized", help="Show prioritized tasks")
     subparsers.add_parser("poptask", help="Show the highest-priority task")
     subparsers.add_parser("popstory", help="Show the highest-priority story")
+    pushstory_parser = subparsers.add_parser(
+        "pushstory", help="Push a story (from file or stdin) to the top of the backlog"
+    )
+    pushstory_parser.add_argument(
+        "path", nargs="?", help="Optional path to MDGBDF or JSON story content; reads stdin when omitted"
+    )
     subparsers.add_parser("help", help="Show command usage summary")
 
     return parser
@@ -194,7 +246,7 @@ def _normalize_output_flag_position(argv: list[str] | None) -> list[str] | None:
 
         flag_index = normalized.index(flag)
         command_index = next(
-            (i for i, token in enumerate(normalized) if token in {"prioritized", "poptask", "popstory", "help"}),
+            (i for i, token in enumerate(normalized) if token in {"prioritized", "poptask", "popstory", "pushstory", "help"}),
             None,
         )
         if command_index is None or flag_index < command_index:
@@ -224,11 +276,21 @@ def main(argv: list[str] | None = None) -> int:
 
     output_format: OutputFormat = "json" if args.json else "mdgbdf"
     try:
-        result = run_backlog_command(
-            command=args.command,
-            provider=args.provider,
-            output_format=output_format,
-        )
+        if args.command == "pushstory":
+            input_text = Path(args.path).read_text(encoding="utf-8") if args.path else sys.stdin.read()
+            result = run_backlog_command(
+                command=args.command,
+                provider=args.provider,
+                output_format=output_format,
+                input_text=input_text,
+                input_format=output_format,
+            )
+        else:
+            result = run_backlog_command(
+                command=args.command,
+                provider=args.provider,
+                output_format=output_format,
+            )
     except (ValueError, FileNotFoundError, UnicodeDecodeError) as exc:
         print(f"Error: {exc}")
         return 1
@@ -245,10 +307,12 @@ __all__ = [
     "Prioritized",
     "PopTask",
     "PopStory",
+    "PushStory",
     "BacklogCommandResult",
     "resolve_provider_name",
     "load_provider_module",
     "run_backlog_command",
+    "push_story",
     "parse_args",
     "main",
 ]

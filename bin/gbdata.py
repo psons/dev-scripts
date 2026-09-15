@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Goal Blotter shared domain model types."""
+"""Goal Blotter shared domain model types.
+
+Generated from docs/dev/spec/gbdata-spec-2.md in conformance with the externally
+managed schema at https://github.com/psons/gb-data/blob/main/goalBlotter.schema.json.
+Do not hand-edit: update the spec and regenerate instead.
+"""
 
 from __future__ import annotations
 

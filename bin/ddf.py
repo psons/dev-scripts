@@ -23,7 +23,7 @@ import re
 import argparse
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping, Protocol, runtime_checkable
 
 try:
     import yaml
@@ -51,6 +51,74 @@ class DDFSection:
     attributes: dict[str, Any] | None = None
     preamble: str | None = None
     sections: list[DDFSection] | None = field(default_factory=list)
+
+
+# ============================================================================
+# Plugin Registry
+# ============================================================================
+
+# A template is shaped like {"rules": [{"pattern": <regex>, "ddfType": <str>}, ...]}.
+DDFTemplate = Mapping[str, Any]
+
+
+@runtime_checkable
+class DDFPlugin(Protocol):
+    """Protocol for ddfType-specific section parser/serializer plugins."""
+
+    def parse_section(self, heading: str, level: int, text: str) -> DDFSection:
+        """Parse section heading + body text (up to the next same/shallower heading)."""
+
+    def serialize_section_markdown(self, section: DDFSection) -> str:
+        """Serialize a plugin-owned DDFSection (subclass) back to a markdown section."""
+
+    def serialize_section_json(self, section: DDFSection) -> dict:
+        """Serialize a plugin-owned DDFSection (subclass) to a JSON-compatible dict."""
+
+
+_PLUGIN_REGISTRY: dict[str, DDFPlugin] = {}
+
+
+def register_plugin(ddf_type: str, plugin: DDFPlugin) -> None:
+    """Register a plugin to handle sections of the given ddfType."""
+    if not isinstance(plugin, DDFPlugin):
+        raise TypeError(f"Plugin for ddfType '{ddf_type}' does not implement the DDFPlugin protocol")
+    _PLUGIN_REGISTRY[ddf_type] = plugin
+
+
+def get_plugin(ddf_type: str | None) -> DDFPlugin | None:
+    """Return the registered plugin for ddf_type, or None if unregistered."""
+    if ddf_type is None:
+        return None
+    return _PLUGIN_REGISTRY.get(ddf_type)
+
+
+def resolve_ddf_type(
+    heading_line: str,
+    attributes: dict[str, Any] | None,
+    template: DDFTemplate | None,
+) -> tuple[str | None, str | None]:
+    """Resolve the runtime ddfType for a section heading.
+
+    Returns (resolved_ddf_type, ignored_attribute_ddf_type). A template match always takes
+    precedence over a 'ddfType' attribute; when both are present and differ, the attribute
+    value is returned as ignored_attribute_ddf_type so callers can preserve/warn about it.
+    """
+    template_ddf_type = None
+    if template:
+        for rule in template.get("rules", []) or []:
+            pattern = rule.get("pattern")
+            ddf_type = rule.get("ddfType")
+            if pattern and ddf_type and re.search(pattern, heading_line):
+                template_ddf_type = ddf_type
+                break
+
+    attribute_ddf_type = attributes.get("ddfType") if isinstance(attributes, dict) else None
+
+    if template_ddf_type is not None:
+        ignored = attribute_ddf_type if attribute_ddf_type and attribute_ddf_type != template_ddf_type else None
+        return template_ddf_type, ignored
+
+    return attribute_ddf_type, None
 
 
 # ============================================================================
@@ -121,7 +189,56 @@ def _extract_front_matter(lines: list[str], start_idx: int = 0) -> tuple[dict[st
 def _parse_section_content(
     lines: list[str],
     start_idx: int,
-    parent_level: int
+    parent_level: int,
+    template: DDFTemplate | None = None,
+) -> tuple[DDFSection, int]:
+    """
+    Parse a single section starting at start_idx.
+    """
+    heading_line = lines[start_idx]
+    idx = start_idx + 1
+
+    # Determine the section's extent: up to (not including) the next heading at the
+    # same or shallower level, or end of input.
+    end_idx = idx
+    while end_idx < len(lines):
+        level = _get_heading_level(lines[end_idx])
+        if level is not None and level <= parent_level:
+            break
+        end_idx += 1
+
+    # Tentatively extract front-matter (without consuming input yet) to discover an
+    # internal ddfType attribute, in case no template rule matches this heading.
+    probe_idx = idx
+    while probe_idx < end_idx and lines[probe_idx].strip() == '':
+        probe_idx += 1
+    probed_attributes, _ = _extract_front_matter(lines[:end_idx], probe_idx)
+
+    ddf_type, ignored_attribute_ddf_type = resolve_ddf_type(heading_line, probed_attributes, template)
+    plugin = get_plugin(ddf_type)
+
+    if plugin is not None:
+        section_text = '\n'.join(lines[idx:end_idx])
+        section = plugin.parse_section(heading_line, parent_level, section_text)
+        if ignored_attribute_ddf_type is not None:
+            print(
+                f"Warning: ignoring ddfType attribute '{ignored_attribute_ddf_type}' in favor of "
+                f"template ddfType '{ddf_type}' for heading: {heading_line}",
+                file=sys.stderr,
+            )
+            if section.attributes is None:
+                section.attributes = {}
+            section.attributes["ddfType"] = ignored_attribute_ddf_type
+        return section, end_idx
+
+    return _parse_generic_section_content(lines, start_idx, parent_level, template)
+
+
+def _parse_generic_section_content(
+    lines: list[str],
+    start_idx: int,
+    parent_level: int,
+    template: DDFTemplate | None = None,
 ) -> tuple[DDFSection, int]:
     """
     Parse a single section starting at start_idx.
@@ -168,7 +285,7 @@ def _parse_section_content(
                 break
             else:
                 # Lower level (more #), nested subsection
-                subsection, idx = _parse_section_content(lines, idx, level)
+                subsection, idx = _parse_section_content(lines, idx, level, template)
                 subsections.append(subsection)
         else:
             # Regular text line
@@ -194,12 +311,14 @@ def _parse_section_content(
 # Parsing Functions
 # ============================================================================
 
-def parse_from_markdown(text: str) -> DDFDoc:
+def parse_from_markdown(text: str, template: DDFTemplate | None = None) -> DDFDoc:
     """
     Parse markdown text into a DDFDoc object.
     
     Args:
         text: Markdown text to parse
+        template: Optional template mapping section-heading regex patterns to a ddfType,
+            used to route matching sections to a registered plugin (see register_plugin).
         
     Returns:
         DDFDoc object representing the parsed document
@@ -245,7 +364,7 @@ def parse_from_markdown(text: str) -> DDFDoc:
         while idx < len(lines):
             level = _get_heading_level(lines[idx])
             if level is not None:
-                section, idx = _parse_section_content(lines, idx, level)
+                section, idx = _parse_section_content(lines, idx, level, template)
                 sections.append(section)
             else:
                 # This shouldn't happen, but handle gracefully
@@ -260,7 +379,8 @@ def parse_from_markdown(text: str) -> DDFDoc:
 
 def parse_from_markdown_file(
     path: str | Path,
-    encoding: str = "utf-8"
+    encoding: str = "utf-8",
+    template: DDFTemplate | None = None,
 ) -> DDFDoc:
     """
     Parse a markdown file into a DDFDoc object.
@@ -268,6 +388,7 @@ def parse_from_markdown_file(
     Args:
         path: Path to markdown file
         encoding: File encoding (default: utf-8)
+        template: Optional plugin-routing template, see parse_from_markdown.
         
     Returns:
         DDFDoc object representing the parsed document
@@ -279,7 +400,7 @@ def parse_from_markdown_file(
     """
     path = Path(path)
     text = path.read_text(encoding=encoding)
-    return parse_from_markdown(text)
+    return parse_from_markdown(text, template)
 
 
 def parse_from_json(text: str) -> DDFDoc:
@@ -397,6 +518,10 @@ def serialize_to_markdown(doc: DDFDoc) -> str:
 
 def _serialize_section(section: DDFSection) -> str:
     """Serialize a DDFSection to markdown text."""
+    plugin = get_plugin(getattr(section, "ddfType", None))
+    if plugin is not None:
+        return plugin.serialize_section_markdown(section)
+
     output = []
     
     # Section heading
@@ -496,6 +621,10 @@ def _doc_to_dict(doc: DDFDoc) -> dict:
 
 def _section_to_dict(section: DDFSection) -> dict:
     """Convert DDFSection to dict."""
+    plugin = get_plugin(getattr(section, "ddfType", None))
+    if plugin is not None:
+        return plugin.serialize_section_json(section)
+
     result = {"heading": section.heading}
     if section.attributes is not None:
         result["attributes"] = section.attributes

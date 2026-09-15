@@ -39,6 +39,54 @@
         "wsum"
     ],
     "chat.tools.terminal.autoApprove": {
-        "printf": true
+        "printf": true,
+        "/^python -m pytest tests/test_gbops\\.py tests/test_gbdata_contract\\.py -q 2>&1 \\| tail -60$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/test_ddf\\.py -q 2>&1 \\| tail -60$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/test_ddfmdgbdf\\.py -q 2>&1 \\| tail -80$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/test_ddf\\.py tests/test_mdgbdata\\.py tests/test_mdgbdata_heading_level\\.py tests/test_gbops\\.py tests/test_gbdata_contract\\.py tests/test_ddfmdgbdf\\.py -q 2>&1 \\| tail -60$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/test_bltodo_push_story\\.py tests/test_bltodo\\.py -q 2>&1 \\| tail -100$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/test_backlog\\.py -q 2>&1 \\| tail -100$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/test_gbops\\.py tests/test_bltodo_push_story\\.py tests/test_backlog\\.py -q 2>&1 \\| tail -60$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/test_domd\\.py -q 2>&1 \\| tail -150$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/ -q -k \"dtask\" 2>&1 \\| tail -150$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/test_domd\\.py -q 2>&1 \\| tail -80$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/test_domd\\.py -q 2>&1 \\| tail -100$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/ -q 2>&1 \\| tail -150$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }
