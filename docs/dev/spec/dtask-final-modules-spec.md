@@ -12,6 +12,13 @@ Covers the acceptance criteria in [docs/dev/work/do.md](../work/do.md):
 - `backlog.py` must define a `PushStory` protocol; `bltodo.py` must implement it by lifting the story
   to the top of `TODO.md` and doing a task-wise upsert, saving a recovery copy before writing.
 
+This spec is aligned with the accepted decisions in
+[ddf-issues.md](./adr/ddf/ddf-issues.md): stories/tasks are data, not layout; a
+data-list section (like `# Current work`) owns its own heading level and passes that level to
+MDGBDF as an offset; `TODO.md` stays a flat list of H1 stories for the current iteration; plugin
+calls are flat/non-nested; and a bare task/text list is represented as a leading text `Story`
+rather than `DDFSection.preamble`. Section-by-section notes below cite the specific decision.
+
 ## Guiding principle
 
 `bin/gbdata.py` is **generated in this repository** from [gbdata-spec-2.md](./gbdata-spec-2.md),
@@ -179,10 +186,11 @@ Rules:
 
 - `_render_markdown_story` emits `"#" * story_heading_level` instead of the hardcoded `"# "` for
   both the plain (`# {name}`) and status (`# {val} - Story: {name}`) heading forms.
-- `story_heading_level` must be in `1..6`. Values outside that range raise
-  `MdgbdataHeadingLevelError`. A plugin that would need to emit H7 must report the error rather than
-  emit invalid markdown; this is the concrete resolution of the H-level issue recorded in
-  [ddf-issues.md](./adr/ddf/ddf-issues.md).
+- `story_heading_level` must be in `1..6`, i.e. the enclosing section's H-level must be `0..5` before
+  adding one for the story level. Values outside that range raise `MdgbdataHeadingLevelError`. A
+  plugin that would need to emit H7 must report the error rather than emit invalid markdown; this is
+  the concrete resolution of "Different treatment of headings between DDF and MDGBDF" in
+  [ddf-issues.md](./adr/ddf/ddf-issues.md), which fixes the enclosing-section limit at H-level 0-5.
 - Task rendering, front-matter blocks, and the `file-input` suppressed-header rule are unchanged;
   tasks are not headings and are unaffected by the offset.
 - JSON serialization is unaffected: heading level is a markdown presentation concern and is **not**
@@ -194,7 +202,10 @@ Rules:
 story: `stories_to_markdown_text` already suppresses the header for a first story named
 `file-input`, so `domd` renders completed tasks as a single `file-input` story whose tasks carry
 `storyID` / `storyName` attributes. Those attributes are already round-tripped by the existing
-task front-matter emit/parse path, so no additional serializer change is required.
+task front-matter emit/parse path, so no additional serializer change is required. This matches the
+"Should the section returned by mdgbdata.py be a DDFSection with preamble?" decision in
+[ddf-issues.md](./adr/ddf/ddf-issues.md): the leading text is a text `Story` in the `stories` list,
+not `DDFSection.preamble`.
 
 ### 3.4 CLI
 
@@ -243,6 +254,11 @@ def serialize_section_json(section: MDGBDFSection) -> dict
   `attributes`, and `stories` (from `mdgbdata.stories_to_json_text`), per the plugin spec.
 - The runtime `ddfType` is kept as a field distinct from `attributes`, so a template override does
   not destroy a conflicting `ddfType` attribute in the source document.
+- `parse_section` and `serialize_section_markdown` never recurse into a nested plugin call for
+  descending headings; the whole section text (including deeper headings) is handled in one call to
+  `mdgbdata`, per the "Should plugins be able to call other plugins?" decision in
+  [ddf-issues.md](./adr/ddf/ddf-issues.md) (accepted as "no" for the current iteration; nested
+  plugin calls are future work).
 
 ## 6. `bin/backlog.py` — add the `PushStory` protocol
 
@@ -280,7 +296,11 @@ def push_story(story: Story, todo_file: str | Path | None = None) -> Story:
   `normalize_backlog` and `pop_story` contracts in [backlog-spec.md](./backlog-spec.md).
 - Plugin-specific concerns (path resolution, recovery, MDGBDF write-back, ordering) stay here.
   The *meaning* of "upsert" stays in `gbops.py` so future `bljira.py` / `blgb.py` plugins reuse it.
-- `TODO.md` is written at `story_heading_level=1` (the default), unchanged from today.
+- `TODO.md` is written at `story_heading_level=1` (the default), unchanged from today. This matches
+  the "For the current iteration" decision in [ddf-issues.md](./adr/ddf/ddf-issues.md) that
+  `TODO.md` stays a flat list of H1 stories; `bltodo.py` calls `mdgbdata.py` directly and does not
+  route through `ddf.py`, so a future move to a DDF-wrapped `# Backlog` section in `TODO.md` is
+  isolated to `bltodo.py` and does not change `gbops.py` or `backlog.py`.
 
 ## 8. `bin/domd.py` — NEW: the `do.md` domain layer
 

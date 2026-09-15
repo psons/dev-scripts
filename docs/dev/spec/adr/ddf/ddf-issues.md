@@ -47,7 +47,7 @@ Some stories in TODO.md are text Stories, used tro preserve content that is not 
 status: accepted
 statusDate: 2026-09-14
 ---
-TODO.md may be a DDF documet with a '# Backlog' Heading section that contains stories.
+TODO.md may be a DDF document with a '# Backlog' Heading section that contains stories.
 
 
 ## issue: Different treatment of headings between DDF and MDGBDF
@@ -177,7 +177,7 @@ mdgbdata.py only has types compatible with the gbdata schema, and currently repr
 
     Nested consideration: if an MDGBDF parser or serializer is not present, the stories attribute can not be handled without raising an error because it is an object, not a simple attribute value.
     --> Could Stories and Tasks be designed to be parsed and serialized as generic DDF sections if a DDF parser ad serializer is not present? 
-        --> Proposal: Yes with the limitation that if a markdown document is loaded into memory as a DDFDocument ad DDF sections even though it contains stories and tasks, it sould be parsed to DDF, and re-serialized to DDF such that he re-serialized DDF could still be parsed with a DDF parser using an MDGBDF plugin, and the stories and tasks would till be intact.  
+        --> Proposal: Yes with the limitation that if a markdown document is loaded into memory as a DDFDocument ad DDF sections even though it contains stories and tasks, it should be parsed to DDF, and re-serialized to DDF such that he re-serialized DDF could still be parsed with a DDF parser using an MDGBDF plugin, and the stories and tasks would till be intact.  
         --> likewise, if a parser uses an MDGBDF plugin to load a document, then an MDGBDF serializer is needed too, so that special model attributes like 'stories' and H-level will be handled correctly.
 
 ### Decisions:
