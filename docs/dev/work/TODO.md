@@ -1,18 +1,3 @@
-
-
-# Story: d - Update the dtask treatment of do.md to be DDF.
-
-    ### Implementation Phases (from docs/dev/spec/ddf-spec.md)
-
-    **Phase 3** (future): Full MDGBDF compatibility
-    - Replace `mdgbdata.py` with `ddf.py` for all existing use cases
-    - Support story and task extraction/manipulation
-    - Backward compatibility with existing MDGBDF workflows
-
-d - prompt copilot for a design recommendation on how dtask should use the DDF template to locate the sections it uses in te do.md ddf document.
-    refer to docs/dev/spec/ddf-plugin-spec.md:#### Document template creation
-
-
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
@@ -25,6 +10,9 @@ Just at the top for now. This can mess up a DDF document a little because it wil
      - later, when dtask sees it as completed and --final is tying off the feature, the backlog should be told the story is complete and disappearing from the work que and the git working Tree. working tree.  
 
 d - Story: stories should normalize to H3
+---
+id: f2fbf77b-88de-7903-8726-a24803a16785-b28be1ad
+---
 this will work better 
  - in do.md, which has an H1 section structure
  - when they naturally are under goals as an H2, and the Goals themselves are some organizational H1, maybe even in do.md.

@@ -4,7 +4,7 @@ The `do.md` file serves as a short-lived, task-specific "scratchpad" for the cur
 
 Here’s a breakdown of its key functions:
 
-1.  **Task Decomposition**: It holds a list of small, "microsected" sub-tasks that break down the larger task into a detailed, actionable plan. This is described in `docs/dev/spec/usecases/dtask-and-do-file-tasks.md` as a place for granular steps that guide implementation.
+1.  **Task Decomposition**: It holds a list of small, "microsected" sub-tasks that break down the larger task into a detailed, actionable plan. This is described in `docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md` as a place for granular steps that guide implementation.
 
 2.  **Git Workflow Management**: The YAML frontmatter in `do.md` is central to the `dtask` workflow. It stores critical metadata used for managing commits and branches, as specified in `docs/dev/spec/dtask-spec.md`:
     *   `workBranch`: The name of the git branch for the current task.

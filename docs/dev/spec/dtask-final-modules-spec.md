@@ -387,6 +387,24 @@ Per the command module pattern, unit tests plus pytest-bdd features:
   written before the update, no task deleted.
 - `tests/test_domd.py` — harvest, push-back selection, bare completed task list with
   `storyID` / `storyName`.
-- `tests/features/dtask_final/` — BDD coverage of `dtask commit --final` with incomplete work,
-  asserting `TODO.md` content and that `do.md` is removed only after a successful push.
-  Tests must not read or write the repository's own `docs/dev/work/TODO.md`.
+- `tests/features/dtask_final/` — required pytest-bdd coverage of the complete finalization
+  workflow. Tests must use temporary git repositories and temporary backlog files; they must not
+  read or write the repository's own `docs/dev/work/TODO.md`.
+
+  The BDD scenarios must cover these externally observable behaviors:
+
+  - Given a `do.md` current-work story containing active unfinished work (a task with status
+    `do`, `in_progress`, or `scheduled`), when `dtask commit --final` succeeds, the corresponding
+    story is present in the backlog and still contains that unfinished task. If the story already
+    exists in the backlog, the scenario must verify task-wise upsert and that the story is lifted
+    to the top.
+  - Given the same story also contains completed, abandoned, or explicitly `unfinished` tasks,
+    when finalization harvests those tasks, the `do.md` written for the first commit contains a
+    `# Completed work` section with those tasks as a bare task list. Each harvested task must
+    preserve `attributes.storyID` and `attributes.storyName`.
+  - The scenario must inspect the first commit (before the separate final removal commit) and
+    assert that its committed `do.md` contains the harvested `# Completed work` task entries.
+    It must then assert that the second finalization commit removes `do.md` only after the
+    backlog update and first commit have succeeded.
+  - A failing backlog push must leave `do.md` present and unchanged on disk, must not create the
+    final removal commit, and must expose the story content needed for recovery.

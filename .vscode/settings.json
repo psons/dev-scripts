@@ -87,6 +87,22 @@
         "/^python -m pytest tests/ -q 2>&1 \\| tail -150$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^python -m pytest tests/features/dtask_final/test_finalization\\.py -q 2>&1 \\| tail -160$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/features/dtask_final/test_finalization\\.py -q 2>&1 \\| tail -180$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/features/dtask_final/test_finalization\\.py -q 2>&1 \\| tail -220$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -m pytest tests/features/dtask/test_commit_no_wsum\\.py tests/features/dtask_final/test_finalization\\.py tests/test_domd\\.py tests/test_backlog\\.py tests/test_bltodo\\.py tests/test_bltodo_push_story\\.py -q 2>&1 \\| tail -220$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

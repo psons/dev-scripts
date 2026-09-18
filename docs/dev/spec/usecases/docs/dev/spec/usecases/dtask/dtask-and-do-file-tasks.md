@@ -44,4 +44,19 @@ That new spec or story should remain un tracked while the current work is being 
 ## dtask init without --branch (or -b) is an error.
 A mission oriented purpose of dtask is to help the user with good branch management.  If a user has not specified a branch, the command should fail with a message that init requires a branch.
 
+## dtask pop
+Given 
+ - the TODO.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO.md
+ - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file.md
 
+ When a user runs dtask pop,
+  - the TODO file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO-after-pop.md
+  - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-pop.md
+
+## dtask settle
+Given 
+ - the TODO file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO-after-pop.md
+ - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-pop-with-progress.md
+
+ When a user runs dtask settle,
+  - the TODO file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO-after-settle.md

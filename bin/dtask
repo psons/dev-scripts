@@ -644,6 +644,22 @@ def cmd_commit(args):
         )
         sys.exit(1)
 
+    if args.final:
+        # Finalization must happen before the first commit so harvested completed work is
+        # included in that commit's do.md snapshot.
+        bin_dir = os.path.dirname(os.path.abspath(__file__))
+        if bin_dir not in sys.path:
+            sys.path.insert(0, bin_dir)
+        try:
+            import domd
+            finalize_result = domd.finalize(do_md_path)
+        except Exception as exc:
+            print(f"Error: failed to finalize {DO_MD_RELATIVE} before commit: {exc}", file=sys.stderr)
+            sys.exit(1)
+        do_md_updated_by_dtask = True
+        if finalize_result.pushed_stories or finalize_result.completed_tasks:
+            print(finalize_result.output_text, end="")
+
     # Clarification 2026-05-18: whenever dtask changes do.md, stage it before commit.
     if do_md_updated_by_dtask:
         add_do_md = subprocess.run(["git", "add", do_md_path], cwd=repo_root)
@@ -694,22 +710,7 @@ def cmd_commit(args):
         print(f"Committed on '{current_branch}': {commit_message}")
 
     if args.final:
-        # Before removing do.md, find incomplete work in '# Current work' and push whole
-        # stories with incomplete tasks back to the backlog. Fatal on failure: do.md must
-        # not be modified or removed if a push fails (see docs/dev/spec/dtask-final-modules-spec.md).
-        bin_dir = os.path.dirname(os.path.abspath(__file__))
-        if bin_dir not in sys.path:
-            sys.path.insert(0, bin_dir)
-        try:
-            import domd
-            finalize_result = domd.finalize(do_md_path)
-        except Exception as exc:
-            print(f"Error: failed to finalize {DO_MD_RELATIVE} before removal: {exc}", file=sys.stderr)
-            sys.exit(1)
-        if finalize_result.pushed_stories:
-            print(finalize_result.output_text, end="")
-
-        # Remove do.md and make a second commit
+        # Remove do.md and make a second commit after the finalized snapshot is committed.
         os.remove(do_md_path)
         rm_result = subprocess.run(
             ["git", "add", do_md_path],

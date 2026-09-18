@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "Generated full build out of 'dtask --final' to push incomplete\
-  \ tasks from do.md back to backlog"
+"actualCommitMessage": "specs and use cases for dtask commit --final and dtask settle"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Complete specs and generate ddf.py enhancement to parse\
@@ -9,6 +8,7 @@
 "title": "do.md"
 "workBranch": "plugin-ddf"
 ---
+
 
 
 # Acceptance criteria
@@ -42,6 +42,16 @@ id: 6ef8e760-6efb-76f5-b56f-c6bb09e1f751-d8018269
 epic: dtask can update do.md and TODO.md
 
 ---
+
+# story: implement dtask settle.
+d - build out use case example.
+prompt: 
+    create a file that shows the state of do.md after running dtask settle where do.md had been in the 
+    state of docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-pop-with-progress.md.  
+    the new file should be docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-settle.md.
+
+    The dtask settle command, when implemented will do all the operations desired on the do.md file and the backlog for dtask commit --final, except that it will not do a git commit and not remove do.md.
+
 
 d - compare the backlog.py protocol to the acceptance write up and reconcile what it means to 'push' a story.
 
