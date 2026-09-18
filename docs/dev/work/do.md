@@ -1,5 +1,5 @@
 ---
-"actualCommitMessage": "specs and use cases for dtask commit --final and dtask settle"
+"actualCommitMessage": "non working implementation of dtask settle."
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Complete specs and generate ddf.py enhancement to parse\
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "plugin-ddf"
 ---
+
 
 
 
@@ -44,13 +45,26 @@ epic: dtask can update do.md and TODO.md
 ---
 
 # story: implement dtask settle.
-d - build out use case example.
+x - build out use case example.
 prompt: 
+
+With selected context in docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md,
+
     create a file that shows the state of do.md after running dtask settle where do.md had been in the 
     state of docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-pop-with-progress.md.  
     the new file should be docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-settle.md.
 
     The dtask settle command, when implemented will do all the operations desired on the do.md file and the backlog for dtask commit --final, except that it will not do a git commit and not remove do.md.
+
+/ - add support for dtask settle
+prompt:
+
+Implement the dtask settle subcommand to do all the operations desired on the do.md file and the backlog for dtask commit --final, except that it will not do a git commit and not remove do.md.  
+
+BDD tests should be generated in accordance with docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md # usage situations.## dtask settle
+
+Help text should be added 
+
 
 
 d - compare the backlog.py protocol to the acceptance write up and reconcile what it means to 'push' a story.

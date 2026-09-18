@@ -14,6 +14,8 @@ tests/
 │   │   ├── init_workbranch.feature
 │   │   ├── init_dirty_newdo.feature
 │   │   └── commit_no_wsum.feature
+│   ├── dtask_settle/
+│   │   └── settle.feature
 │   ├── mdgbdata/
 │   │   └── mdgbdata.feature
 │   ├── dtask_commit_wsum/
@@ -59,6 +61,12 @@ pytest -m bdd
 
 ```bash
 pytest tests/features/dtask_commit_wsum/test_dtask_commit_wsum.py
+```
+
+Other feature modules:
+
+```bash
+pytest tests/features/dtask_settle/test_settle.py
 ```
 
 Other feature modules:

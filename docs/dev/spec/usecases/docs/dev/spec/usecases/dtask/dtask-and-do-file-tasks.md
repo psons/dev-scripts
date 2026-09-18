@@ -55,8 +55,10 @@ Given
 
 ## dtask settle
 Given 
+ - the default backlog plugin is being used
  - the TODO file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO-after-pop.md
  - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-pop-with-progress.md
 
  When a user runs dtask settle,
   - the TODO file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO-after-settle.md
+  - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-settle.md

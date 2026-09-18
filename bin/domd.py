@@ -11,7 +11,8 @@ Public API:
 - harvest_completed: move completed/abandoned/unfinished tasks out of current work stories
   into the completed work section as a bare, storyID/storyName-tagged task list.
 - stories_to_push_back: current-work stories that still have incomplete tasks.
-- finalize: the full dtask `commit --final` sequence (harvest, push back, drop, save).
+- settle: harvest completed work, push incomplete stories back, drop current work, and save.
+- finalize: the full dtask `commit --final` sequence's do.md/backlog operation.
 - parse_args / main: CLI entry points (command module pattern).
 """
 
@@ -158,8 +159,8 @@ def stories_to_push_back(doc: DoDoc) -> list[Story]:
     return gbops.stories_with_incomplete_tasks(doc.current_work_stories())
 
 
-def finalize(path: str | Path, *, provider: str | None = None) -> DoMdCommandResult:
-    """Run the dtask `commit --final` sequence: harvest, push back, drop, save.
+def settle(path: str | Path, *, provider: str | None = None) -> DoMdCommandResult:
+    """Settle do.md and the backlog without committing or removing do.md.
 
     Push failures are fatal: if any push_story call fails, do.md is not modified on disk.
     """
@@ -176,15 +177,25 @@ def finalize(path: str | Path, *, provider: str | None = None) -> DoMdCommandRes
     doc.drop_stories([story.id for story in to_push])
     save(doc, do_md_path)
 
-    lines = [f"do.md finalized: {do_md_path}"]
+    lines = [f"do.md settled: {do_md_path}"]
     lines.append(f"Harvested {len(completed_tasks)} completed task(s).")
     lines.append(f"Pushed {len(pushed)} story(ies) back to the backlog.")
     return DoMdCommandResult(
-        command="finalize",
+        command="settle",
         do_md_path=str(do_md_path),
         pushed_stories=pushed,
         completed_tasks=completed_tasks,
         output_text="\n".join(lines) + "\n",
+    )
+
+
+def finalize(path: str | Path, *, provider: str | None = None) -> DoMdCommandResult:
+    """Run the do.md/backlog portion of the dtask `commit --final` sequence."""
+    result = settle(path, provider=provider)
+    return replace(
+        result,
+        command="finalize",
+        output_text=result.output_text.replace("do.md settled:", "do.md finalized:", 1),
     )
 
 
@@ -239,6 +250,7 @@ __all__ = [
     "save",
     "harvest_completed",
     "stories_to_push_back",
+    "settle",
     "finalize",
     "parse_args",
     "main",

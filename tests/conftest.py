@@ -88,6 +88,7 @@ pytest_plugins = [
     "tests.steps.test_backlog_steps",
     "tests.steps.test_bltodo_steps",
     "tests.features.dtask_commit_wsum.steps",
+    "tests.steps.test_dtask_settle_steps",
 ]
 
 

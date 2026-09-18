@@ -332,6 +332,10 @@ Subcommands:
                     If '# Current work' does not exist, it will be created after file
                     front-matter.
 
+    settle  Record completed work in do.md, push incomplete stories back to the
+                    backlog, and remove settled stories from '# Current work'. Does not
+                    create a git commit or remove do.md.
+
   commit  Commit staged changes on workBranch using workHeadline as the commit message.
           Unstaged changes are only included when --all or --update is used.
 
@@ -732,6 +736,27 @@ def cmd_commit(args):
         )
 
 
+def cmd_settle(_args):
+    repo_root = find_repo_root()
+    do_md_path = get_do_md_path(repo_root)
+
+    if not os.path.isfile(do_md_path):
+        print(f"Error: {DO_MD_RELATIVE} not found. Run 'dtask init' first.", file=sys.stderr)
+        sys.exit(1)
+
+    bin_dir = os.path.dirname(os.path.abspath(__file__))
+    if bin_dir not in sys.path:
+        sys.path.insert(0, bin_dir)
+    try:
+        import domd
+        settle_result = domd.settle(do_md_path)
+    except Exception as exc:
+        print(f"Error: failed to settle {DO_MD_RELATIVE}: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    print(settle_result.output_text, end="")
+
+
 def main():
     if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
         cmd_help(None)
@@ -768,6 +793,11 @@ def main():
         parser = argparse.ArgumentParser(prog="dtask pop", add_help=True)
         args = parser.parse_args(sys.argv[2:])
         cmd_pop(args)
+
+    elif subcommand == "settle":
+        parser = argparse.ArgumentParser(prog="dtask settle", add_help=True)
+        args = parser.parse_args(sys.argv[2:])
+        cmd_settle(args)
 
     else:
         print(f"Error: unknown subcommand '{subcommand}'. Run 'dtask help' for usage.", file=sys.stderr)
