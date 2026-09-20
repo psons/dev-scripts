@@ -1,6 +1,5 @@
 ---
-"actualCommitMessage": "feat: Improve dtask story/task management; ensure completed\
-  \ tasks persist on settle and refine do.md formatting"
+"actualCommitMessage": "backlog TODO grooming, and project spelling library updates"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Complete specs and generate ddf.py enhancement to parse\
@@ -9,6 +8,7 @@
 "title": "do.md"
 "workBranch": "plugin-ddf"
 ---
+
 
 
 # Acceptance criteria
