@@ -206,7 +206,11 @@ def settle(path: str | Path, *, provider: str | None = None) -> DoMdCommandResul
 
 
 def finalize(path: str | Path, *, provider: str | None = None) -> DoMdCommandResult:
-    """Run the do.md/backlog portion of the dtask `commit --final` sequence."""
+    """Run the do.md/backlog portion of the dtask `commit --final` sequence.
+
+    This is the settle flow that must happen before the first commit is created so the
+    harvested completed work and backlog update are part of the snapshot that gets committed.
+    """
     result = settle(path, provider=provider)
     return replace(
         result,

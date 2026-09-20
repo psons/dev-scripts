@@ -142,6 +142,29 @@ def test_settle_pushes_full_story_back_to_backlog_including_completed_tasks(monk
     assert captured["task_names"] == ["incomplete task", "a completed task"]
 
 
+def test_finalize_runs_settle_flow_before_returning_finalized_result(monkeypatch, tmp_path: Path):
+    path = _write_do_md(tmp_path)
+    todo_file = tmp_path / "TODO.md"
+    todo_file.write_text("", encoding="utf-8")
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+    monkeypatch.delenv("BACKLOG_PROVIDER", raising=False)
+
+    called = []
+    real_settle = domd.settle
+
+    def observing_settle(*args, **kwargs):
+        called.append("settle")
+        return real_settle(*args, **kwargs)
+
+    monkeypatch.setattr(domd, "settle", observing_settle)
+
+    result = domd.finalize(path)
+
+    assert called == ["settle"]
+    assert result.command == "finalize"
+    assert result.output_text.startswith("do.md finalized:")
+
+
 def test_save_round_trips_current_work(tmp_path: Path):
     path = _write_do_md(tmp_path)
     doc = domd.load(path)

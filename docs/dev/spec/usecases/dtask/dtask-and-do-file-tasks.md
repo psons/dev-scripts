@@ -74,3 +74,5 @@ Pushing and popping stories always moves whole stories, even if some of the task
 When tasks are written into do.md # Completed work they are copies from the stories that contain them.
 
 When If a tasks are written into do.md # Completed work, they are upserted.
+
+dtask --final should perform te settle updates before making its first commit.

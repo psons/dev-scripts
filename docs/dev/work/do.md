@@ -1,15 +1,14 @@
 ---
-"actualCommitMessage": "backlog TODO grooming, and project spelling library updates"
-"description": "A list of small, focused tasks guiding the current commit with detailed\
-  \ microsected activities."
-"intendedCommitMessage": "Complete specs and generate ddf.py enhancement to parse\
-  \ and serialize ddf documents with gbdata Tasks and Stories embedded in them "
-"priorCommit": "52763a3a8c405c92465d29758e0e081768e1457f"
-"title": "do.md"
-"workBranch": "plugin-ddf"
+actualCommitMessage: dtask commit --final now performs dtask settle before removing
+  do.md
+description: A list of small, focused tasks guiding the current commit with detailed
+  microsected activities.
+intendedCommitMessage: 'Complete specs and generate ddf.py enhancement to parse and
+  serialize ddf documents with gbdata Tasks and Stories embedded in them '
+priorCommit: 52763a3a8c405c92465d29758e0e081768e1457f
+title: do.md
+workBranch: plugin-ddf
 ---
-
-
 
 # Acceptance criteria
 Complete specs and generate ddf.py enhancement to parse and serialize ddf documents with gbdata Tasks and Stories embedded in them
@@ -32,13 +31,13 @@ Goal Blotter is not planned to support documents like DDF documents in its data 
 
 # Current work
 
-## dtask final design with DDF
+## x - Story: dtask final design with DDF
 ---
 id: 378696af-f825-7014-a5c8-b44613991e88-7fbdbe43
 ---
 
 
-## d - Story: DDF parsing with MDGBDF sections supported.
+## x - Story: DDF parsing with MDGBDF sections supported.
 ---
 id: 6ef8e760-6efb-76f5-b56f-c6bb09e1f751-d8018269
 epic: dtask can update do.md and TODO.md
@@ -65,9 +64,7 @@ BDD tests should be generated in accordance with docs/dev/spec/usecases/docs/dev
 
 Help text should be added
 
-d - compare the backlog.py protocol to the acceptance write up and reconcile what it means to 'push' a story.
-
-/ - **Phase 2** (future - see [ddf-plugin-spec.md](./ddf-plugin-spec.md)): Plugin architecture
+x - **Phase 2** (future - see [ddf-plugin-spec.md](./ddf-plugin-spec.md)): Plugin architecture
 from === Implementation Phases (from docs/dev/spec/ddf-spec.md)
 - Register plugins for specialized formats (e.g., MDGBDF for stories/tasks)
 - Plugin-based section parsing via `ddfType` attribute
@@ -81,6 +78,7 @@ from === Implementation Phases (from docs/dev/spec/ddf-spec.md)
 
 x - Implement the code ready spec docs/dev/spec/dtask-final-modules-spec.md
 
+x - compare the backlog.py protocol to the acceptance write up and reconcile what it means to 'push' a story.
 
 # Completed work
 
@@ -173,8 +171,13 @@ id: 89b72eee-f9a1-7ccd-ba89-aa1c0016998a-12880d48
 ## 2026-09-20 17:06
 
 ---
-workHeadline: "feat: Improve dtask story/task management; ensure completed tasks persist on settle and refine do.md formatting"
-specChanges: "The `dtask-and-do-file-tasks.md` spec is updated to clarify `dtask` and `do.md` behavior, specifying that `do.md` should contain bare tasks within story sections, `dtask settle` must include completed tasks when stories are returned to the backlog, whole stories must be moved during push/pop, and tasks written to `do.md` are upserted copies."
+workHeadline: 'feat: Improve dtask story/task management; ensure completed tasks persist
+  on settle and refine do.md formatting'
+specChanges: The `dtask-and-do-file-tasks.md` spec is updated to clarify `dtask` and
+  `do.md` behavior, specifying that `do.md` should contain bare tasks within story
+  sections, `dtask settle` must include completed tasks when stories are returned
+  to the backlog, whole stories must be moved during push/pop, and tasks written to
+  `do.md` are upserted copies.
 ---
 
 **Specification**: The provided git diff updates the `dtask-and-do-file-tasks.md` specification document, introducing a new section for "Needed corrections." This section clarifies several critical behaviors for the `dtask` utility, particularly concerning how tasks and stories are handled within the `do.md` file and during the `dtask settle` operation. It specifies that `do.md` should only contain bare tasks, without redundant story metadata when within a story section, and that `dtask settle` must include completed tasks when stories are returned to the backlog. Additionally, the document now emphasizes that the system should always move whole stories during push and pop operations, and that tasks written to `do.md` are copies from their source stories, managed via upsert.
