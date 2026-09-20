@@ -303,17 +303,16 @@ def extract_commit_message_work_headline(body: str) -> str:
 
 
 def cmd_help(_args):
-    print("""dtask - manage git branch and commit messages for the current task
+    print("""dtask - manage git branch, story, and commit messages for the current task
 
 Subcommands:
-  help    Print this help message.
+    help  Print this help message.
 
-  init    Initialize a new docs/dev/work/do.md file for the current task.
+    init  Initialize a new docs/dev/work/do.md file for the current task.
           Sets priorCommit to the current HEAD commit hash.
 
           Options:
-                        --workbranch, -b <branch>   Required. Create and check out a new
-                                                                                git branch.
+            --workbranch, -b <branch>   Required. Create and check out a new git branch.
             --intended,   -i <message>  Set the intendedCommitMessage.
             --actual,     -a <message>  Set the actualCommitMessage.
             --dirty                     Allow init even if the working tree is not
@@ -327,12 +326,12 @@ Subcommands:
                                         is already committed, it is simply replaced
                                         with no extra commit.
 
-    pop     Insert the top story returned by backlog popstory at the top of
+     pop  Insert the top story returned by backlog popstory at the top of
                     the '# Current work' section in docs/dev/work/do.md.
                     If '# Current work' does not exist, it will be created after file
                     front-matter.
 
-    settle  Record completed work in do.md, push incomplete stories back to the
+  settle  Record completed work in do.md, push incomplete stories back to the
                     backlog, and remove settled stories from '# Current work'. Does not
                     create a git commit or remove do.md.
 
@@ -392,6 +391,9 @@ def _fetch_popstory_markdown():
 
 def _insert_at_current_work(content, popstory_md):
     """Insert popstory markdown at top of # Current work, creating section if needed."""
+    # popstory is serialized as a standalone MDGBDF document with H1 story headings.
+    # Within do.md, stories belong to the H1 Current work section and must be H2s.
+    popstory_md = re.sub(r"(?m)^#(?!#)(?=\s)", "##", popstory_md)
     current_work_match = re.search(r"(?im)^#\s*current work\s*$", content)
     if current_work_match is not None:
         insert_pos = current_work_match.end()

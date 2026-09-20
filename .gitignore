@@ -2,6 +2,7 @@
 .github
 AGENTS.md
 docs/dev/work/backlog
+docs/dev/work/completed-work
 **/__pycache__/
 *.pyc
 .pytest_cache/

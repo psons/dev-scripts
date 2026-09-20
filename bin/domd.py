@@ -104,7 +104,17 @@ class DoDoc:
                 f"do.md is missing a '# {COMPLETED_WORK}' section to record harvested tasks in"
             )
         existing_tasks = self.completed_work_tasks()
-        section.stories = gbops.regroup_tasks_by_story(existing_tasks + tasks)
+        section.stories = [
+            Story(
+                id="file-input",
+                name="file-input",
+                status=None,
+                description=None,
+                maxTasks=None,
+                tasks=existing_tasks + tasks,
+                attributes=None,
+            )
+        ]
 
     def drop_stories(self, story_ids) -> None:
         """Remove stories with the given ids from '# Current work'. No-op if the section is absent."""
@@ -140,10 +150,11 @@ def harvest_completed(doc: DoDoc) -> list[Task]:
     remaining_stories: list[Story] = []
 
     for story in current_stories:
-        tagged_tasks = gbops.tag_tasks_with_story(story)
-        finished_ids = {task.id for task in gbops.finished_tasks(story)}
-        remaining_tasks = [task for task in tagged_tasks if task.id not in finished_ids]
-        harvested.extend(task for task in tagged_tasks if task.id in finished_ids)
+        story_tasks = story.tasks or []
+        finished = gbops.finished_tasks(story)
+        finished_ids = {task.id for task in finished}
+        remaining_tasks = [gbops.strip_story_ref(task) for task in story_tasks if task.id not in finished_ids]
+        harvested.extend(gbops.tag_task_with_story(task, story) for task in finished)
 
         if remaining_tasks or not finished_ids:
             remaining_stories.append(replace(story, tasks=remaining_tasks or None))
@@ -163,16 +174,21 @@ def settle(path: str | Path, *, provider: str | None = None) -> DoMdCommandResul
     """Settle do.md and the backlog without committing or removing do.md.
 
     Push failures are fatal: if any push_story call fails, do.md is not modified on disk.
+    Stories are always pushed back with their full task set, so completed tasks harvested into
+    the do.md '# Completed work' section are preserved in the backlog story by upsert.
     """
     do_md_path = Path(path)
     doc = load(do_md_path)
+    pre_harvest_stories = {story.id: story for story in doc.current_work_stories()}
 
     completed_tasks = harvest_completed(doc)
 
     to_push = stories_to_push_back(doc)
     pushed: list[Story] = []
     for story in to_push:
-        pushed.append(backlog.push_story(story, provider=provider))
+        original_story = pre_harvest_stories.get(story.id)
+        story_to_push = story if original_story is None else replace(original_story, tasks=list(original_story.tasks or []))
+        pushed.append(backlog.push_story(story_to_push, provider=provider))
 
     doc.drop_stories([story.id for story in to_push])
     save(doc, do_md_path)

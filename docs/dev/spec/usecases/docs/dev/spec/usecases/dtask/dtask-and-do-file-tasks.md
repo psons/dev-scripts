@@ -62,3 +62,15 @@ Given
  When a user runs dtask settle,
   - the TODO file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO-after-settle.md
   - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-settle.md
+
+### Needed corrections
+whole stories should never be written into do.md # Completed work.  Only bare tasks should be written to # Completed work
+Tasks should not be written with their storyName and storyID when they are written within their story sections, that already carry a story name and storyId
+
+dtask settle should include completed tasks when it pushes stories back into the backlog.  
+
+Pushing and popping stories always moves whole stories, even if some of the tasks are completed. 
+
+When tasks are written into do.md # Completed work they are copies from the stories that contain them.
+
+When If a tasks are written into do.md # Completed work, they are upserted.

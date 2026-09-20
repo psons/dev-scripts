@@ -87,9 +87,16 @@ def test_pop_inserts_story_at_top_of_current_work(tmp_path: Path):
     assert result.returncode == 0, f"stdout: {result.stdout}\nstderr: {result.stderr}"
     content = do_md.read_text(encoding="utf-8")
     assert "# Current work" in content
-    assert "# d - Story: Alpha" in content
+    assert "## d - Story: Alpha" in content
+    assert "\n# d - Story: Alpha" not in content
     assert "d - first task" in content
     assert content.index("# d - Story: Alpha") < content.index("Existing line")
+
+    import sys
+    sys.path.insert(0, str(BIN_DIR))
+    import domd
+
+    assert [story.name for story in domd.load(do_md).current_work_stories()] == ["Alpha"]
 
 
 def test_pop_creates_current_work_section_after_frontmatter(tmp_path: Path):
@@ -116,7 +123,7 @@ def test_pop_creates_current_work_section_after_frontmatter(tmp_path: Path):
     frontmatter_end = content.index("---\n", 4) + 4
     current_work_pos = content.index("# Current work")
     assert current_work_pos >= frontmatter_end
-    assert "# d - Story: Alpha" in content
+    assert "## d - Story: Alpha" in content
 
 
 def test_pop_fails_when_do_md_missing(tmp_path: Path):

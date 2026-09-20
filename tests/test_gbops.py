@@ -40,6 +40,12 @@ def test_tag_tasks_with_story_sets_attributes():
     assert tagged[0].attributes == {"storyID": "s1", "storyName": "My Story"}
 
 
+def test_strip_story_ref_removes_story_metadata_from_task():
+    task = _task("t1", attributes={"storyID": "s1", "storyName": "My Story", "extra": "kept"})
+    stripped = gbops.strip_story_ref(task)
+    assert stripped.attributes == {"extra": "kept"}
+
+
 def test_tag_task_with_story_does_not_overwrite_existing():
     task = _task("t1", attributes={"storyID": "keep-me"})
     story = _story(id_="s1", name="My Story")

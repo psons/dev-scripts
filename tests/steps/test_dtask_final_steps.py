@@ -172,7 +172,7 @@ def then_todo_contains_active_task(git_repo, task_name, story_name):
 def then_backlog_story_contains_tasks(git_repo):
     stories = _backlog_stories(git_repo)
     task_ids = [task.id for task in stories[0].tasks or []]
-    assert task_ids == ["task-existing", "task-active"]
+    assert task_ids == ["task-existing", "task-active", "task-completed", "task-unfinished"]
 
 
 @then(parsers.parse('the first finalization commit contains completed task "{task_name}" with story ID "{story_id}" and story name "{story_name}"'))

@@ -38,7 +38,7 @@ def test_finalization_persists_backlog_and_completed_work(git_repo):
     stories = _backlog_stories(git_repo)
     assert stories[0].id == "story-active"
     assert stories[0].name == "Active Story"
-    assert [task.id for task in stories[0].tasks or []] == ["task-existing", "task-active"]
+    assert [task.id for task in stories[0].tasks or []] == ["task-existing", "task-active", "task-completed", "task-unfinished"]
 
     # Spec: completed/abandoned/unfinished tasks are recorded in '# Completed work' as a bare
     # list, tagged with attributes.storyID/attributes.storyName, in the do.md committed *before*

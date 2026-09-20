@@ -52,6 +52,16 @@ def with_attributes(obj: Task | Story, **kv: object) -> Task | Story:
     return replace(obj, attributes=merged)
 
 
+def strip_story_ref(task: Task) -> Task:
+    """Return a task without storyID/storyName metadata while preserving all other attributes."""
+    if not task.attributes:
+        return task
+    remaining = {key: value for key, value in task.attributes.items() if key not in {STORY_ID_ATTR, STORY_NAME_ATTR}}
+    if not remaining:
+        return replace(task, attributes=None)
+    return replace(task, attributes=remaining)
+
+
 def tag_task_with_story(task: Task, story: Story) -> Task:
     """Return a copy of task with storyID/storyName set from story, without overwriting existing values."""
     existing = task.attributes or {}
@@ -210,6 +220,7 @@ __all__ = [
     "ANONYMOUS_STORY_ID",
     "ANONYMOUS_STORY_NAME",
     "with_attributes",
+    "strip_story_ref",
     "tag_task_with_story",
     "tag_tasks_with_story",
     "story_ref",
