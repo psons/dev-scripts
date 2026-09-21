@@ -7,7 +7,7 @@ This documentation set is organized by development activity so users can find th
 - [Node JS Based Development](node-js-development/README.md)
 - [Firebase Project Development](firebase-development/README.md)
 - [Development Project Setup](project-setup/README.md)
-- [Feature Based Work Story and Source Commit Workflows](feature-workflow/README.md)
+- [Story, Feature, Task, Commit Workflows](feature-workflow/README.md)
 - [AI Knowledge Indexing and Skills](ai-knowledge-skills/README.md)
 
 ## Existing User Docs

@@ -17,7 +17,7 @@ Each main topical markdown pages should have:
 
  Scan the docs/dev/spec/usecases directory for content to use to build the to development activities sections.  If the docs/dev/spec/usecases file begins with proposed, it should provide content under the second section.
 
-The user documentation page for each script and artifacts should inline the help text from the script if available, except that if the script help command expands environment variables or builds strings at run time, they should be replaces with tokens to represent the strings such as the environment variable used, or the function name used to determine the string at run time. , except that README files should not have user documentation pages.
+The user documentation page for each script and artifact should inline the help text from the script if available, except that if the script help command expands environment variables or builds strings at run time, they should be replaces with tokens to represent the strings such as the environment variable used, or the function name used to determine the string at run time. , except that README files should not have user documentation pages.
 
 Each script or artifact in the bin directory plus enable_env_local.sh and .env.local should have a user documentation page
 
@@ -34,6 +34,38 @@ In addition to the main documentation page, each topical area should have:
     p-s for Development Project Setup
     f-w for Feature based work story and source commit workflows.
     ai-k-s for AI Knowledge indexing and Skills
+
+The scripts and artifacts should be listed under the Topical Ares as follows: 
+
+* Node JS based development
+    - clean_node_modules
+    
+* Firebase project development
+    - bounce-fbase
+    
+* Development Project Setup
+    - enable_env_local.sh
+    - helperfuncs.env
+    - list
+
+* Feature based work story and source commit workflows.
+    - backlog.py
+    - bltodo.py
+    - ddf.py
+    - ddfmdgbdf.py
+    - domd.py
+    - dtask
+    - gbdata.py
+    - gbops.py
+    - gshove.sh
+    - mdgbdata.py
+    - wsum
+    - wsum.py
+
+
+* AI Knowledge indexing and Skills
+    - index-knowledge
+
 
 
 # Updateing
