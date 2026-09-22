@@ -1,3 +1,16 @@
+# init a feature to correct story moving behavior by dtask settle.
+dtask settle is ignoring stories that do not have tasks, which is not correct.
+
+d - finish drafting the plan in docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md 
+
+d - clean stuff out of the planningg draft to proper places
+Some content from docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md
+should move to use cases, adrs.
+
+d - update the dtask final spec from the dtask-and-do-file-tasks.md
+ - # usage situations.## dtask settle.### Needed corrections
+ - # usage situations.## dtask settle.### More needed corrections
+
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa

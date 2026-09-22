@@ -76,3 +76,33 @@ When tasks are written into do.md # Completed work they are copies from the stor
 When If a tasks are written into do.md # Completed work, they are upserted.
 
 dtask --final should perform te settle updates before making its first commit.
+
+### More needed corrections
+
+dtask settle must clear all content out of the 'do.md # Completed work' section.
+ - What should be done with text stories and preamble text from completed stories, since only tasks get copied to the '#Completed work' section?
+    One Proposal: 
+        dtask final should do 3 commits:
+            the first commit is the state when the command is run. it is needed to preserve text of completed stories that will otherwise be lost 
+            the second commit is the state of the do.md after a dtask settle, where content might be lost
+            the third commit is with do.md removed.
+        the background is that using te bltodo backlog assumes that the source tree does not get junked up forever with work management, so the content is lost unless a detailed commit branch is kept.
+    Another proposal:
+        file recovery can be used to make sure content is not lost.
+        What module implements recovery? 
+
+
+
+All content should be included in a list of MDGBDF Stories.  If a story is not complete, it should be pushed back to the backlog 
+
+ADR updates should be made and referenced here
+
+The mdgbdata behaviors should be documented to never explicitly write a status into a serialized story or set the property if it has not been found in content being parsed.
+
+Stories with no tasks are status 'do'
+Stories whit all tasks as 'completed' or 'abandoned' are to be handled as completed at run time
+
+Stories should be treated as complete at run time if they c
+
+The mdgbdata change should complement behaviors here:
+`dtask settle` should push stories into the backlog if thy are complete.   
