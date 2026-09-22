@@ -79,30 +79,23 @@ dtask --final should perform te settle updates before making its first commit.
 
 ### More needed corrections
 
-dtask settle must clear all content out of the 'do.md # Completed work' section.
- - What should be done with text stories and preamble text from completed stories, since only tasks get copied to the '#Completed work' section?
-    One Proposal: 
-        dtask final should do 3 commits:
-            the first commit is the state when the command is run. it is needed to preserve text of completed stories that will otherwise be lost 
-            the second commit is the state of the do.md after a dtask settle, where content might be lost
-            the third commit is with do.md removed.
-        the background is that using te bltodo backlog assumes that the source tree does not get junked up forever with work management, so the content is lost unless a detailed commit branch is kept.
-    Another proposal:
-        file recovery can be used to make sure content is not lost.
-        What module implements recovery? 
-
-
-
-All content should be included in a list of MDGBDF Stories.  If a story is not complete, it should be pushed back to the backlog 
-
-ADR updates should be made and referenced here
-
 The mdgbdata behaviors should be documented to never explicitly write a status into a serialized story or set the property if it has not been found in content being parsed.
 
-Stories with no tasks are status 'do'
-Stories whit all tasks as 'completed' or 'abandoned' are to be handled as completed at run time
-
-Stories should be treated as complete at run time if they c
-
 The mdgbdata change should complement behaviors here:
-`dtask settle` should push stories into the backlog if thy are complete.   
+`dtask settle` should push stories into the backlog if they are complete.   
+
+Stories with no tasks are status 'do'
+
+Stories with all tasks 'completed' or 'abandoned' are to be handled as completed at run time
+
+A copy of do.md should be saved before writing updates to it
+    - domd.py should have a showrecovery option like bltodo.py 
+        - ADR updates have been made to docs/dev/spec/adr/dtask/dtask-issues.md regarding recovery.
+
+dtask settle should perform backlog UpdateStory.  Behaviors for backlog implementations may vary, but the bltodo plugin should have the following behaviors:
+- upsert te story as is done for push, but do not change its place in the queue as is done for push.
+- check to see if the status is completed or abandoned.
+    - if completed or abandoned, write the story into a done log
+
+ - per docs/dev/spec/backlog-spec.md # backlog.py.## Future Backlog Plugin Protocols
+

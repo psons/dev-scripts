@@ -1,16 +1,3 @@
-# init a feature to correct story moving behavior by dtask settle.
-dtask settle is ignoring stories that do not have tasks, which is not correct.
-
-d - finish drafting the plan in docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md 
-
-d - clean stuff out of the planningg draft to proper places
-Some content from docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md
-should move to use cases, adrs.
-
-d - update the dtask final spec from the dtask-and-do-file-tasks.md
- - # usage situations.## dtask settle.### Needed corrections
- - # usage situations.## dtask settle.### More needed corrections
-
 # d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
@@ -38,11 +25,19 @@ id: 179a9ab8-61d9-78a8-bf4e-8e2a0b043d1a-4955bfec
 - load TODO.md as mdgbdata  
 - prepend the tasks to the TODO story list in memory, and write it back
 
+
 # User Documentation Improvements for release
+---
+id: 9bc8dab1-cd77-7257-8788-396f59c73f94-6b8b9aa0
+---
 Improve the user documentation with explicit organization of pieces under the main topical areas and improvement of the work flow section.
 For a release i will tall to people about, the conceptual work flow should be documented, and really quick to understand, even idf some pieces are not there yet. 
 
+
 # usability needs flexible H-level for stories
+---
+id: 360610cf-c53b-7894-bde8-3c063054f083-00708906
+---
 The dtask settle command raises the issue that TODO.md and do.md have stories at different levels.
 This is going to be a source of confusion and needs to be fixed.
 
@@ -66,6 +61,9 @@ In a typical development environment, a developer:
 * build a release 
 
 d - review the 'Doc a feature lifecycle' to set up dtask documentation
+---
+id: db0aa661-64fe-74e9-b5ce-c7261777ec65-d3983eab
+---
  there should be a dtask work flow laid on top of the that does not use other tools per story description here
  there might be an elaboration of how dtask pop causes a story to be related to a set of cycles around the branch work flow
     - probably 
@@ -79,8 +77,9 @@ d - review the 'Doc a feature lifecycle' to set up dtask documentation
         - with dtask init the story gets popped back into do.md to have more feature / task / commit increments per above.
         - repeat that cycle until the story is complete.
             - WHERE DO COMPLETED STORIES GO?
+                see ADR: docs/dev/spec/adr/dtask/dtask-issues.md
                 - each backlog has an implementation.
-                - bltodo needs another file, maybe even a subdirectory, like docs/dev/work/completed-work/done-yyyy-mm-dd.md
+                - bltodo needs another file, maybe even a subdirectory, like docs/dev/work/done/done-yyyy-mm-dd.md (humorously, some might say it is done and done)
 
 d - address TODOs in user docs docs/user/feature-workflow/f-w-process.md
 ---
@@ -240,16 +239,29 @@ id: b85fdbba-9743-7baf-ba5d-d93c95a05ee2-5ef6d7c3
 ---
 
 
-# Story: dtask module refactor to use bin/domd.py for do.md reading writing / formatting.
+# d - Story: dtask module refactor to use bin/domd.py for do.md reading writing / formatting.
+---
+id: 66df5a26-202a-740a-9b72-e1eeef5ab3d0-20ec803b
+---
 This module was created as part of --final pushing back to TODO.py and now knows some of te required structure of do.md.  It should own all of te required structure of do.md.
 
-# Story: record unfinished work and correlated summaries in do.md for dtask final.
+
+# d - Story: record unfinished work and correlated summaries in do.md for dtask final.
+---
+id: 4fbac25b-7722-7964-93cb-2e76270f5592-52a4dfd1
+---
 
 d - When tasks are in progress in do.md and dtask --final is run, do.md should show the unfinished tasks
+---
+id: 862375ee-ed12-780a-85e5-e7e1aada3488-1fcd8366
+---
 might be the # Completed Work section or a new $ unfinished section.
 The intent is that work summaries and modified files can be understood with the tasks that were worked on, even if not finished.
 
 d - file this analysis for organizing tasks and work summaries together
+---
+id: 64892d63-bd68-749b-9c58-e0bacba11103-2447d9be
+---
     - do some forward looking thinking as to whether a template can be re-structured without any code changes to make a story list where work summaries are together with tasks.  No, I think perhaps a work summary can have a task ID that was completed when wsum becomes task aware a lit of tasks that are now changed to in progress of completed can be paired with te work summary.  If dtask commit is run frequently and task statuses are updated, then the work summary will naturally be summarizing the work to complete the tasks.  At some point, perhaps an LLM can be trained to figure out work based on historical completed tasks.
 
 
