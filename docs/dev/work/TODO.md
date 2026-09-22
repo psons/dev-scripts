@@ -25,6 +25,9 @@ id: 179a9ab8-61d9-78a8-bf4e-8e2a0b043d1a-4955bfec
 - load TODO.md as mdgbdata  
 - prepend the tasks to the TODO story list in memory, and write it back
 
+# User Documentation Improvements for release
+Improve the user documentation with explicit organization of pieces under the main topical areas and improvement of the work flow section.
+For a release i will tall to people about, the conceptual work flow should be documented, and really quick to understand, even idf some pieces are not there yet. 
 
 # usability needs flexible H-level for stories
 The dtask settle command raises the issue that TODO.md and do.md have stories at different levels.

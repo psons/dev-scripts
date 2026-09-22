@@ -17,6 +17,10 @@ This documentation set is organized by development activity so users can find th
 
 # maintenance
 
+## This page
 Update this page with the prompt below:
 
 "Refresh docs/user/README.md. Keep the five topical area links aligned to current folder names, keep references to existing user docs, and avoid duplicating tool details that already exist on topical or script pages."
+
+## All user docs
+See [User Documentation Structure - Updating](../dev/spec/user-documentation-structure.md#updateing)
