@@ -1,6 +1,7 @@
 *DS_Store
 .github
 AGENTS.md
+docs/dev/work/done
 docs/dev/work/backlog
 docs/dev/work/completed-work
 **/__pycache__/

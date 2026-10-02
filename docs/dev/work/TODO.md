@@ -1,32 +1,68 @@
-# Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
+# Story: Bug fixes for dtask settle
+---
+id: 02cc0bee-ece0-71b1-963f-10caf5a60c9d-94e4fad9
+---
+
+d - copying work into the '# Completed work' section should not write the story ID 'file-input'
+---
+id: e004bd60-0408-7f01-845d-2e17bfa6710d-0cbe5172
+---
+```markdown
+    ---
+    id: file-input
+    ---
+```
+
+d - dtask pop (backlog.py?) should not attempt to write derived status into stories when serializing.
+---
+id: 4beb3878-9dc8-7ad3-9fe0-603ac972482a-983f1fd4
+---
+
+d - section informal attribute frontmatter reading should ignore code quoted material
+---
+id: 8eeceb5a-c7a8-7d86-a205-033c5e6d8274-77fc09f0
+---
+ok to abandon this story if it is messy. user can probably work around by indenting.
+
+d - tasks written into '# Completed work' should be upserted.
+---
+id: 92eaed74-ec6a-7504-9c96-cfd07ef83ee9-65673e28
+---
+They are currently being duplicated.
+Do I currently have a description of the behavior to upsert a task?
+
+
+# Story: Story H-level enhancement
+---
+id: 72ddb290-0334-744e-a45f-3ea2a33cb62c-7b66fd1a
+---
+
+d - stories should normalize to the H-level to nest inside the current template level, which will in many cases match a DDF template
+---
+id: 8d0119e9-d2c0-797d-9826-3d6ebe72a049-e60c0580
+---
+    Check if this is already done
+    This task was was: d - stories should normalize to H3
+
+    this will work better 
+    - in do.md, which has an H1 section structure
+    - when they naturally are under goals as an H2, and the Goals themselves are some organizational H1, maybe even in do.md.
+
+
+# Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed or abandoned, back into TODO.md.
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
 estimate: 4p
 epic: dtask --final does not lose incomplete work in do.md
 ---
-Just at the top for now. This can mess up a DDF document a little because it will take work stories out of the document, but only put them back at the top, which may not be where they came from, depending on how much other document material and layout is supported in TODO.md (Text stories for example are not popped, even if they are at the top of the document).   But if pop is taking them out of the DDF doc, it is getting ripped apart anyway.   This can be fixed when there are markers in the DDF doc.
 
-    d - build out a new story: popping a story from the backlog by dtask to todo.md puts it in progress, and probably dtask, via the backlog API needs to tell the backlog it is in progress.
-     - later, when dtask sees it as completed and --final is tying off the feature, the backlog should be told the story is complete and disappearing from the work que and the git working Tree. working tree.  
-
-d - stories should normalize to H3
+d - dtask \--final should include a 'dtask settle' in a commit before removing do.md
 ---
-id: f2fbf77b-88de-7903-8726-a24803a16785-b28be1ad
+id: c493690d-1383-7cc9-b8a6-aeaaf5132e72-c3cf01bb
 ---
-this will work better 
- - in do.md, which has an H1 section structure
- - when they naturally are under goals as an H2, and the Goals themselves are some organizational H1, maybe even in do.md.
 
 
-# User Documentation Improvements for release
----
-id: 9bc8dab1-cd77-7257-8788-396f59c73f94-6b8b9aa0
----
-Improve the user documentation with explicit organization of pieces under the main topical areas and improvement of the work flow section.
-For a release I will talk to people about, the conceptual work flow. It should be documented, and really quick to understand, even if some pieces are not there yet. 
-
-
-# usability needs flexible H-level for stories
+# Story: usability needs flexible H-level for stories
 ---
 id: 360610cf-c53b-7894-bde8-3c063054f083-00708906
 ---
@@ -35,6 +71,32 @@ This is going to be a source of confusion and needs to be fixed.
 
 existing state: right now, TODO.md is parsed as mdgbdf to a flat list of stories, including text stories, and requires stories to be H1 level.
 TODO.md should be parsed as DDF with a magic section (# Backlog) and allow other sections as explanatory text.
+
+d - TODO.md should behave as a ddf document like done.md does
+---
+id: ebd838d0-9f5b-7eaa-baab-a223a2f0bc73-20d4e932
+---
+See tasks below regarding text stories in the backlog
+text stories outside of a '# Backlog' heading section should be untouched by backlog operations
+
+d - Text stories in the backlog should be popped when their turn comes up.
+---
+id: c91ea3c8-67a4-722e-9446-bd530892eb3c-57e45a8f
+---
+Sine a story section may have sub section, descriptive documentation can be included within a story and popped with it.  By contrast Text stories within the backlog, but not within any story should be popped and pushed, and may even be flagged as completed or abandoned so settle pushstory operations will move them out of do and they can get out of the way, into done.
+
+d - add a user documentation caution that when manually putting stories in do.md, they should be at the correct H-level to be pushed out of do.md.
+---
+id: 0433f254-8484-7477-8a9d-3e9a4ea8b18f-8ba4a4c1
+---
+
+
+# User Documentation Improvements for release
+---
+id: 9bc8dab1-cd77-7257-8788-396f59c73f94-6b8b9aa0
+---
+Improve the user documentation with explicit organization of pieces under the main topical areas and improvement of the work flow section.
+For a release I will talk to people about, the conceptual work flow. It should be documented, and really quick to understand, even if some pieces are not there yet. 
 
 
 # Story: Document things - Doc a feature lifecycle
@@ -111,6 +173,8 @@ d - merge the feature branch back to main
 id: 4cf320f7-214e-7c06-a52f-9b03019bfca2-fdb24a20
 ---
  At this point, \--mergeback \<branch\> would be a command allowed with \--final, or it could be a front-matter attribute managed similar to the “actual commit message” which uses the front-matter value, but can be overridden with command line.  
+
+ a --mergeback switch with no argument given with init would set the starting frontmatter as a branch to merge back to.  A --mergeback argument could be accepted, but the branch has to exist, or an error will result.
 	d - spec  
 	estimate: 2p  
 	d - run prompt and review  
