@@ -262,49 +262,14 @@ def serialize_section_json(section: MDGBDFSection) -> dict
   [ddf-issues.md](./adr/ddf/ddf-issues.md) (accepted as "no" for the current iteration; nested
   plugin calls are future work).
 
-## 6. `bin/backlog.py` — add the `PushStory` protocol
+## 6. `bin/backlog.py` / `bin/bltodo.py` — the `PushStory` protocol
 
-```python
-@runtime_checkable
-class PushStory(Protocol):
-    def push_story(self, story: Story) -> Story: ...
-```
+The `PushStory` protocol definition (in `backlog.py`) and its implementation (`push_story` in
+`bltodo.py`) have moved to [backlog-spec.md](./backlog-spec.md), under "PushStory protocol in
+backlog.py" and "push_story behavior in bltodo.py". `dtask` orchestration below composes with
+that protocol via `backlog.push_story`.
 
-- New subcommand `pushstory`, which reads MDGBDF or JSON from a file argument or stdin.
-- A programmatic entry point `push_story(story: Story, provider: str | None = None) -> Story` so
-  `dtask` passes a `Story` object directly instead of round-tripping through text.
-- `run_backlog_command` gains the `pushstory` dispatch and returns the merged story in the existing
-  `BacklogCommandResult` shape.
-- `backlog.py` contains **no** merge logic. It performs provider resolution, the `isinstance`
-  protocol check (raising a user-facing error when the provider does not implement `PushStory`),
-  and dispatch.
-
-## 7. `bin/bltodo.py` — implement `PushStory`
-
-```python
-def push_story(story: Story, todo_file: str | Path | None = None) -> Story:
-    path = resolve_todo_file_path(todo_file)
-    normalize_backlog(path)                     # guarantees ids on existing stories
-    stories = _read_stories_from_backlog(path)  # re-read to pick up normalized ids
-    save_recovery(path)                         # required before any write
-    match = gbops.find_story(stories, story)
-    merged = gbops.upsert_story(match, story) if match else story
-    remaining = [s for s in stories if s is not match]
-    _write_stories_to_backlog(path, gbops.lift_story_to_top(remaining, merged))
-    return merged
-```
-
-- The recovery copy is mandatory and must succeed before the write, matching the existing
-  `normalize_backlog` and `pop_story` contracts in [backlog-spec.md](./backlog-spec.md).
-- Plugin-specific concerns (path resolution, recovery, MDGBDF write-back, ordering) stay here.
-  The *meaning* of "upsert" stays in `gbops.py` so future `bljira.py` / `blgb.py` plugins reuse it.
-- `TODO.md` is written at `story_heading_level=1` (the default), unchanged from today. This matches
-  the "For the current iteration" decision in [ddf-issues.md](./adr/ddf/ddf-issues.md) that
-  `TODO.md` stays a flat list of H1 stories; `bltodo.py` calls `mdgbdata.py` directly and does not
-  route through `ddf.py`, so a future move to a DDF-wrapped `# Backlog` section in `TODO.md` is
-  isolated to `bltodo.py` and does not change `gbops.py` or `backlog.py`.
-
-## 8. `bin/domd.py` — NEW: the `do.md` domain layer
+## 7. `bin/domd.py` — NEW: the `do.md` domain layer
 
 A command module per [python-command-module-pattern.md](./python-command-module-pattern.md):
 typed result object, CLI plus an importable API. This is the half that `dtask` drives with a DDF
@@ -351,7 +316,7 @@ def finalize(path, *, provider: str | None = None) -> DoMdCommandResult
 - `finalize` composes the whole `--final` sequence and is what `dtask` calls; the CLI subcommand
   `domd finalize` exercises the same function for testing and manual recovery.
 
-## 9. `bin/dtask` — orchestration only
+## 8. `bin/dtask` — orchestration only
 
 ```python
 # inside cmd_commit, when args.final

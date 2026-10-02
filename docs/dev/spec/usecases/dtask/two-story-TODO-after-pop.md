@@ -1,4 +1,4 @@
-# d - Story: story 2
+# Story: story 2
 ---
 id: d407fd79-61b7-72fa-a933-5fa1246def21-a6be0538
 ---

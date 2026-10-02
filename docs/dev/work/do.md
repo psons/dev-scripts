@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "developing specs to have dtasks settle completed stories to\
-  \ the backlog api: bltodo in docs/dev/work..."
+"actualCommitMessage": "completed specs for correction: dtask settle is ignoring stories\
+  \ that do not have tasks"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": "Correct story moving behavior by dtask settle."
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "settle-story-move-fixes"
 ---
+
 
 # Current work
 
@@ -19,27 +20,61 @@ id: 3eef52a5-c922-7b93-be8f-c651526c1495-968152ff
 ---
 dtask settle is ignoring stories that do not have tasks, which is not correct.
 
-/ - finish drafting the plan in docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md
+x - finish drafting the plan in docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md
 ---
 id: 288f4b77-53c5-7f84-8287-e3876f677f53-81d7676c
 ---
 
 
-/ - clean stuff out of the planning draft to proper places
+x - clean stuff out of the planning draft to proper places
 ---
 id: 6ec073d3-8f22-7b8a-9dc1-84ba76da98e9-7d63f005
 ---
 Some content from docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md
 should move to use cases, adrs.
 
-/ - implement the needed backlog updateStory protocol
+/ - implement the needed backlog PushStory protocol
     / - update docs/dev/spec/backlog-spec.md
     ---
     prompt: 
-    update the docs/dev/spec/backlog-spec.md to include implementation of UpdateStory and a subcommand update_story.  UpdateStory performs an upsert of a story, like PushStory does, but instead of lifting it to the top of te queue.
-    The bltodo plugin will perform a logical (run time state) check of the new status, and if the story is now "completed" it will be written to as defined by the runtime state examining tasks, 
-
+    update the docs/dev/spec/backlog-spec.md to include implementation of PushStory and a subcommand pushstory.  PushStory has the behaviors specified for dtask settle in dtask-and-do-file-tasks.md    
     ---
+    This task might be complete.
+
+
+/ - specify user override behavior for Story.status
+clarify in prompts and specs that it is the backlog that is a control interface for story status, and setting may be exposed to a caller (moved to use case doc). 
+    x - update do and TODO examples in docs/dev/spec/usecases/dtask so that they do not have the 'd' status on stories.  This will now be considered superfluous behavior.
+
+/ - Develop
+    update tests that have been based on files in docs/dev/spec/usecases/dtask so that they do not have status in the heading per the revised examples.
+
+    x - have ai: create an example of a story in do.md that will error because it has incomplete tasks, but has been flagged as completed or abandoned.
+     prompt: read docs/dev/spec/backlog-spec.md, and create a file docs/dev/spec/usecases/dtask/do-file-with-error-story-status.md as an example of do.md file content with a story that will cause an error in bltodo.py because it has incomplete tasks, but has been flagged as completed or abandoned. Add a link reference to the example file from backlog-spec.md
+
+    x - have ai: create an example of a story with no tasks and flagged as 'completed' that will be treated by backlog.py as completed and moved into the done file per the implementation behavior of bltodp.py.
+     prompt: read docs/dev/spec/backlog-spec.md, and create a file docs/dev/spec/usecases/dtask/do-file-with-completed-no-tasks-story-status.md as an example of do.md file content with a story with no tasks and flagged as 'completed' that will be treated by backlog.py as completed and moved into the done file per the implementation behavior of bltodp.py. Add a link reference to the example file from backlog-spec.md
+
+     prompt: Also create a matching done file example.
+
+    x - have ai: create an example of a story where all tasks are completed or abandoned that will be treated by backlog.py as completed and moved into the done file per the implementation behavior of bltodp.py. 
+    prompt:
+    read docs/dev/spec/backlog-spec.md, and create a use case file  as an example of do.md file content with a story where all tasks are completed or abandoned that will be treated by backlog.py as completed and moved into the done file per the implementation behavior of bltodp.py.  Add a link reference to the example file from backlog-spec.md.  Also create the done file example.
+
+d - Do the specified corrections to complete the story 
+prompt: 
+    Read:
+        - Use case information in docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md # usage situations.## dtask settle.### More needed corrections
+        - Enhancements to the backlog PushStory implementation and behaviors of the bltodo.py plugin specified in docs/dev/spec/backlog-spec.md
+        - and ADRs for dtask in docs/dev/spec/adr/dtask/dtask-issues.md 
+    Then Update the story moving behavior of dtask settle per updated specifications to correct the problem: dtask settle is ignoring stories that do not have tasks, which is not correct.
+
+
+x - The mdgbdata behaviors should be documented to never explicitly write a status into a serialized story or set the property if it has not been found in content being parsed.
+
+
+### Delivery step
+
 
 d - update the dtask final spec from the dtask-and-do-file-tasks.md
 ---

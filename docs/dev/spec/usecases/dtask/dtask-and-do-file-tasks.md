@@ -75,27 +75,27 @@ When tasks are written into do.md # Completed work they are copies from the stor
 
 When If a tasks are written into do.md # Completed work, they are upserted.
 
-dtask --final should perform te settle updates before making its first commit.
+dtask --final should perform the settle updates before making its first commit.
 
 ### More needed corrections
+
+dtask users may set a story to 'completed' in do.md, but an error will be thrown if there are tasks that are not completed or abandoned.   
+The normal use case is that if a story with no tasks was created to hold future tasks, but has been determined to be not needed, or has been completed through other work, a user may set its status explicitly to 'abandoned' or 'completed' to allow a backlog implementation to move it out of the todo work queue when it is pushed into the backlog. Normally Story status should not be set by a user, but if a story was created, but never had any tasks, and is not needed, it should be abandoned, and the backlog plugin should move it out of the queue.  
+
 
 The mdgbdata behaviors should be documented to never explicitly write a status into a serialized story or set the property if it has not been found in content being parsed.
 
 The mdgbdata change should complement behaviors here:
-`dtask settle` should push stories into the backlog if they are complete.   
 
-Stories with no tasks are status 'do'
+`dtask settle` should push stories into the backlog wether they are complete or not.  
 
-Stories with all tasks 'completed' or 'abandoned' are to be handled as completed at run time
+The docs/dev/spec/backlog-spec.md defines a runtime Status determination for stories, and a behavior relating to how the backlog manages completed stories when they are pushed. 
 
-A copy of do.md should be saved before writing updates to it
-    - domd.py should have a showrecovery option like bltodo.py 
-        - ADR updates have been made to docs/dev/spec/adr/dtask/dtask-issues.md regarding recovery.
+Complete stories should be Updated in the backlog.
 
-dtask settle should perform backlog UpdateStory.  Behaviors for backlog implementations may vary, but the bltodo plugin should have the following behaviors:
-- upsert te story as is done for push, but do not change its place in the queue as is done for push.
-- check to see if the status is completed or abandoned.
-    - if completed or abandoned, write the story into a done log
+The backlog should not error if an PushStory operation is a new story because a story may have been created in do.md.
 
- - per docs/dev/spec/backlog-spec.md # backlog.py.## Future Backlog Plugin Protocols
+Stories created in do.md may be completed before they are ever pushed to the backlog.  Such a story should be handled as completed by the implementing backlog plugin.
+
+dtask settle should perform backlog PushStory.  Behaviors for backlog implementations may vary, but the bltodo plugin behavior is documented in docs/dev/spec/backlog-spec.md
 

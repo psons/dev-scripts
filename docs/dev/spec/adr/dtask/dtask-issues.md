@@ -1,3 +1,6 @@
+---
+"description": "This is an issues document to record open issues, the analysis of te issues, and the accepted Architectural Decisions Record (ADR) to resolve the issues"
+---
 ## issue: What should be done with old '#Current work' 
 since dtask settle must clear all content out of the 'do.md # Completed work' section.
 and only tasks get copied to the '#Completed work' section text stories and preamble text from completed stories would be lost by dtask settle 
@@ -29,7 +32,7 @@ and only tasks get copied to the '#Completed work' section text stories and prea
         a future feature could include a setting to not keep them.
 
 5th proposal (selected. See decisions):
-    dtask settle should perform backlog UpdateStory.  The bltodo plugin should save to a stack in docs/dev/work/done/done.md
+    dtask settle should perform backlog PushStory.  The bltodo plugin should save completed stories to a stack in docs/dev/work/done/done.md
 ### Decisions
 ---
 status: accepted
@@ -42,5 +45,5 @@ status: accepted
 statusNote: more related behaviors are documented in docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md
 statusDate: 2026-09-22
 ---
-dtask settle should perform backlog UpdateStory.  The bltodo plugin should save to a stack in docs/dev/work/done/done.md 
+dtask settle should perform backlog PushStory.  The bltodo plugin should save completed stories to a stack in docs/dev/work/done/done.md 
     
