@@ -97,6 +97,46 @@ def test_run_backlog_pushstory_lifts_and_upserts(monkeypatch, tmp_path: Path):
     _write_todo(todo_file)
     monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
     monkeypatch.delenv("BACKLOG_PROVIDER", raising=False)
+    bltodo = sys.modules["bltodo"]
+    monkeypatch.setattr(bltodo, "resolve_done_file_path", lambda: tmp_path / "done.md")
+
+    input_text = (
+        "# d - Story: Beta\n"
+        "---\n"
+        "id: story-b\n"
+        "---\n"
+        "d - second task\n"
+        "---\n"
+        "id: task-2\n"
+        "---\n"
+        "d - new task\n"
+        "---\n"
+        "id: task-new\n"
+        "---\n"
+    )
+
+    result = backlog.run_backlog_command(
+        command="pushstory",
+        output_format="mdgbdf",
+        input_text=input_text,
+        input_format="mdgbdf",
+    )
+
+    assert "Story: Beta" in result.output_text
+
+    stories = bltodo.load_todo_stories()
+    assert stories[0].id == "story-b"
+    assert [t.id for t in stories[0].tasks] == ["task-2", "task-new"]
+
+
+def test_run_backlog_pushstory_archives_story_once_all_its_tasks_are_completed(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "todo.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+    monkeypatch.delenv("BACKLOG_PROVIDER", raising=False)
+    bltodo = sys.modules["bltodo"]
+    done_file = tmp_path / "done.md"
+    monkeypatch.setattr(bltodo, "resolve_done_file_path", lambda: done_file)
 
     input_text = (
         "# d - Story: Beta\n"
@@ -118,10 +158,12 @@ def test_run_backlog_pushstory_lifts_and_upserts(monkeypatch, tmp_path: Path):
 
     assert "Story: Beta" in result.output_text
 
-    bltodo = sys.modules["bltodo"]
     stories = bltodo.load_todo_stories()
-    assert stories[0].id == "story-b"
-    assert stories[0].tasks[0].status.value == "completed"
+    assert [s.id for s in stories] == ["story-a"]
+
+    done_stories = bltodo.load_done_stories(done_file)
+    assert [s.id for s in done_stories] == ["story-b"]
+    assert done_stories[0].tasks[0].status.value == "completed"
 
 
 def test_pushstory_raises_when_provider_lacks_protocol(monkeypatch, tmp_path: Path):

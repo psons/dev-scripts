@@ -1,4 +1,4 @@
-# d - Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
+# Story: dtask \--final should move all stories in the ‘do.md\#current work’ section that are not completed, back into TODO.md.
 ---
 id: e8f82a4e-19cd-7b91-acf5-c3797e7dc7fa-b3bfd5aa
 estimate: 4p
@@ -9,7 +9,7 @@ Just at the top for now. This can mess up a DDF document a little because it wil
     d - build out a new story: popping a story from the backlog by dtask to todo.md puts it in progress, and probably dtask, via the backlog API needs to tell the backlog it is in progress.
      - later, when dtask sees it as completed and --final is tying off the feature, the backlog should be told the story is complete and disappearing from the work que and the git working Tree. working tree.  
 
-d - Story: stories should normalize to H3
+d - stories should normalize to H3
 ---
 id: f2fbf77b-88de-7903-8726-a24803a16785-b28be1ad
 ---
@@ -17,21 +17,13 @@ this will work better
  - in do.md, which has an H1 section structure
  - when they naturally are under goals as an H2, and the Goals themselves are some organizational H1, maybe even in do.md.
 
-d - build a dtask unpop subcommand and module capability to:
----
-id: 179a9ab8-61d9-78a8-bf4e-8e2a0b043d1a-4955bfec
----
-- get the current work stories after ‘\#current work’ and before ‘\#completed work’  
-- load TODO.md as mdgbdata  
-- prepend the tasks to the TODO story list in memory, and write it back
-
 
 # User Documentation Improvements for release
 ---
 id: 9bc8dab1-cd77-7257-8788-396f59c73f94-6b8b9aa0
 ---
 Improve the user documentation with explicit organization of pieces under the main topical areas and improvement of the work flow section.
-For a release i will tall to people about, the conceptual work flow should be documented, and really quick to understand, even idf some pieces are not there yet. 
+For a release I will talk to people about, the conceptual work flow. It should be documented, and really quick to understand, even if some pieces are not there yet. 
 
 
 # usability needs flexible H-level for stories
@@ -45,7 +37,7 @@ existing state: right now, TODO.md is parsed as mdgbdf to a flat list of stories
 TODO.md should be parsed as DDF with a magic section (# Backlog) and allow other sections as explanatory text.
 
 
-# d - Story: Document things - Doc a feature lifecycle
+# Story: Document things - Doc a feature lifecycle
 ---
 id: 3255d54d-3700-7327-80a9-485eea97677c-25e2ae98
 estimate: '2p  '
@@ -95,7 +87,7 @@ id: b8eab0af-0c10-7a59-a7f5-36d4b8758762-01b7294c
         TODO write this section to honor a link from docs/user/feature-workflow/f-w-process.md
 
 
-# d - Story: Work on stuff \- improve dtask to support a full feature life cycle per the documented work flow
+# Story: Work on stuff \- improve dtask to support a full feature life cycle per the documented work flow
 ---
 id: 17438af7-a350-71ff-a4f2-f1a9e3f99f81-268d874b
 ---
@@ -127,7 +119,7 @@ id: 4cf320f7-214e-7c06-a52f-9b03019bfca2-fdb24a20
 	estimate: 2p
 
 
-# d - Story: bugfix: dtask should allow existing branch with -b
+# Story: bugfix: dtask should allow existing branch with -b
 ---
 id: 140748b0-1c3f-79e4-bb30-b20a7c8de67f-d89c4805
 fatal: a branch named 'backlog-command' already exists
@@ -137,7 +129,7 @@ error when backlog-command branch already exists.
  $ dtask init -b backlog-command -i "simple Filesystem based backlog implementation using TODO.md" --dirty
 
 
-# d - Story: Document things \- Do prerequisites.
+# Story: Document things \- Do prerequisites.
 ---
 id: cd73dbad-9938-7298-a21d-c1f51e208296-af4f93fc
 ---
@@ -152,7 +144,7 @@ without the non included things, but with a bin index, and higher level "applica
 This may be complete based on docs/dev/spec/user-documentation-structure.md
 
 
-# d - Story: Document things \- Do User Docs for all included script pieces
+# Story: Document things \- Do User Docs for all included script pieces
 ---
 id: 3a75ebb3-0db9-7a52-8321-c59cac40676e-e6481463
 estimate: '22p  '
@@ -172,7 +164,7 @@ id: 76cd1e75-48d3-7669-af6b-28beaa476665-0cbc13eb
      d - wsum config - Gemini setup.
 
 
-# d - Story: Document things \- Doc a Task Spec and Prompt Workflow
+# Story: Document things \- Doc a Task Spec and Prompt Workflow
 ---
 id: b5404589-f376-78c0-9062-86690d242bbb-be2a6b98
 estimate: 1p
@@ -180,7 +172,7 @@ estimate: 1p
 d \- 1 paragraph user doc explaining Task, Spec, and Prompt work flow.  
 
 
-# d - Story: Document things \- Doc task and story syntax
+# Story: Document things \- Doc task and story syntax
 ---
 id: d6235bf1-0a8b-7fac-9b85-fbe214135539-045edcbb
 estimate: '2p '
@@ -188,7 +180,7 @@ estimate: '2p '
 d \- AI to extract from some relevant docs  
 
 
-# d - Story: Document things \- Doc the bltodo flow around TODO.md and do.md,
+# Story: Document things \- Doc the bltodo flow around TODO.md and do.md,
 ---
 id: ec63f72b-9071-75f1-95fe-8bdb337aca32-bc980987
 estimate: '1p  '
@@ -217,7 +209,7 @@ id: fc55f6f0-4b0a-7552-b765-c98b69275bdc-3546b48d
  - users would interact with mdgbdata.py rarely if ever.
 
 
-# d - Story: improve project directory structure user docs
+# Story: improve project directory structure user docs
 ---
 id: f056719b-2221-7ff9-b3c8-e88dd19765eb-6681d6ea
 ---
@@ -239,14 +231,14 @@ id: b85fdbba-9743-7baf-ba5d-d93c95a05ee2-5ef6d7c3
 ---
 
 
-# d - Story: dtask module refactor to use bin/domd.py for do.md reading writing / formatting.
+# Story: dtask module refactor to use bin/domd.py for do.md reading writing / formatting.
 ---
 id: 66df5a26-202a-740a-9b72-e1eeef5ab3d0-20ec803b
 ---
 This module was created as part of --final pushing back to TODO.py and now knows some of te required structure of do.md.  It should own all of te required structure of do.md.
 
 
-# d - Story: record unfinished work and correlated summaries in do.md for dtask final.
+# Story: record unfinished work and correlated summaries in do.md for dtask final.
 ---
 id: 4fbac25b-7722-7964-93cb-2e76270f5592-52a4dfd1
 ---
@@ -265,7 +257,7 @@ id: 64892d63-bd68-749b-9c58-e0bacba11103-2447d9be
     - do some forward looking thinking as to whether a template can be re-structured without any code changes to make a story list where work summaries are together with tasks.  No, I think perhaps a work summary can have a task ID that was completed when wsum becomes task aware a lit of tasks that are now changed to in progress of completed can be paired with te work summary.  If dtask commit is run frequently and task statuses are updated, then the work summary will naturally be summarizing the work to complete the tasks.  At some point, perhaps an LLM can be trained to figure out work based on historical completed tasks.
 
 
-# d - Story: Formalize specification Flow
+# Story: Formalize specification Flow
 ---
 id: f453644d-f1ef-7e94-aeca-a5fe23f4cf9b-5af5051a
 backlogItem: This story should be pushed into and AI work flow backlog item.
@@ -292,7 +284,7 @@ Usecases such as: docs/dev/spec/usecases/backlog-usage.md should:
     - there likely can be elaboration of the feature uses as the user docs are written.
 
 
-# d - Story: task aware do.md parsing
+# Story: task aware do.md parsing
 ---
 id: 91a26399-8297-714a-a897-7495e0fb9e2e-087a353f
 ---

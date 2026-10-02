@@ -6,6 +6,8 @@ import importlib.util
 from pathlib import Path
 import sys
 
+import pytest
+
 _bin_dir = Path(__file__).resolve().parents[1] / "bin"
 if str(_bin_dir) not in sys.path:
     sys.path.insert(0, str(_bin_dir))
@@ -145,3 +147,51 @@ def test_stories_with_incomplete_tasks_filters():
     result = gbops.stories_with_incomplete_tasks([with_incomplete, all_done])
 
     assert [s.id for s in result] == ["s1"]
+
+
+def test_resolve_story_status_no_tasks_defaults_to_do():
+    story = _story(status=StoryStatus.DO, tasks=None)
+    assert gbops.resolve_story_status(story) == StoryStatus.DO
+
+
+def test_resolve_story_status_no_tasks_honors_explicit_completed():
+    story = _story(status=StoryStatus.COMPLETED, tasks=None)
+    assert gbops.resolve_story_status(story) == StoryStatus.COMPLETED
+
+
+def test_resolve_story_status_no_tasks_honors_explicit_abandoned():
+    story = _story(status=StoryStatus.ABANDONED, tasks=[])
+    assert gbops.resolve_story_status(story) == StoryStatus.ABANDONED
+
+
+def test_resolve_story_status_any_incomplete_task_resolves_to_do():
+    story = _story(
+        status=StoryStatus.DO,
+        tasks=[_task("t1", status=TaskStatus.COMPLETED), _task("t2", status=TaskStatus.IN_PROGRESS)],
+    )
+    assert gbops.resolve_story_status(story) == StoryStatus.DO
+
+
+def test_resolve_story_status_unfinished_task_is_not_story_complete():
+    story = _story(status=StoryStatus.DO, tasks=[_task("t1", status=TaskStatus.UNFINISHED)])
+    assert gbops.resolve_story_status(story) == StoryStatus.DO
+
+
+def test_resolve_story_status_all_tasks_completed_or_abandoned_resolves_to_completed():
+    story = _story(
+        status=StoryStatus.DO,
+        tasks=[_task("t1", status=TaskStatus.COMPLETED), _task("t2", status=TaskStatus.ABANDONED)],
+    )
+    assert gbops.resolve_story_status(story) == StoryStatus.COMPLETED
+
+
+def test_resolve_story_status_explicit_completed_with_incomplete_task_raises():
+    story = _story(status=StoryStatus.COMPLETED, tasks=[_task("t1", status=TaskStatus.DO)])
+    with pytest.raises(gbops.StoryStatusConflictError):
+        gbops.resolve_story_status(story)
+
+
+def test_resolve_story_status_explicit_abandoned_with_incomplete_task_raises():
+    story = _story(status=StoryStatus.ABANDONED, tasks=[_task("t1", status=TaskStatus.IN_PROGRESS)])
+    with pytest.raises(gbops.StoryStatusConflictError):
+        gbops.resolve_story_status(story)

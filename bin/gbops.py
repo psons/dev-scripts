@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from gbdata import Story, Task, TaskStatus
+from gbdata import Story, StoryStatus, Task, TaskStatus
 
 STORY_ID_ATTR = "storyID"
 STORY_NAME_ATTR = "storyName"
@@ -41,8 +41,18 @@ HARVEST_TASK_STATUSES = frozenset(
     }
 )
 
+# Task statuses that count as "finished" for runtime Story.status resolution (see
+# resolve_story_status). Deliberately excludes TaskStatus.UNFINISHED: an unfinished task is not
+# the same as the story being done, per docs/dev/spec/backlog-spec.md.
+STORY_COMPLETE_TASK_STATUSES = frozenset({TaskStatus.COMPLETED, TaskStatus.ABANDONED})
+
 ANONYMOUS_STORY_ID = "anonymous-story"
 ANONYMOUS_STORY_NAME = "Completed Tasks"
+
+
+class StoryStatusConflictError(ValueError):
+    """Raised when a Story's explicit status conflicts with the state of its tasks."""
+
 
 
 def with_attributes(obj: Task | Story, **kv: object) -> Task | Story:
@@ -212,6 +222,31 @@ def stories_with_incomplete_tasks(stories: list[Story]) -> list[Story]:
     return [story for story in stories if incomplete_tasks(story)]
 
 
+def resolve_story_status(story: Story) -> StoryStatus:
+    """Resolve a Story's runtime status from its task state, per docs/dev/spec/backlog-spec.md.
+
+    - No tasks: an explicit 'completed'/'abandoned' Story.status is honored as-is, else 'do'.
+    - Any task not 'completed'/'abandoned': 'do', unless Story.status is explicitly flagged
+      'completed'/'abandoned', which is a StoryStatusConflictError.
+    - Every task 'completed' or 'abandoned': 'completed'.
+    """
+    tasks = story.tasks or []
+    if not tasks:
+        if story.status in (StoryStatus.COMPLETED, StoryStatus.ABANDONED):
+            return story.status
+        return StoryStatus.DO
+
+    if any(task.status not in STORY_COMPLETE_TASK_STATUSES for task in tasks):
+        if story.status in (StoryStatus.COMPLETED, StoryStatus.ABANDONED):
+            raise StoryStatusConflictError(
+                f"Story {story.id!r} is flagged '{story.status.value}' but has a task that is "
+                "not 'completed' or 'abandoned'"
+            )
+        return StoryStatus.DO
+
+    return StoryStatus.COMPLETED
+
+
 __all__ = [
     "STORY_ID_ATTR",
     "STORY_NAME_ATTR",
@@ -233,4 +268,7 @@ __all__ = [
     "incomplete_tasks",
     "finished_tasks",
     "stories_with_incomplete_tasks",
+    "STORY_COMPLETE_TASK_STATUSES",
+    "StoryStatusConflictError",
+    "resolve_story_status",
 ]

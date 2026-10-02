@@ -5,25 +5,33 @@ Public API:
 - resolve_todo_file_path: return the TODO path from argument/env/default.
 - load_todo_stories: parse TODO markdown into Story objects.
 - prioritized / pop_task / pop_story / push_story: backlog provider protocol methods.
+- resolve_done_file_path / load_done_stories / archive_completed_stories: done.md archiving.
 - build_command_result / parse_args / main: CLI entry points.
 """
 
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 import getpass
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 
+import ddf
+import ddfmdgbdf  # noqa: F401  (import registers the MDGBDF plugin with ddf.py)
 import gbops
 import mdgbdata
 from gbdata import Story, StoryStatus, Task, TaskStatus
+
+COMPLETED_STORIES = "Completed Stories"
+
+DONE_MD_TEMPLATE = {"rules": [{"pattern": r"^#+\s+Completed Stories\s*$", "ddfType": "MDGBDF"}]}
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,6 +87,13 @@ def resolve_todo_file_path(todo_file: str | Path | None = None) -> Path:
 def resolve_todo_file(todo_file: str | Path | None = None) -> Path:
     """Backward-compatible alias for resolve_todo_file_path."""
     return resolve_todo_file_path(todo_file)
+
+
+def resolve_done_file_path() -> Path:
+    """Resolve the done.md path: git-repo-root relative, not configurable via env var."""
+    git_root = _git_repo_root()
+    base = git_root if git_root is not None else _repo_root()
+    return (base / "docs/dev/work/done/done.md").resolve()
 
 
 def _recovery_dir_for_todo(todo_file: str | Path | None = None) -> Path:
@@ -143,10 +158,97 @@ def _read_stories_from_backlog(
     )
 
 
+_STORY_MARKER_RE = re.compile(r"(?i:^story:\W*)")
+
+
+def _strip_default_story_status(story: Story) -> Story:
+    """Drop Story.status back to None when it is the ambiguous default 'do' value.
+
+    'do' is indistinguishable from "no status marker was present" (mdgbdata.py defaults an
+    unmarked work story's status to 'do'), so writing it back out as an explicit "d -" prefix
+    would fabricate a status marker the source text never actually had. The "Story:" word itself
+    is preserved (folded into the name) since mdgbdata.py only emits it when status is set.
+    """
+    if story.status != StoryStatus.DO:
+        return story
+    name = story.name or ""
+    if _STORY_MARKER_RE.match(name):
+        return replace(story, status=None)
+    return replace(story, status=None, name=f"Story: {name}" if name else "Story:")
+
+
 def _write_stories_to_backlog(backlog_path: Path, stories: list[Story]) -> None:
     story_map, task_map = _load_status_maps()
-    markdown_text = mdgbdata.stories_to_markdown_text(stories, story_map, task_map)
+    normalized_stories = [_strip_default_story_status(story) for story in stories]
+    markdown_text = mdgbdata.stories_to_markdown_text(normalized_stories, story_map, task_map)
     backlog_path.write_text(markdown_text, encoding="utf-8")
+
+
+def _find_completed_stories_section(doc: ddf.DDFDoc) -> ddfmdgbdf.MDGBDFSection | None:
+    for section in doc.sections:
+        heading = section.heading.lstrip("#").strip().lower()
+        if heading == COMPLETED_STORIES.lower():
+            if not isinstance(section, ddfmdgbdf.MDGBDFSection):
+                raise ValueError(
+                    f"done.md section '{COMPLETED_STORIES}' was not parsed as MDGBDF; check DONE_MD_TEMPLATE"
+                )
+            return section
+    return None
+
+
+def _load_done_doc(done_path: Path) -> ddf.DDFDoc:
+    if done_path.exists():
+        text = done_path.read_text(encoding="utf-8")
+        return ddf.parse_from_markdown(text, template=DONE_MD_TEMPLATE)
+    return ddf.DDFDoc(sections=[ddfmdgbdf.MDGBDFSection(heading=f"# {COMPLETED_STORIES}", stories=[], heading_level=1)])
+
+
+def _save_done_doc(done_path: Path, doc: ddf.DDFDoc) -> None:
+    done_path.parent.mkdir(parents=True, exist_ok=True)
+    done_path.write_text(ddf.serialize_to_markdown(doc), encoding="utf-8")
+
+
+def load_done_stories(done_file: str | Path | None = None) -> list[Story]:
+    """Return the archived Story stack from done.md's '# Completed Stories' section."""
+    done_path = Path(done_file).expanduser().resolve() if done_file is not None else resolve_done_file_path()
+    section = _find_completed_stories_section(_load_done_doc(done_path))
+    return section.stories if section is not None else []
+
+
+def archive_completed_stories(todo_file: str | Path | None = None) -> list[Story]:
+    """Sweep stories whose runtime status resolves to 'completed' out of the backlog and onto
+    the done.md '# Completed Stories' stack (most-recently-archived stories first).
+
+    This is a dedicated function, not wired into normalize_backlog or pop_story: only push_story
+    invokes it automatically.
+    """
+    backlog_path = resolve_todo_file_path(todo_file)
+    stories = _read_stories_from_backlog(backlog_path)
+
+    remaining: list[Story] = []
+    completed: list[Story] = []
+    for story in stories:
+        if gbops.resolve_story_status(story) == StoryStatus.COMPLETED:
+            completed.append(story)
+        else:
+            remaining.append(story)
+
+    if not completed:
+        return []
+
+    save_recovery(backlog_path)
+    _write_stories_to_backlog(backlog_path, remaining)
+
+    done_path = resolve_done_file_path()
+    doc = _load_done_doc(done_path)
+    section = _find_completed_stories_section(doc)
+    if section is None:
+        section = ddfmdgbdf.MDGBDFSection(heading=f"# {COMPLETED_STORIES}", stories=[], heading_level=1)
+        doc.sections.append(section)
+    section.stories = [_strip_default_story_status(story) for story in completed] + section.stories
+    _save_done_doc(done_path, doc)
+
+    return completed
 
 
 def normalize_backlog(todo_file: str | Path | None = None) -> Path:
@@ -203,7 +305,9 @@ def push_story(story: Story, todo_file: str | Path | None = None) -> Story:
     """Lift story to the top of the backlog, upserting its tasks if it already exists.
 
     Guarantees ids on existing stories via normalize_backlog, saves a recovery copy of the
-    backlog before writing, and never deletes a task (see gbops.upsert_tasks).
+    backlog before writing, and never deletes a task (see gbops.upsert_tasks). Afterward,
+    archives any story (including this one) whose runtime status now resolves to 'completed'
+    onto the done.md stack (see archive_completed_stories).
     """
     backlog_path = resolve_todo_file_path(todo_file)
 
@@ -216,6 +320,8 @@ def push_story(story: Story, todo_file: str | Path | None = None) -> Story:
     merged = gbops.upsert_story(match, story) if match is not None else story
     remaining = [existing for existing in stories if existing is not match]
     _write_stories_to_backlog(backlog_path, gbops.lift_story_to_top(remaining, merged))
+
+    archive_completed_stories(backlog_path)
     return merged
 
 
@@ -247,6 +353,10 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command")
     subparsers.add_parser("show", help="Print TODO path and MDGBDF backlog")
+    showdone_parser = subparsers.add_parser("showdone", help="Print done file path and archived completed stories")
+    showdone_parser.add_argument(
+        "n", nargs="?", type=int, default=None, help="Limit output to the top n completed stories (default: all)"
+    )
     subparsers.add_parser("showrecovery", help="Show backlog path, recovery dir, and directory listing")
     recovery_parser = subparsers.add_parser("recovery", help="Save a recovery copy of the TODO file")
     recovery_parser.add_argument("n", nargs="?", type=int, default=4, help="Number of recovery files to keep (default: 4)")
@@ -261,6 +371,10 @@ Subcommands:
     help            Print this help message.
 
     show            Print TODO file path and Markdown GB Data Form (MDGBDF) backlog.
+
+    showdone [n]    Print done file path and completed stories archived in 'done.md', in
+                    'Markdown GB Data Form' (MDGBDF). Optional n limits output to the top n
+                    completed stories (default: all).
 
     showrecovery    Show the TODO file path, recovery directory path, and recovery directory listing.
 
@@ -290,6 +404,16 @@ def main(argv: list[str] | None = None) -> int:
             print(result.output_text, end="")
             return 0
 
+        if command == "showdone":
+            done_path = resolve_done_file_path()
+            stories = load_done_stories(done_path)
+            if args.n is not None:
+                stories = stories[: args.n]
+            story_map, task_map = _load_status_maps()
+            md_text = mdgbdata.stories_to_markdown_text(stories, story_map, task_map)
+            print(f"Done file: {done_path}\n{md_text}", end="")
+            return 0
+
         if command == "showrecovery":
             print(show_recovery())
             return 0
@@ -315,6 +439,9 @@ __all__ = [
     "BltodoCommandResult",
     "resolve_todo_file",
     "resolve_todo_file_path",
+    "resolve_done_file_path",
+    "load_done_stories",
+    "archive_completed_stories",
     "save_recovery",
     "show_recovery",
     "normalize_backlog",
@@ -322,6 +449,7 @@ __all__ = [
     "prioritized",
     "pop_task",
     "pop_story",
+    "push_story",
     "build_command_result",
     "parse_args",
     "main",

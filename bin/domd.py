@@ -10,8 +10,9 @@ Public API:
 - load / save: read and write a do.md file as a DoDoc.
 - harvest_completed: move completed/abandoned/unfinished tasks out of current work stories
   into the completed work section as a bare, storyID/storyName-tagged task list.
-- stories_to_push_back: current-work stories that still have incomplete tasks.
-- settle: harvest completed work, push incomplete stories back, drop current work, and save.
+- stories_to_push_back: all current-work stories (dtask settle pushes every story back to the
+  backlog whether it is complete or not; see docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md).
+- settle: harvest completed work, push every current-work story back, drop current work, and save.
 - finalize: the full dtask `commit --final` sequence's do.md/backlog operation.
 - parse_args / main: CLI entry points (command module pattern).
 """
@@ -140,6 +141,11 @@ def harvest_completed(doc: DoDoc) -> list[Task]:
     """Move harvestable tasks (completed/abandoned/unfinished) out of current work stories
     and into the completed work section as a storyID/storyName-tagged bare task list.
 
+    Every current-work story is kept (even one left with no remaining tasks): dtask settle
+    pushes every story back to the backlog regardless of completeness, so a story must still be
+    present in '# Current work' for stories_to_push_back to find it, per
+    docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md.
+
     Returns the harvested tasks.
     """
     current_stories = doc.current_work_stories()
@@ -155,10 +161,7 @@ def harvest_completed(doc: DoDoc) -> list[Task]:
         finished_ids = {task.id for task in finished}
         remaining_tasks = [gbops.strip_story_ref(task) for task in story_tasks if task.id not in finished_ids]
         harvested.extend(gbops.tag_task_with_story(task, story) for task in finished)
-
-        if remaining_tasks or not finished_ids:
-            remaining_stories.append(replace(story, tasks=remaining_tasks or None))
-        # A story with no remaining tasks (all harvested) is dropped from current work.
+        remaining_stories.append(replace(story, tasks=remaining_tasks or None))
 
     doc.set_current_work_stories(remaining_stories)
     doc.append_completed_tasks(harvested)
@@ -166,16 +169,24 @@ def harvest_completed(doc: DoDoc) -> list[Task]:
 
 
 def stories_to_push_back(doc: DoDoc) -> list[Story]:
-    """Return current-work stories that still have incomplete tasks."""
-    return gbops.stories_with_incomplete_tasks(doc.current_work_stories())
+    """Return all current-work stories.
+
+    dtask settle pushes every current-work story back to the backlog whether it is complete or
+    not: the backlog (bltodo.push_story -> archive_completed_stories) is responsible for routing
+    a fully-completed story to done.md instead of leaving it in the backlog's active queue.
+    """
+    return list(doc.current_work_stories())
 
 
 def settle(path: str | Path, *, provider: str | None = None) -> DoMdCommandResult:
     """Settle do.md and the backlog without committing or removing do.md.
 
-    Push failures are fatal: if any push_story call fails, do.md is not modified on disk.
-    Stories are always pushed back with their full task set, so completed tasks harvested into
-    the do.md '# Completed work' section are preserved in the backlog story by upsert.
+    Every current-work story (complete, incomplete, or task-less) is pushed back to the backlog
+    and dropped from '# Current work'; the backlog decides whether a fully-completed story is
+    archived to done.md (see bltodo.archive_completed_stories) or kept active. Push failures are
+    fatal: if any push_story call fails, do.md is not modified on disk. Stories are always pushed
+    back with their full original task set, so completed tasks harvested into the do.md
+    '# Completed work' section are preserved in the backlog story by upsert.
     """
     do_md_path = Path(path)
     doc = load(do_md_path)

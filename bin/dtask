@@ -331,9 +331,10 @@ Subcommands:
                     If '# Current work' does not exist, it will be created after file
                     front-matter.
 
-  settle  Record completed work in do.md, push incomplete stories back to the
-                    backlog, and remove settled stories from '# Current work'. Does not
-                    create a git commit or remove do.md.
+  settle  Record completed work in do.md, push every '# Current work' story back to the
+                    backlog (whether complete or not), and remove it from '# Current work'.
+                    The backlog archives a fully-completed story to done.md instead of
+                    keeping it active. Does not create a git commit or remove do.md.
 
   commit  Commit staged changes on workBranch using workHeadline as the commit message.
           Unstaged changes are only included when --all or --update is used.

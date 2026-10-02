@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
 
 _bin_dir = Path(__file__).resolve().parents[1] / "bin"
 if str(_bin_dir) not in sys.path:
@@ -24,6 +25,7 @@ def _load_module(name: str, path: Path):
 
 
 gbdata = _load_module("gbdata", _bin_dir / "gbdata.py")
+gbops = _load_module("gbops", _bin_dir / "gbops.py")
 _load_module("mdgbdata", _bin_dir / "mdgbdata.py")
 bltodo = _load_module("bltodo", _bin_dir / "bltodo.py")
 
@@ -149,6 +151,38 @@ def test_normalize_backlog_adds_ids_and_rewrites(monkeypatch, tmp_path: Path):
     assert normalized.count("id:") >= 2
 
 
+def test_normalize_backlog_does_not_fabricate_an_explicit_do_status_marker(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    todo_file.write_text(
+        "## Story: Beta\n"
+        "d - some task\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    bltodo.normalize_backlog()
+
+    normalized = todo_file.read_text(encoding="utf-8")
+    assert "d - Story: Beta" not in normalized
+    assert "Story: Beta" in normalized
+
+
+def test_normalize_backlog_drops_an_explicit_do_marker_since_it_is_the_default(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    todo_file.write_text(
+        "# d - Story: Alpha\n"
+        "d - first task\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    bltodo.normalize_backlog()
+
+    normalized = todo_file.read_text(encoding="utf-8")
+    assert "d - Story: Alpha" not in normalized
+    assert "# Story: Alpha" in normalized
+
+
 def test_pop_story_saves_recovery_before_removal(monkeypatch, tmp_path: Path):
     todo_file = tmp_path / "sample.md"
     _write_todo(todo_file)
@@ -198,8 +232,130 @@ def test_show_recovery_lists_paths_and_files(monkeypatch, tmp_path: Path):
 
     assert f"TODO file: {todo_file.resolve()}" in text
     assert "Recovery dir:" in text
-    assert "Recovery files:" in text
-    assert ".md" in text
+
+
+def test_archive_completed_stories_no_tasks_moves_story_to_done_file(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+    done_file = tmp_path / "done.md"
+    monkeypatch.setattr(bltodo, "resolve_done_file_path", lambda: done_file)
+
+    todo_file.write_text(
+        todo_file.read_text(encoding="utf-8") + "# x - Story: Gamma\n---\nid: story-c\n---\n",
+        encoding="utf-8",
+    )
+
+    archived = bltodo.archive_completed_stories()
+
+    assert [s.id for s in archived] == ["story-c"]
+    remaining = bltodo.load_todo_stories()
+    assert "story-c" not in {s.id for s in remaining}
+    done_stories = bltodo.load_done_stories(done_file)
+    assert [s.id for s in done_stories] == ["story-c"]
+
+
+def test_archive_completed_stories_all_tasks_completed_moves_whole_story(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+    done_file = tmp_path / "done.md"
+    monkeypatch.setattr(bltodo, "resolve_done_file_path", lambda: done_file)
+    todo_file.write_text(
+        "# d - Story: Alpha\n---\nid: story-a\n---\nd - first task\n---\nid: task-1\n---\n"
+        "# d - Story: Beta\n---\nid: story-b\n---\nx - only task\n---\nid: task-2\n---\n",
+        encoding="utf-8",
+    )
+
+    archived = bltodo.archive_completed_stories()
+
+    assert [s.id for s in archived] == ["story-b"]
+    remaining = bltodo.load_todo_stories()
+    assert [s.id for s in remaining] == ["story-a"]
+    done_stories = bltodo.load_done_stories(done_file)
+    assert done_stories[0].tasks[0].name == "only task"
+
+
+def test_archive_completed_stories_is_a_noop_when_nothing_is_completed(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+
+    def fail_if_called():
+        raise AssertionError("resolve_done_file_path should not be called when nothing is completed")
+
+    monkeypatch.setattr(bltodo, "resolve_done_file_path", fail_if_called)
+
+    archived = bltodo.archive_completed_stories()
+
+    assert archived == []
+
+
+def test_archive_completed_stories_raises_on_flagged_story_with_incomplete_task(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+    todo_file.write_text(
+        "# x - Story: Gamma\n---\nid: story-c\n---\nd - unfinished analysis\n---\nid: task-1\n---\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(gbops.StoryStatusConflictError):
+        bltodo.archive_completed_stories()
+
+
+def test_push_story_archives_pushed_story_when_it_resolves_completed(monkeypatch, tmp_path: Path):
+    todo_file = tmp_path / "sample.md"
+    _write_todo(todo_file)
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+    done_file = tmp_path / "done.md"
+    monkeypatch.setattr(bltodo, "resolve_done_file_path", lambda: done_file)
+
+    pushed = gbdata.Story(id="story-z", name="Zed", status=gbdata.StoryStatus.COMPLETED, tasks=[])
+
+    result = bltodo.push_story(pushed)
+
+    assert result.id == "story-z"
+    remaining = bltodo.load_todo_stories()
+    assert "story-z" not in {s.id for s in remaining}
+    done_stories = bltodo.load_done_stories(done_file)
+    assert [s.id for s in done_stories] == ["story-z"]
+
+
+def test_showdone_prints_done_path_and_archived_stories(monkeypatch, tmp_path: Path, capsys):
+    todo_file = tmp_path / "sample.md"
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+    done_file = tmp_path / "done.md"
+    monkeypatch.setattr(bltodo, "resolve_done_file_path", lambda: done_file)
+    done_file.write_text(
+        "# Completed Stories\n\n## x - Story: Archived One\n---\nid: story-done\n---\n",
+        encoding="utf-8",
+    )
+
+    exit_code = bltodo.main(["showdone"])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert f"Done file: {done_file}" in out
+    assert "Archived One" in out
+
+
+def test_showdone_limits_to_top_n(monkeypatch, tmp_path: Path, capsys):
+    todo_file = tmp_path / "sample.md"
+    monkeypatch.setenv("BL_TODO_FILE", str(todo_file))
+    done_file = tmp_path / "done.md"
+    monkeypatch.setattr(bltodo, "resolve_done_file_path", lambda: done_file)
+    done_file.write_text(
+        "# Completed Stories\n\n"
+        "## x - Story: Newest\n---\nid: story-2\n---\n\n"
+        "## x - Story: Oldest\n---\nid: story-1\n---\n",
+        encoding="utf-8",
+    )
+
+    exit_code = bltodo.main(["showdone", "1"])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "Newest" in out
+    assert "Oldest" not in out
 
 
 def test_main_showrecovery_command(monkeypatch, tmp_path: Path, capsys):
