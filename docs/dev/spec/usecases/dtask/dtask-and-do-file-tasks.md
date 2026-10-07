@@ -46,22 +46,22 @@ A mission oriented purpose of dtask is to help the user with good branch managem
 
 ## dtask pop
 Given 
- - the TODO.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO.md
- - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file.md
+ - the TODO.md file is in the state matching docs/dev/spec/usecases/dtask/two-story-TODO.md
+ - the do.md file is in the state matching docs/dev/spec/usecases/dtask/basic-do-file.md
 
  When a user runs dtask pop,
-  - the TODO file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO-after-pop.md
-  - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-pop.md
+  - the TODO file is in the state matching docs/dev/spec/usecases/dtask/two-story-TODO-after-pop.md
+  - the do.md file is in the state matching docs/dev/spec/usecases/dtask/basic-do-file-after-pop.md
 
 ## dtask settle
 Given 
  - the default backlog plugin is being used
- - the TODO file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO-after-pop.md
- - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-pop-with-progress.md
+ - the TODO file is in the state matching docs/dev/spec/usecases/dtask/two-story-TODO-after-pop.md
+ - the do.md file is in the state matching docs/dev/spec/usecases/dtask/basic-do-file-after-pop-with-progress.md
 
  When a user runs dtask settle,
-  - the TODO file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/two-story-TODO-after-settle.md
-  - the do.md file is in the state matching docs/dev/spec/usecases/docs/dev/spec/usecases/dtask/basic-do-file-after-settle.md
+  - the TODO file is in the state matching docs/dev/spec/usecases/dtask/two-story-TODO-after-settle.md
+  - the do.md file is in the state matching docs/dev/spec/usecases/dtask/basic-do-file-after-settle.md
 
 ### Needed corrections
 whole stories should never be written into do.md # Completed work.  Only bare tasks should be written to # Completed work

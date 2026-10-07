@@ -13,7 +13,7 @@ from pytest_bdd import given, then, when, parsers
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-USECASE_DIR = REPO_ROOT / "docs/dev/spec/usecases/docs/dev/spec/usecases/dtask"
+USECASE_DIR = REPO_ROOT / "docs/dev/spec/usecases/dtask"
 DO_MD_RELATIVE = "docs/dev/work/do.md"
 
 

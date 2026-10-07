@@ -1,3 +1,5 @@
+
+
 # Story: Bug fixes for dtask settle
 ---
 id: 02cc0bee-ece0-71b1-963f-10caf5a60c9d-94e4fad9
@@ -90,6 +92,9 @@ d - add a user documentation caution that when manually putting stories in do.md
 id: 0433f254-8484-7477-8a9d-3e9a4ea8b18f-8ba4a4c1
 ---
 
+# Story: Fix wsum test failures
+d - fix tests/features/wsum/test_wsum.py FFFFF..F
+d - fix tests/test_wsum_unit.py .....F......FF..........
 
 # User Documentation Improvements for release
 ---
