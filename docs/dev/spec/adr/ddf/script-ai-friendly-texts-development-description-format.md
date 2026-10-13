@@ -53,7 +53,7 @@ DECISION: Stories should support attributes when they are loaded to task and sto
 
 # Work Stories
 Stories that have either Tasks or a Status to track are 'work Stories'.
-If a markdown H1 heading section has tasks, but no Status was parsed from the header, it defaults to a 'do' status.   
+If a markdown H1 heading section has tasks, but no Status was parsed from the header, it stays without a status; a status is never fabricated just because tasks are present.   
 
 # Whole Document Preservation
 When a markdown document is read as DDF not text information will bew lost because all information will be preserved as a list of Stories.

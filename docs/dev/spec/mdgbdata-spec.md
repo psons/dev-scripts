@@ -241,12 +241,13 @@ For Work Stories:
 
 - Evaluate status patterns against heading text content (after removing `#` markers and leading spaces).  
 - If a status pattern matched, set and persist `Story.status` on the model dataclass according to the pattern that matched.  
-- If no status pattern matched, set the `Story.status` to  `StoryStatus.DO`.  
+- If no status pattern matched, `Story.status` stays `None`. `Story.status` must never be fabricated by the parser: it is only ever set from an explicitly matched status pattern, an explicit `status` property (informal or front-matter), or a caller/UI explicitly constructing/updating a `Story`.  
 - Story `name` is heading content that remains after the removal of   
   - the markdown header ‘\#’ symbols  
-  - the status pattern match  
-  - the Story marker.  
-- For the corner case where there is no heading because the story is the file scope story and the story is a ‘work story’ because it has tasks, set the status to `None.`
+  - the status pattern match, when a status pattern matched.  
+  - the Story marker, when a status pattern matched. When no status pattern matched, the Story
+    marker text (e.g. `Story:`) is left in place as part of `name` (see round-trip summary below).  
+- For the corner case where there is no heading because the story is the file scope story and the story is a ‘work story’ because it has tasks, the status stays `None` — the same "never fabricate" rule, not a separate exception.
 
 For Text Stories:
 
@@ -254,9 +255,13 @@ For Text Stories:
 
 ##### Summary of Round trip handling of the story marker.
 
-- Rules specified elsewhere in this document work together so that the  
--  story marker is not lost on stories, even though the story marker is not stored internally.   
-  - if a story marker was found, a status will be set to a default even if it is not present in the header.  The presence of a status in the model object will cause the story marker to be included when the story is serialized.
+- `Story.status` is never fabricated to preserve a marker. Instead, when a story heading carries a
+  `Story:` marker but no explicit status pattern matched, the marker text is left un-stripped in
+  `Story.name`. Serializing a `None`-status story writes `name` verbatim as a plain header (see
+  Markdown Serialization), so the marker round-trips without implying or storing a status.  
+- `work_stories_only` filtering must independently honor all three Work Story conditions from
+  Story Header Detection (status set, tasks present, or a `Story:` marker in the name) — it must
+  not rely on status being set as a proxy for "has a marker", since status is no longer fabricated.
 
 #### Story-level ad hoc metadata must be supported:
 
@@ -358,7 +363,7 @@ A line starts a new task when all are true:
 2. Line matches one of the task status patterns.  
 3. Parser is currently within an active H1-rooted story scope that must be promoted to a story per Story Header Detection item 2, or within file-scope story context (including files with no H1 heading).
 
-If a task-status line is encountered under an H1 heading that has not yet been materialized as a story, that heading must first be promoted to a `Story` (default `StoryStatus.DO` for non-pattern headings), and the line must then be treated as a task header within that story. If task-status lines occur without any H1 heading, they must be attached to the file-scope story.
+If a task-status line is encountered under an H1 heading that has not yet been materialized as a story, that heading must first be promoted to a `Story` (status stays `None`; it is never fabricated for non-pattern headings), and the line must then be treated as a task header within that story. If task-status lines occur without any H1 heading, they must be attached to the file-scope story.
 
 Non-task-like indented lines must be treated as detail text, never as a task header.
 
@@ -536,6 +541,14 @@ The header for text stories when parsed from markdown
 
 If the first story in a list to be serialized has the special name "file-input", then do not write the story header in serialized output.  The intent of this feature is so that any front-matter still follows the standard file front-matter rules that other parsers may be using.
 
+If that same suppressed-header "file-input" story also has the literal id "file-input" (i.e. a synthetic
+grouping story with no real id of its own, used to hold a bare task list), omit the `id` property from its
+front-matter block entirely instead of writing `id: file-input`. A story produced by parsing real file-scope
+content always receives a generated or explicit id distinct from the literal string "file-input", so this rule
+never affects round-tripping of genuine file-scope stories (their `id` is still written). Bare tasks already
+carry their own `storyID`/`storyName` attributes, so they do not need to be encapsulated in a story with a
+meaningful id of its own.
+
 ## JSON Mapping Contract
 
 JSON serialization and parsing must use the following field mapping:
@@ -622,7 +635,8 @@ At minimum, include tests for:
    - status-matched heading creates story with stripped name  
    - status-matched heading persists `Story.status`  
    - non-pattern heading with tasks still creates story  
-   - non-pattern stories with tasks default `Story.status` to `StoryStatus.DO`  
+   - non-pattern stories never have a fabricated `Story.status`: it stays `None` even when the
+     heading has tasks or a `Story:` marker  
    - non-pattern H1 stories without tasks produce informational stories with `Story.status is None`  
    - `Story:` heading creates story without tasks  
    - story attributes parse to `Story.attributes`  

@@ -1,30 +1,70 @@
-
-
 # Story: Bug fixes for dtask settle
 ---
 id: 02cc0bee-ece0-71b1-963f-10caf5a60c9d-94e4fad9
 ---
 
-d - copying work into the '# Completed work' section should not write the story ID 'file-input'
+x - copying work into the '# Completed work' section should not write the story ID 'file-input'
 ---
 id: e004bd60-0408-7f01-845d-2e17bfa6710d-0cbe5172
 ---
+Writing work into the '# Completed work' section should not write the story ID 'file-input' as shown here:
 ```markdown
     ---
     id: file-input
     ---
 ```
+Writing the bare tasks do not need to be encapsulated in a file scope story because each task has its own story ID attribute.
+Add an update to the relevant software module specs and fix the behavior.
 
-d - dtask pop (backlog.py?) should not attempt to write derived status into stories when serializing.
+x - dtask pop (backlog.py?) should not attempt to write derived status into stories when serializing.
 ---
 id: 4beb3878-9dc8-7ad3-9fe0-603ac972482a-983f1fd4
 ---
+`Story.status` must never be set to a fabricated/default value anywhere in the parse/serialize
+pipeline. `StoryStatus.DO` (or any other status) should only ever be recorded on a `Story` when it
+was explicitly present in the parsed source (an explicit status marker in the heading) or explicitly
+set by a caller/UI. Backlog logic (`gbops.resolve_story_status` et al.) already determines whether a
+story is complete by examining its tasks' statuses at runtime, so a stored `Story.status` is never
+needed just to answer "is this story done" questions.
 
-d - section informal attribute frontmatter reading should ignore code quoted material
----
-id: 8eeceb5a-c7a8-7d86-a205-033c5e6d8274-77fc09f0
----
-ok to abandon this story if it is messy. user can probably work around by indenting.
+Concretely, for example the 'd - ' below was fabricated and written into do.md, but it wasn't present
+in TODO.md's source:
+```markdown
+    ## d - Story: Bug fixes for dtask settle
+    ---
+    id: 02cc0bee-ece0-71b1-963f-10caf5a60c9d-94e4fad9
+    ---
+```
+
+Update these spec sources (remove the "default to `StoryStatus.DO`" rule; parsing a markerless/
+non-pattern story heading, even one with tasks, must leave `Story.status` as `None`):
+- docs/dev/spec/mdgbdata-spec.md: the "Story Name and Story Status" section's "If no status pattern
+  matched, set the `Story.status` to `StoryStatus.DO`." line and the "Summary of Round trip handling
+  of the story marker" bullet about a default being set when a marker was found; the "Task Name,
+  Status, and Detail" section's "(default `StoryStatus.DO` for non-pattern headings)" note; and the
+  implementation-notes bullet "non-pattern stories with tasks default `Story.status` to
+  `StoryStatus.DO`".
+- docs/dev/spec/usecases/story-task-parsing-md.md: the "a default story status of 'do' must be
+  applied" sentence.
+- docs/dev/spec/adr/ddf/script-ai-friendly-texts-development-description-format.md: the "it defaults
+  to a 'do' status" sentence.
+
+Then fix `bin/mdgbdata.py`'s `parse_stories_from_markdown` to stop defaulting the story status to
+`StoryStatus.DO` when no status pattern matched (it must stay `None`), and confirm
+`_render_markdown_story` still renders a `None`-status story with the plain (non-prefixed) header,
+exactly like the existing "text story" rendering path, so a `# Story: X` heading with tasks but no
+explicit marker round-trips without gaining a fabricated `d - ` prefix.
+
+Audit `bin/bltodo.py`'s `_strip_default_story_status` workaround (added specifically to undo this
+fabricated default before writing to the backlog/done.md) — once the parser itself never fabricates
+the default, confirm whether this workaround is still needed anywhere before simplifying or removing
+it.
+
+Update all mdgbdata-spec.md-backed tests (tests/test_mdgbdata.py and any dependents in
+tests/test_bltodo*.py, tests/test_domd.py, tests/features/**) that currently assert a markerless/
+non-pattern story heading with tasks parses to `StoryStatus.DO` — they must instead assert
+`status is None`, with serialization of such a story keeping the plain header form.
+
 
 d - tasks written into '# Completed work' should be upserted.
 ---
@@ -32,6 +72,14 @@ id: 92eaed74-ec6a-7504-9c96-cfd07ef83ee9-65673e28
 ---
 They are currently being duplicated.
 Do I currently have a description of the behavior to upsert a task?
+
+
+
+d - section informal attribute frontmatter reading should ignore code quoted material
+---
+id: 8eeceb5a-c7a8-7d86-a205-033c5e6d8274-77fc09f0
+---
+ok to abandon this story if it is messy. user can probably work around by indenting.
 
 
 # Story: Story H-level enhancement
@@ -92,9 +140,22 @@ d - add a user documentation caution that when manually putting stories in do.md
 id: 0433f254-8484-7477-8a9d-3e9a4ea8b18f-8ba4a4c1
 ---
 
+
 # Story: Fix wsum test failures
+---
+id: 174d15d6-f063-76f2-b873-543a2bc9c511-32bd2016
+---
+
 d - fix tests/features/wsum/test_wsum.py FFFFF..F
+---
+id: 59e80ccc-5cb5-7292-944c-48422f2e6bfc-4f3e6e31
+---
+
 d - fix tests/test_wsum_unit.py .....F......FF..........
+---
+id: 4b5bee47-eea8-7645-8771-8071fe47c6ce-068bcc6a
+---
+
 
 # User Documentation Improvements for release
 ---

@@ -12,12 +12,11 @@ Public API:
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import getpass
 import os
 from pathlib import Path
-import re
 import shutil
 import subprocess
 import sys
@@ -158,29 +157,9 @@ def _read_stories_from_backlog(
     )
 
 
-_STORY_MARKER_RE = re.compile(r"(?i:^story:\W*)")
-
-
-def _strip_default_story_status(story: Story) -> Story:
-    """Drop Story.status back to None when it is the ambiguous default 'do' value.
-
-    'do' is indistinguishable from "no status marker was present" (mdgbdata.py defaults an
-    unmarked work story's status to 'do'), so writing it back out as an explicit "d -" prefix
-    would fabricate a status marker the source text never actually had. The "Story:" word itself
-    is preserved (folded into the name) since mdgbdata.py only emits it when status is set.
-    """
-    if story.status != StoryStatus.DO:
-        return story
-    name = story.name or ""
-    if _STORY_MARKER_RE.match(name):
-        return replace(story, status=None)
-    return replace(story, status=None, name=f"Story: {name}" if name else "Story:")
-
-
 def _write_stories_to_backlog(backlog_path: Path, stories: list[Story]) -> None:
     story_map, task_map = _load_status_maps()
-    normalized_stories = [_strip_default_story_status(story) for story in stories]
-    markdown_text = mdgbdata.stories_to_markdown_text(normalized_stories, story_map, task_map)
+    markdown_text = mdgbdata.stories_to_markdown_text(stories, story_map, task_map)
     backlog_path.write_text(markdown_text, encoding="utf-8")
 
 
@@ -245,7 +224,7 @@ def archive_completed_stories(todo_file: str | Path | None = None) -> list[Story
     if section is None:
         section = ddfmdgbdf.MDGBDFSection(heading=f"# {COMPLETED_STORIES}", stories=[], heading_level=1)
         doc.sections.append(section)
-    section.stories = [_strip_default_story_status(story) for story in completed] + section.stories
+    section.stories = completed + section.stories
     _save_done_doc(done_path, doc)
 
     return completed

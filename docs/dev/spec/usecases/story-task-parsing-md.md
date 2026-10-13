@@ -35,7 +35,7 @@ Tasks are part of the heading section they are in, and always are anchored at th
 # Non pattern matched stories 
 A heading that is not part of a previous story that contains tasks is a story even if it does not match a pattern. This is a corner case where a story must be created to hold tasks under that heading. The heading line should be used for the name of the story.  See the updated DDF specs for handling the status for these stories.
 
-If the heading text does not match a story status pattern, the story still exists and a default story status of 'do' must be applied.
+If the heading text does not match a story status pattern, the story still exists, but no status is applied: `Story.status` stays absent/`None` rather than being defaulted to 'do'. A story's completion is determined at runtime from its tasks' statuses, not from a stored story status.
 
 A heading has '[Ss]tory: ' as the the first or second non-white space string after '^#' is a story even id it doesn't have any tasks under it.
 

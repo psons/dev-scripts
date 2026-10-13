@@ -58,7 +58,7 @@ def test_load_reads_current_and_completed_work_stories(tmp_path: Path):
     doc = domd.load(path)
 
     current_stories = doc.current_work_stories()
-    assert [s.name for s in current_stories] == ["Alpha", "Beta"]
+    assert [s.name for s in current_stories] == ["Alpha", "Story: Beta"]
 
     completed_tasks = doc.completed_work_tasks()
     assert completed_tasks[0].name == "previously completed task"
@@ -75,7 +75,7 @@ def test_harvest_completed_moves_finished_tasks_and_keeps_stories_with_no_remain
     assert "all done task" in harvested_names
 
     current_stories = doc.current_work_stories()
-    assert [s.name for s in current_stories] == ["Alpha", "Beta"]
+    assert [s.name for s in current_stories] == ["Alpha", "Story: Beta"]
     assert [t.name for t in current_stories[0].tasks] == ["incomplete task"]
     assert current_stories[1].tasks is None
 
@@ -113,6 +113,19 @@ def test_append_completed_tasks_uses_a_single_file_input_story_for_bare_tasks(tm
             assert "storyID" in task.attributes or "storyName" in task.attributes
 
 
+def test_append_completed_tasks_does_not_write_file_input_story_id_to_disk(tmp_path: Path):
+    path = _write_do_md(tmp_path)
+    doc = domd.load(path)
+    story = doc.current_work_stories()[0]
+    harvested = [gbops.tag_task_with_story(task, story) for task in (story.tasks or [])]
+
+    doc.append_completed_tasks(harvested)
+    domd.save(doc, path)
+
+    saved_text = path.read_text(encoding="utf-8")
+    assert "id: file-input" not in saved_text
+
+
 def test_stories_to_push_back_returns_all_current_work_stories(tmp_path: Path):
     path = _write_do_md(tmp_path)
     doc = domd.load(path)
@@ -120,7 +133,7 @@ def test_stories_to_push_back_returns_all_current_work_stories(tmp_path: Path):
 
     to_push = domd.stories_to_push_back(doc)
 
-    assert [s.name for s in to_push] == ["Alpha", "Beta"]
+    assert [s.name for s in to_push] == ["Alpha", "Story: Beta"]
 
 
 def test_settle_pushes_every_current_work_story_back_to_backlog_including_completed_tasks(monkeypatch, tmp_path: Path):
@@ -142,7 +155,7 @@ def test_settle_pushes_every_current_work_story_back_to_backlog_including_comple
 
     assert captured == [
         ("Alpha", ["incomplete task", "a completed task"]),
-        ("Beta", ["all done task"]),
+        ("Story: Beta", ["all done task"]),
     ]
 
 
@@ -177,7 +190,7 @@ def test_save_round_trips_current_work(tmp_path: Path):
     domd.save(doc, path)
 
     reloaded = domd.load(path)
-    assert [s.name for s in reloaded.current_work_stories()] == ["Alpha", "Beta"]
+    assert [s.name for s in reloaded.current_work_stories()] == ["Alpha", "Story: Beta"]
 
 
 def test_finalize_pushes_every_current_work_story_archiving_completed_ones(monkeypatch, tmp_path: Path):
@@ -191,7 +204,7 @@ def test_finalize_pushes_every_current_work_story_archiving_completed_ones(monke
 
     result = domd.finalize(do_md_path)
 
-    assert [s.name for s in result.pushed_stories] == ["Alpha", "Beta"]
+    assert [s.name for s in result.pushed_stories] == ["Alpha", "Story: Beta"]
 
     reloaded = domd.load(do_md_path)
     assert reloaded.current_work_stories() == []
@@ -201,7 +214,7 @@ def test_finalize_pushes_every_current_work_story_archiving_completed_ones(monke
     assert [t.name for t in todo_stories[0].tasks] == ["incomplete task", "a completed task"]
 
     done_stories = bltodo.load_done_stories(done_file)
-    assert [s.name for s in done_stories] == ["Beta"]
+    assert [s.name for s in done_stories] == ["Story: Beta"]
     assert [t.name for t in done_stories[0].tasks] == ["all done task"]
 
 

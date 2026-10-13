@@ -203,11 +203,14 @@ Rules:
 `# Completed work` holds tasks without stories. This is served by the existing implicit file-scope
 story: `stories_to_markdown_text` already suppresses the header for a first story named
 `file-input`, so `domd` renders completed tasks as a single `file-input` story whose tasks carry
-`storyID` / `storyName` attributes. Those attributes are already round-tripped by the existing
-task front-matter emit/parse path, so no additional serializer change is required. This matches the
-"Should the section returned by mdgbdata.py be a DDFSection with preamble?" decision in
-[ddf-issues.md](./adr/ddf/ddf-issues.md): the leading text is a text `Story` in the `stories` list,
-not `DDFSection.preamble`.
+`storyID` / `storyName` attributes. Since that grouping story is purely synthetic (it is built with
+the literal id `"file-input"`, not a real generated id), its `id` is also omitted from the rendered
+front-matter (see mdgbdata-spec.md's Markdown Serialization rule for suppressed `file-input`
+stories); only the bare task list is written under `# Completed work`. Those attributes are already
+round-tripped by the existing task front-matter emit/parse path, so no additional serializer change
+is required beyond the `id` omission. This matches the "Should the section returned by mdgbdata.py
+be a DDFSection with preamble?" decision in [ddf-issues.md](./adr/ddf/ddf-issues.md): the leading
+text is a text `Story` in the `stories` list, not `DDFSection.preamble`.
 
 ### 3.4 CLI
 

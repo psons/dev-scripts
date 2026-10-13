@@ -305,10 +305,6 @@ def _has_story_marker(text: str) -> bool:
     return _STORY_MARKER_RE.match(text) is not None
 
 
-def _story_heading_name(text: str) -> str:
-    return _strip_story_prefix(text)
-
-
 def _task_header_status(
     line: str,
     compiled_patterns: dict[StoryStatus | TaskStatus, re.Pattern[str]],
@@ -596,10 +592,9 @@ def parse_stories_from_markdown(
                 continue
 
             if heading_level == story_heading_level:
-                if _has_story_marker(heading_text):
-                    start_story(_story_heading_name(heading_text), StoryStatus.DO, heading_level)
-                else:
-                    start_story(heading_text, None, heading_level)
+                # No explicit status pattern matched: never fabricate one (even if a "Story:"
+                # marker is present), so leave the marker text in `name` to round-trip it.
+                start_story(heading_text, None, heading_level)
                 continue
 
             pending_heading_level = heading_level
@@ -657,10 +652,9 @@ def parse_stories_from_markdown(
         if task_status is not None:
             if current_story_name is None:
                 if pending_heading_text is not None and pending_heading_level is not None:
-                    pending_story_name = _story_heading_name(pending_heading_text)
                     start_story(
-                        pending_story_name,
-                        StoryStatus.DO,
+                        pending_heading_text,
+                        None,
                         pending_heading_level,
                         initial_description_lines=pending_heading_description_lines,
                     )
@@ -669,9 +663,6 @@ def parse_stories_from_markdown(
                     pending_heading_description_lines = []
                 else:
                     ensure_file_scope_story()
-
-            if current_story_status is None:
-                current_story_status = StoryStatus.DO
 
             if current_task_name is not None:
                 finalize_task()
@@ -751,7 +742,7 @@ def parse_stories_from_markdown(
 
     if not work_stories_only:
         return stories
-    return [story for story in stories if story.status is not None or bool(story.tasks)]
+    return _filter_work_stories(stories)
 
 
 def parse_stories_from_markdown_file(
@@ -931,7 +922,12 @@ def _contains_markdown_structure(text: str, task_patterns: dict[TaskStatus, re.P
 
 
 def _filter_work_stories(stories: list[Story]) -> list[Story]:
-    return [story for story in stories if story.status is not None or bool(story.tasks)]
+    # Work story per spec: has a status, has tasks, or has an explicit "Story:" marker in its name.
+    return [
+        story
+        for story in stories
+        if story.status is not None or bool(story.tasks) or _has_story_marker(story.name)
+    ]
 
 
 def _render_markdown_story(
@@ -950,7 +946,9 @@ def _render_markdown_story(
         else:
             story_entry = _story_status_entry(story.status, story_status_map)
             lines.append(f"{heading_prefix} {story_entry.val} - Story: {story.name}")
-    story_frontmatter: dict[str, object] = {"id": story.id}
+    story_frontmatter: dict[str, object] = {}
+    if not (suppress_header and story.id == "file-input"):
+        story_frontmatter["id"] = story.id
     if story.maxTasks is not None:
         story_frontmatter["maxTasks"] = story.maxTasks
     if story.attributes:

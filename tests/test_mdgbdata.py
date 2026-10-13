@@ -103,7 +103,7 @@ def test_status_matched_heading_creates_story_and_persists_status():
     assert stories[0].tasks[0].status == TaskStatus.COMPLETED
 
 
-def test_non_pattern_heading_with_tasks_still_creates_story_default_do():
+def test_non_pattern_heading_with_tasks_does_not_fabricate_status():
     story_map, task_map = _status_maps()
     text = "# Planning\nx - decide approach\n"
 
@@ -111,7 +111,7 @@ def test_non_pattern_heading_with_tasks_still_creates_story_default_do():
 
     assert len(stories) == 1
     assert stories[0].name == "Planning"
-    assert stories[0].status == StoryStatus.DO
+    assert stories[0].status is None
     assert re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-[0-9a-f]{8}$", stories[0].id)
 
 
@@ -245,7 +245,7 @@ def test_bare_tasks_before_first_heading_go_to_unscoped_story():
 
     assert len(stories) == 2
     assert stories[0].name == "file-input"
-    assert stories[0].status == StoryStatus.DO
+    assert stories[0].status is None
     assert stories[0].tasks is not None
     assert len(stories[0].tasks) == 2
     assert re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-[0-9a-f]{8}$", stories[0].id)
@@ -268,8 +268,8 @@ def test_parse_stories_from_markdown_work_stories_only_filters_text_stories():
     stories = parse_stories_from_markdown(text, story_map, task_map, work_stories_only=True)
 
     assert len(stories) == 1
-    assert stories[0].name == "Plan"
-    assert stories[0].status == StoryStatus.DO
+    assert stories[0].name == "Story: Plan"
+    assert stories[0].status is None
 
 
 def test_parse_stories_from_markdown_file_work_stories_only_filters_file_scope_text_story(tmp_path: Path):
@@ -306,7 +306,7 @@ def test_file_scope_tasks_before_first_h1_attach_to_filename_story(tmp_path: Pat
 
     assert len(stories) == 2
     assert stories[0].name == "file-todo-source.md"
-    assert stories[0].status == StoryStatus.DO
+    assert stories[0].status is None
     assert stories[0].tasks is not None
     assert stories[0].tasks[0].name == "setup"
 
@@ -368,15 +368,15 @@ def test_informal_story_property_lines_map_to_formal_properties():
     assert stories[0].attributes is None
 
 
-def test_story_marker_heading_creates_work_story_with_default_do_status():
+def test_story_marker_heading_creates_text_story_without_fabricated_status():
     story_map, task_map = _status_maps()
     text = "# Story: Plan\nContext line\n"
 
     stories = parse_stories_from_markdown(text, story_map, task_map)
 
     assert len(stories) == 1
-    assert stories[0].name == "Plan"
-    assert stories[0].status == StoryStatus.DO
+    assert stories[0].name == "Story: Plan"
+    assert stories[0].status is None
     assert stories[0].description == "Context line"
 
 
@@ -542,6 +542,34 @@ def test_stories_to_markdown_suppresses_first_story_header_for_file_input_story_
     assert "File-level intro" in markdown
     assert "d - bootstrap" in markdown
     assert "# d - Story: Work Story" in markdown
+
+
+def test_stories_to_markdown_omits_id_for_synthetic_file_input_story_with_literal_id():
+    story_map, task_map = _status_maps()
+    stories = [
+        gbdata.Story(
+            id="file-input",
+            name="file-input",
+            status=None,
+            description=None,
+            tasks=[
+                gbdata.Task(
+                    id="task-1",
+                    status=TaskStatus.COMPLETED,
+                    name="previously completed task",
+                    detail=None,
+                    attributes={"storyID": "story-zzz", "storyName": "Old Story"},
+                )
+            ],
+            attributes=None,
+        ),
+    ]
+
+    markdown = stories_to_markdown_text(stories, story_map, task_map)
+
+    assert not markdown.startswith("# file-input")
+    assert "id: file-input" not in markdown
+    assert markdown.strip().startswith("x - previously completed task")
 
 
 def test_story_attributes_are_parsed_and_roundtrip_in_markdown():

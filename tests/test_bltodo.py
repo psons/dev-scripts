@@ -167,7 +167,7 @@ def test_normalize_backlog_does_not_fabricate_an_explicit_do_status_marker(monke
     assert "Story: Beta" in normalized
 
 
-def test_normalize_backlog_drops_an_explicit_do_marker_since_it_is_the_default(monkeypatch, tmp_path: Path):
+def test_normalize_backlog_preserves_an_explicit_do_marker_since_it_is_not_fabricated(monkeypatch, tmp_path: Path):
     todo_file = tmp_path / "sample.md"
     todo_file.write_text(
         "# d - Story: Alpha\n"
@@ -179,8 +179,7 @@ def test_normalize_backlog_drops_an_explicit_do_marker_since_it_is_the_default(m
     bltodo.normalize_backlog()
 
     normalized = todo_file.read_text(encoding="utf-8")
-    assert "d - Story: Alpha" not in normalized
-    assert "# Story: Alpha" in normalized
+    assert "# d - Story: Alpha" in normalized
 
 
 def test_pop_story_saves_recovery_before_removal(monkeypatch, tmp_path: Path):
