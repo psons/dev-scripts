@@ -81,6 +81,8 @@ id: 8eeceb5a-c7a8-7d86-a205-033c5e6d8274-77fc09f0
 ---
 ok to abandon this story if it is messy. user can probably work around by indenting.
 
+# Story - Code cleanup backward compatibility for 'attribs' 
+d - Remove backward compatibility for Story.attribs and Task.attribs, which have been replaced by Story.attributes and Task.attributes respectively
 
 # Story: Story H-level enhancement
 ---

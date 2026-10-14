@@ -1,6 +1,6 @@
 ---
-"actualCommitMessage": "Refactor: `dtask`, `bltodo`, `mdgbdata` prevent story/task\
-  \ status & ID fabrication for improved data fidelity"
+"actualCommitMessage": "Refactor: Finalize Story/Task attributes transition & enhance\
+  \ cSpell dictionary"
 "description": "A list of small, focused tasks guiding the current commit with detailed\
   \ microsected activities."
 "intendedCommitMessage": ""
@@ -8,6 +8,7 @@
 "title": "do.md"
 "workBranch": "dtask-settle-fixes"
 ---
+
 
 
 # Current work
@@ -82,6 +83,16 @@ non-pattern story heading with tasks parses to `StoryStatus.DO` — they must in
 
 # Work Summary
 
+## 2026-10-14 10:40
+
+---
+workHeadline: "Refactor: Finalize Story/Task attributes transition & enhance cSpell dictionary"
+workChanges: "Added a story to `TODO.md` to remove backward compatibility for `Story.attribs` and `Task.attribs`, finalizing the transition to `Story.attributes` and `Task.attributes`."
+---
+
+**Work Planning**: A new story has been added to the `TODO.md` file, outlining a code cleanup task. This task involves removing backward compatibility for the `Story.attribs` and `Task.attribs` properties. These properties have been replaced by `Story.attributes` and `Task.attributes` respectively, and the change will finalize the transition to the updated naming convention. This ensures consistency and tidies up the codebase by removing legacy code.
+
+**Implementation**: The `.vscode/settings.json` file was updated to include several new words in the `cSpell.words` dictionary. This change adds `dequotes`, `markerless`, `mdgb`, and `roundtrips` to the recognized vocabulary, ensuring these technical terms are no longer flagged as spelling errors within the VS Code editor. This improves the developer experience by reducing false positives from the spell checker, particularly for terms relevant to markdown parsing and data handling.
 ## 2026-10-13 15:54
 
 ---
