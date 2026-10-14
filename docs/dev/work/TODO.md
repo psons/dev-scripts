@@ -65,7 +65,6 @@ tests/test_bltodo*.py, tests/test_domd.py, tests/features/**) that currently ass
 non-pattern story heading with tasks parses to `StoryStatus.DO` — they must instead assert
 `status is None`, with serialization of such a story keeping the plain header form.
 
-
 d - tasks written into '# Completed work' should be upserted.
 ---
 id: 92eaed74-ec6a-7504-9c96-cfd07ef83ee9-65673e28
@@ -73,16 +72,23 @@ id: 92eaed74-ec6a-7504-9c96-cfd07ef83ee9-65673e28
 They are currently being duplicated.
 Do I currently have a description of the behavior to upsert a task?
 
-
-
 d - section informal attribute frontmatter reading should ignore code quoted material
 ---
 id: 8eeceb5a-c7a8-7d86-a205-033c5e6d8274-77fc09f0
 ---
 ok to abandon this story if it is messy. user can probably work around by indenting.
 
-# Story - Code cleanup backward compatibility for 'attribs' 
+
+# Story - Code cleanup backward compatibility for 'attribs'
+---
+id: aab0ab83-b38e-7d4e-8e98-684f9051a19c-ee256c60
+---
+
 d - Remove backward compatibility for Story.attribs and Task.attribs, which have been replaced by Story.attributes and Task.attributes respectively
+---
+id: c819dd94-545d-72ff-9758-739e6d7075ab-c2d071f8
+---
+
 
 # Story: Story H-level enhancement
 ---
