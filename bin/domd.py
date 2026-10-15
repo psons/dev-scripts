@@ -9,7 +9,9 @@ Public API:
 - DoDoc: wraps a parsed do.md DDFDoc, exposing current-work/completed-work story/task access.
 - load / save: read and write a do.md file as a DoDoc.
 - harvest_completed: move completed/abandoned/unfinished tasks out of current work stories
-  into the completed work section as a bare, storyID/storyName-tagged task list.
+  into the completed work section as a bare, storyID/storyName-tagged task list, upserted by id
+  (see DoDoc.append_completed_tasks) so re-harvesting an already-recorded task updates it in
+  place instead of duplicating it.
 - stories_to_push_back: all current-work stories (dtask settle pushes every story back to the
   backlog whether it is complete or not; see docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md).
 - settle: harvest completed work, push every current-work story back, drop current work, and save.
@@ -96,7 +98,7 @@ class DoDoc:
         return tasks
 
     def append_completed_tasks(self, tasks: list[Task]) -> None:
-        """Append tasks to the '# Completed work' section as a bare (ungrouped) task list."""
+        """Upsert tasks (by id) into the '# Completed work' bare (ungrouped) task list."""
         if not tasks:
             return
         section = self._find_section(COMPLETED_WORK)
@@ -112,7 +114,7 @@ class DoDoc:
                 status=None,
                 description=None,
                 maxTasks=None,
-                tasks=existing_tasks + tasks,
+                tasks=gbops.upsert_tasks(existing_tasks, tasks),
                 attributes=None,
             )
         ]

@@ -1,14 +1,7 @@
-# Story: tasks written into '# Completed work' should be upserted.
+# story: quoted front matter should not be interpreted as attributes
 ---
-id: acca8cc8-af09-7ca8-9ae6-04ec74356158-a14f8b0a
+id: cfb39b25-bd56-7aea-96b8-eec5885bee24-c004a589
 ---
-
-d - tasks written into '# Completed work' should be upserted.
----
-id: 92eaed74-ec6a-7504-9c96-cfd07ef83ee9-65673e28
----
-They are currently being duplicated.
-Do I currently have a description of the behavior to upsert a task?
 
 d - section informal attribute frontmatter reading should ignore code quoted material
 ---

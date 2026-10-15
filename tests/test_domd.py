@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 import importlib.util
 from pathlib import Path
 import sys
@@ -144,6 +145,33 @@ def test_completed_work_file_input_story_id_stays_absent_after_a_second_save_cyc
     saved_text = path.read_text(encoding="utf-8")
     completed_section = saved_text.split("# Completed work", 1)[1].lstrip("\n")
     assert not completed_section.startswith("---")
+
+
+def test_append_completed_tasks_upserts_a_reharvested_task_instead_of_duplicating_it(tmp_path: Path):
+    path = _write_do_md(tmp_path)
+    doc = domd.load(path)
+    story = doc.current_work_stories()[0]
+    first_harvest = [gbops.tag_task_with_story(task, story) for task in (story.tasks or [])]
+    doc.append_completed_tasks(first_harvest)
+
+    ids_after_first_harvest = [task.id for task in doc.completed_work_tasks()]
+
+    # Simulate a later `settle, pop, settle` re-harvest of the same already-recorded task
+    # (unchanged id), plus one genuinely new completed task.
+    reharvested_existing = replace(first_harvest[0], status=TaskStatus.COMPLETED, detail="updated on re-harvest")
+    new_task = gbops.tag_task_with_story(
+        gbdata.Task(id="new-task-id", status=TaskStatus.COMPLETED, name="a brand new completed task"),
+        story,
+    )
+    doc.append_completed_tasks([reharvested_existing, new_task])
+
+    completed_tasks = doc.completed_work_tasks()
+    ids = [task.id for task in completed_tasks]
+    assert ids.count(first_harvest[0].id) == 1
+    assert ids == ids_after_first_harvest + ["new-task-id"]
+
+    updated = next(task for task in completed_tasks if task.id == first_harvest[0].id)
+    assert updated.detail == "updated on re-harvest"
 
 
 def test_stories_to_push_back_returns_all_current_work_stories(tmp_path: Path):

@@ -18,7 +18,7 @@ except ImportError:
 DO_MD_RELATIVE = os.path.join("docs", "dev", "work", "do.md")
 
 DO_MD_DESCRIPTION = (
-    "A list of small, focused tasks guiding the current commit with detailed microsected activities."
+    "A transient file for the feature branch containing current work Stories popped from the top of a backlog, enhanced for implementation, then moved to the Completed work section."
 )
 DO_MD_TITLE = ("do.md")
 

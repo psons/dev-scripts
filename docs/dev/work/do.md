@@ -1,8 +1,9 @@
 ---
-"actualCommitMessage": "Refactor TODO.md to do.md for completed tasks, refine mdgbdata\
-  \ to omit \"file-input\" story IDs from frontmatter, and update specs"
-"description": "A list of small, focused tasks guiding the current commit with detailed\
-  \ microsected activities."
+"actualCommitMessage": "feat(domd): Implement upsert for completed tasks in do.md,\
+  \ preventing duplication; updated specs and tests"
+"description": "A transient file for the feature branch containing current work Stories\
+  \ popped from the top of a backlog, enhanced for implementation, then moved to the\
+  \ Completed work section."
 "intendedCommitMessage": "upsert task text if already in do.md #Completed work"
 "priorCommit": "5e6e93493bd6d7a1b4c6793fe62cff5b9502935a"
 "title": "do.md"
@@ -91,63 +92,118 @@ Code: '`mdgbdata._render_markdown_story` must drop the `story.id == "file-input"
 storyID: 09dc64b3-fee1-70de-a008-0f54c098571e-1c1f6eb5
 storyName: 'Story: The do.md # Completed work section should not have a story ID printed.'
 ---
-### prompt1
-DDF type MDGBDF sections to be printed as bare task lists should not have a printed ID for an enclosing story.
-What spec updates are needed to so so that do.md # Completed work section does not have a story ID printed?
-Add the detail underneath this task.
 
-Root cause: `mdgbdata._render_markdown_story`'s suppressed-header rule only omits `id` when it
-equals the literal sentinel string `"file-input"` (`if not (suppress_header and story.id ==
-`domd.append_completed_tasks` constructs the in-memory wrapper `Story(id="file-input", ...)`. On
-the next parse (e.g. a later `dtask pop`/settle re-reading the saved do.md), the bare task list
-under `# Completed work` has no heading, so `mdgbdata.ensure_file_scope_story()` creates a fresh
-implicit "file-input" story and assigns it a real derived id (`{uuid7}-{hash8}`, e.g.
-`08de6878-8f5e-7ff3-9b8f-c472544ec177-6a7e38b4` as seen above) instead of the literal sentinel. The
-literal-string check no longer matches, so the `id` gets printed again on the next save — this is
-exactly the `08de6878-...` id currently sitting under `# Completed work` in this file.
+x - test task
+---
+id: d0b7fd52-eceb-7762-9a55-2cb1ddacf3c1-165a4d59
+storyID: acca8cc8-af09-7ca8-9ae6-04ec74356158-a14f8b0a
+storyName: 'Story: tasks written into ''# Completed work'' should be upserted.'
+---
+
+x - test task
+---
+id: d0b7fd52-eceb-7762-9a55-2cb1ddacf3c1-165a4d59
+storyID: acca8cc8-af09-7ca8-9ae6-04ec74356158-a14f8b0a
+storyName: 'Story: tasks written into ''# Completed work'' should be upserted.'
+---
+
+x - tasks written into '# Completed work' should be upserted.
+---
+id: 92eaed74-ec6a-7504-9c96-cfd07ef83ee9-65673e28
+storyID: acca8cc8-af09-7ca8-9ae6-04ec74356158-a14f8b0a
+storyName: 'Story: tasks written into ''# Completed work'' should be upserted.'
+---
+tasks written into '# Completed work' should be upserted.
+They are currently being duplicated.
+The task in this file 'x - test task' was marked as completed, and after a settle, pop, settle sequence as shown below, the task appears twice in the '#Completed work' section.
+```markdown
+    dtask settle
+    dtask pop
+    dtask settle
+```
+If a completed task is present when the story is settled back into the backlog multiple times before the whole story is completed.
+### prompt 1
+Do I currently have a description of the behavior to upsert a task?
+### prompt 2
+update this task with instructions for the specification enhancements to fix the bug.  Include a description of what it means to upsert a task.
+
+What it means to upsert a task (into a bare task list, e.g. do.md's `# Completed work` section):
+- Tasks are matched by `id`. An incoming task whose `id` already exists in the target list
+  **replaces that task in place** (same position), using the incoming task's `status`, `name`,
+  `detail`, and `attributes` (including `storyID`/`storyName`) wholesale.
+- An incoming task whose `id` is not already present is **appended** to the end, in incoming order.
+- No existing task is ever deleted/dropped just because it is absent from the incoming batch.
+- This is exactly `gbops.upsert_tasks(existing, incoming) -> list[Task]`, which already implements
+  this id-keyed merge (used today by `gbops.upsert_story` for backlog pushes) — it is not yet used
+  by do.md's completed-work writer.
+
+Root cause of the duplication bug: `domd.DoDoc.append_completed_tasks` (bin/domd.py) builds the
+`# Completed work` task list via plain concatenation — `tasks=existing_tasks + tasks` — instead of
+an id-keyed upsert. Across a `settle, pop, settle` sequence, the same already-completed task gets
+harvested and appended again on the second settle, producing a duplicate entry instead of updating
+the existing one in place.
 
 Spec updates needed:
-- `docs/dev/spec/mdgbdata-spec.md` "Markdown Serialization" section: generalize the file-input
-  suppressed-header rule so `id` is unconditionally omitted from the front-matter block whenever
-  the header is suppressed (first story named exactly `file-input`), regardless of the id's value
-  — not only when `id == "file-input"` literally. Note that this id is always deterministically
-  re-derivable at parse time from (kind, story order, name) when not explicit in the source, so
-  omitting it from markdown never loses information for this synthetic grouping story; only
-  `stories_to_json_text` (JSON) still includes the id, since JSON output is not subject to this
-  markdown-only suppression rule.
-- `docs/dev/spec/dtask-final-modules-spec.md` §3.3 "Bare task list rendering": update to state the
-  `id` omission applies unconditionally to the suppressed-header story, since the file-input
-  wrapper id backing the `# Completed work` bare task list is always internal/synthetic, not just
-  when it happens to equal the literal string `"file-input"`.
-- No change needed in `docs/dev/spec/usecases/story-task-parsing-md.md` or the ddf ADR script spec;
-  this rule is specific to mdgbdata.py's Markdown Serialization section.
+- `docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md`: expand the terse "Needed corrections"
+  sentence "When If a tasks are written into do.md # Completed work, they are upserted." into the
+  full upsert definition above (id-keyed merge; matching existing tasks are replaced in place,
+  preserving position; new tasks are appended; nothing is ever deleted).
+- `docs/dev/spec/dtask-final-modules-spec.md`: document that `domd.DoDoc.append_completed_tasks`
+  (and therefore `domd.harvest_completed`/`domd.settle`) must perform this upsert via
+  `gbops.upsert_tasks`, not concatenation, alongside the existing `upsert_tasks`/`upsert_story`
+  documentation already there for the backlog path.
 
-unconditionally omit `id` whenever `suppress_header` is true.
+Code fix: `bin/domd.py`'s `append_completed_tasks` must replace `tasks=existing_tasks + tasks` with
+`tasks=gbops.upsert_tasks(existing_tasks, tasks)`.
 
-Tests to update: `tests/test_mdgbdata.py`'s
-`test_stories_to_markdown_suppresses_first_story_header_for_file_input_story_name` and
-`test_cli_tomd_suppresses_first_story_header_for_file_input_name` currently assert the id IS
-written for a suppressed-header story with a non-sentinel id — they must be changed to assert the
-`id` line is absent. `test_stories_to_markdown_omits_id_for_synthetic_file_input_story_with_literal_id`
-already covers the literal-sentinel case and should keep passing unchanged. Add a round-trip test
-in `tests/test_domd.py` that harvests completed tasks, saves, reloads, harvests/saves again, and
-asserts no `id:` line precedes the `# Completed work` bare task list after the *second* save too
-(the first save already passes today; only the second save currently regresses).
+Tests to add: `tests/test_domd.py` needs a regression test that harvests the same completed task
+twice (simulating `settle, pop, settle`) and asserts it appears exactly once in `# Completed work`
+afterward, with its position preserved and its `storyID`/`storyName`/`status` reflecting the most
+recent harvest.
 
-### prompt2
-Now update the specs ad implement the code and tests for this task.
+### prompt 3
+Now update the specs and implement the code and tests for this task.
+
+x - update tests to match the new DO_MD_DESCRIPTION in dtask.
+---
+id: 287f1fa7-92d4-7805-ae8d-4c935b4e685f-713cd890
+storyID: acca8cc8-af09-7ca8-9ae6-04ec74356158-a14f8b0a
+storyName: 'Story: tasks written into ''# Completed work'' should be upserted.'
+---
+The update in dtask is correct and the tests need to be updated.
 
 # Work Summary
 
+
+## 2026-10-15 16:22
+
+---
+workHeadline: "feat(domd): Implement upsert for completed tasks in do.md, preventing duplication; updated specs and tests"
+specChanges: "The `dtask` spec is refined to use `domd.DoDoc.append_completed_tasks` with `gbops.upsert_tasks` to merge completed tasks into `do.md`'s \"Completed work\" section, updating existing tasks by ID and appending new ones, without ever removing completed tasks."
+workChanges: "`TODO.md` now defines upserting tasks into `do.md`'s `# Completed work` to prevent duplication, addressing a `bin/domd.py` bug; this requires spec updates, a code fix, new tests, and `do.md`'s frontmatter has been refactored to direct YAML."
+---
+
+**Work Planning**: The `TODO.md` file has been significantly updated, providing a detailed definition of what it means to "upsert" tasks into the `do.md` file's `# Completed work` section, emphasizing id-keyed replacement and appending to prevent duplication. This update identifies the root cause of a duplication bug in `bin/domd.py`, where tasks were concatenated instead of upserted, and outlines the required specification enhancements in `dtask-final-modules-spec.md` and `usecases/dtask/dtask-and-do-file-tasks.md`, along with a proposed code fix and new regression tests. Additionally, the frontmatter in `do.md` has been refactored for clarity, transitioning from quoted string values to direct YAML key-value pairs.
+
+**Specification**: The provided git diff refines the specifications for how `dtask` manages completed tasks within the `do.md` file's "Completed work" section. The changes detail that `domd.DoDoc.append_completed_tasks` must use `gbops.upsert_tasks` to merge incoming tasks. This upsert mechanism ensures that if a task's ID already exists in the "Completed work" list, its details are updated in place, preventing duplicates, especially when `dtask settle` re-harvests already-completed tasks. New tasks with unique IDs are appended, and no existing completed task is ever removed.
+
+**Implementation**: The `domd.py` script was updated to prevent duplication of completed tasks when re-harvested into the `do.md` file's "Completed work" section. Specifically, the `append_completed_tasks` method now upserts tasks by ID, updating existing entries and adding new ones, a change reflected in its docstring and the `dtask` script's description of the `do.md` file. A new unit test in `test_domd.py` validates this upsert functionality, ensuring that re-harvested tasks are updated in place rather than duplicated.
 ## 2026-10-15 15:05
 
 ---
-workHeadline: "Refactor TODO.md to do.md for completed tasks, refine mdgbdata to omit \"file-input\" story IDs from frontmatter, and update specs"
-specChanges: "Documentation for `dtask-final-modules-spec.md` and `mdgbdata-spec.md` was updated to ensure the `id` property of the synthetic \"file-input\" story for `# Completed work` tasks is unconditionally omitted from markdown front-matter, preventing re-derivable IDs from being explicitly written while retaining them in JSON serialization."
-workChanges: "Refactored `TODO.md` by moving completed `dtask settle` and `Story.status` items to a new `do.md` log under a '# Completed work' section, and updated `TODO.md` with a new story for upserting tasks into the completed section."
+workHeadline: Refactor TODO.md to do.md for completed tasks, refine mdgbdata to omit
+  "file-input" story IDs from frontmatter, and update specs
+specChanges: Documentation for `dtask-final-modules-spec.md` and `mdgbdata-spec.md`
+  was updated to ensure the `id` property of the synthetic "file-input" story for
+  `# Completed work` tasks is unconditionally omitted from markdown front-matter,
+  preventing re-derivable IDs from being explicitly written while retaining them in
+  JSON serialization.
+workChanges: Refactored `TODO.md` by moving completed `dtask settle` and `Story.status`
+  items to a new `do.md` log under a '# Completed work' section, and updated `TODO.md`
+  with a new story for upserting tasks into the completed section.
 ---
 
-**Work Planning**: The `TODO.md` file was refactored, removing several completed stories and tasks related to `dtask settle` bug fixes and `Story.status` serialization. These items have been moved to a newly created `do.md` file, which now serves as a log for completed work, specifically under a '# Completed work' section. The `TODO.md` file now contains a single, new story focused on ensuring tasks written into the '# Completed work' section are upserted. This change aims to better organize ongoing and completed tasks within the project documentation.
+**Work Planning**: The `TODO.md` popped out several completed stories and tasks related to `dtask settle` bug fixes and `Story.status` serialization. These items have been moved to a newly created `do.md` file, which now serves as a log for completed work, specifically under a '# Completed work' section. The `TODO.md` file now contains a single, new story focused on ensuring tasks written into the '# Completed work' section are upserted. This change aims to better organize ongoing and completed tasks within the project documentation.
 
 **Specification**: The documentation for `dtask-final-modules-spec.md` and `mdgbdata-spec.md` has been updated to clarify the serialization behavior of the synthetic "file-input" story, specifically when handling tasks in the `# Completed work` section. The change specifies that the `id` property of this grouping story should be unconditionally omitted from markdown front-matter, regardless of whether it's a literal sentinel or a re-parsed generated ID. This ensures that only the bare task list is written, aligning with the design decision to prevent synthetic or re-derivable IDs from being explicitly written into markdown, while still retaining the `id` during JSON serialization. This refinement improves consistency and clarity in how `dtask` and `mdgbdata` handle completed tasks.
 

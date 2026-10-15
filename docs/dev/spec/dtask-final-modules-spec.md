@@ -214,6 +214,16 @@ the `id` omission. This matches the "Should the section returned by mdgbdata.py 
 with preamble?" decision in [ddf-issues.md](./adr/ddf/ddf-issues.md): the leading text is a text
 `Story` in the `stories` list, not `DDFSection.preamble`.
 
+`domd.DoDoc.append_completed_tasks` must upsert the incoming harvested tasks into the existing
+`# Completed work` bare task list by `id`, via `gbops.upsert_tasks(existing_tasks, tasks)` — not a
+plain list concatenation. Per `gbops.upsert_tasks`'s existing contract (see §2 above): an incoming
+task whose `id` matches an existing completed-work task replaces it in place (same position); an
+incoming task with a new `id` is appended; no existing completed-work task is ever dropped. This
+matters because `dtask settle` can harvest the same already-completed task again on a later
+`settle, pop, settle` sequence (the task is still present on its story, which gets pushed back to
+the backlog and popped again before the whole story is done) — without the upsert, that reharvest
+duplicates the task in `# Completed work` instead of updating its entry in place.
+
 ### 3.4 CLI
 
 `mdgbdata.py` gains a `--story-heading-level N` option that is threaded to the parse and serialize

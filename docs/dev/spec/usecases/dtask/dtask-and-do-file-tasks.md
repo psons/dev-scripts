@@ -73,7 +73,13 @@ Pushing and popping stories always moves whole stories, even if some of the task
 
 When tasks are written into do.md # Completed work they are copies from the stories that contain them.
 
-When If a tasks are written into do.md # Completed work, they are upserted.
+When tasks are written into do.md # Completed work, they are upserted into the existing bare task
+list there, by `id`: an incoming task whose `id` already exists in `# Completed work` replaces that
+task in place (same position), using the incoming task's `status`, `name`, `detail`, and
+`attributes` (including `storyID`/`storyName`) wholesale; an incoming task whose `id` is not already
+present is appended at the end, in incoming order. No task already in `# Completed work` is ever
+deleted just because it is absent from the incoming batch. This is the same id-keyed merge already
+implemented by `gbops.upsert_tasks`.
 
 dtask --final should perform the settle updates before making its first commit.
 

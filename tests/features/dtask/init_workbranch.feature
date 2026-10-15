@@ -21,7 +21,7 @@ Feature: dtask init with --workbranch flag
     Then the do.md file contains:
       | frontmatter key | value |
       | workBranch | experimental-feature |
-      | description | A list of small, focused tasks guiding the current commit with detailed microsected activities. |
+      | description | A transient file for the feature branch containing current work Stories popped from the top of a backlog, enhanced for implementation, then moved to the Completed work section. |
       | title | do.md |
 
   Scenario: Workbranch creates branch from current HEAD
