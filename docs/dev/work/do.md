@@ -1,15 +1,14 @@
 ---
-"actualCommitMessage": "feat(domd): Implement upsert for completed tasks in do.md,\
-  \ preventing duplication; updated specs and tests"
-"description": "A transient file for the feature branch containing current work Stories\
-  \ popped from the top of a backlog, enhanced for implementation, then moved to the\
-  \ Completed work section."
-"intendedCommitMessage": "upsert task text if already in do.md #Completed work"
-"priorCommit": "5e6e93493bd6d7a1b4c6793fe62cff5b9502935a"
-"title": "do.md"
-"workBranch": "completed-work-duplication"
+actualCommitMessage: Completed tasks now update if they are already in do.md#Completed
+  work, and extra story ids are suppressed.
+description: A transient file for the feature branch containing current work Stories
+  popped from the top of a backlog, enhanced for implementation, then moved to the
+  Completed work section.
+intendedCommitMessage: 'upsert task text if already in do.md #Completed work'
+priorCommit: 5e6e93493bd6d7a1b4c6793fe62cff5b9502935a
+title: do.md
+workBranch: completed-work-duplication
 ---
-
 
 # Current work
 
@@ -122,46 +121,12 @@ The task in this file 'x - test task' was marked as completed, and after a settl
     dtask settle
 ```
 If a completed task is present when the story is settled back into the backlog multiple times before the whole story is completed.
-### prompt 1
-Do I currently have a description of the behavior to upsert a task?
-### prompt 2
-update this task with instructions for the specification enhancements to fix the bug.  Include a description of what it means to upsert a task.
 
-What it means to upsert a task (into a bare task list, e.g. do.md's `# Completed work` section):
-- Tasks are matched by `id`. An incoming task whose `id` already exists in the target list
-  **replaces that task in place** (same position), using the incoming task's `status`, `name`,
-  `detail`, and `attributes` (including `storyID`/`storyName`) wholesale.
-- An incoming task whose `id` is not already present is **appended** to the end, in incoming order.
-- No existing task is ever deleted/dropped just because it is absent from the incoming batch.
-- This is exactly `gbops.upsert_tasks(existing, incoming) -> list[Task]`, which already implements
-  this id-keyed merge (used today by `gbops.upsert_story` for backlog pushes) — it is not yet used
-  by do.md's completed-work writer.
 
-Root cause of the duplication bug: `domd.DoDoc.append_completed_tasks` (bin/domd.py) builds the
-`# Completed work` task list via plain concatenation — `tasks=existing_tasks + tasks` — instead of
-an id-keyed upsert. Across a `settle, pop, settle` sequence, the same already-completed task gets
-harvested and appended again on the second settle, producing a duplicate entry instead of updating
-the existing one in place.
-
-Spec updates needed:
-- `docs/dev/spec/usecases/dtask/dtask-and-do-file-tasks.md`: expand the terse "Needed corrections"
-  sentence "When If a tasks are written into do.md # Completed work, they are upserted." into the
-  full upsert definition above (id-keyed merge; matching existing tasks are replaced in place,
-  preserving position; new tasks are appended; nothing is ever deleted).
-- `docs/dev/spec/dtask-final-modules-spec.md`: document that `domd.DoDoc.append_completed_tasks`
-  (and therefore `domd.harvest_completed`/`domd.settle`) must perform this upsert via
-  `gbops.upsert_tasks`, not concatenation, alongside the existing `upsert_tasks`/`upsert_story`
-  documentation already there for the backlog path.
-
-Code fix: `bin/domd.py`'s `append_completed_tasks` must replace `tasks=existing_tasks + tasks` with
-`tasks=gbops.upsert_tasks(existing_tasks, tasks)`.
-
-Tests to add: `tests/test_domd.py` needs a regression test that harvests the same completed task
-twice (simulating `settle, pop, settle`) and asserts it appears exactly once in `# Completed work`
-afterward, with its position preserved and its `storyID`/`storyName`/`status` reflecting the most
-recent harvest.
-
-### prompt 3
+## prompt 3
+---
+id: d38b5ec2-c893-7e75-b76a-b3321afcb739-75f7816e
+---
 Now update the specs and implement the code and tests for this task.
 
 x - update tests to match the new DO_MD_DESCRIPTION in dtask.
@@ -178,9 +143,16 @@ The update in dtask is correct and the tests need to be updated.
 ## 2026-10-15 16:22
 
 ---
-workHeadline: "feat(domd): Implement upsert for completed tasks in do.md, preventing duplication; updated specs and tests"
-specChanges: "The `dtask` spec is refined to use `domd.DoDoc.append_completed_tasks` with `gbops.upsert_tasks` to merge completed tasks into `do.md`'s \"Completed work\" section, updating existing tasks by ID and appending new ones, without ever removing completed tasks."
-workChanges: "`TODO.md` now defines upserting tasks into `do.md`'s `# Completed work` to prevent duplication, addressing a `bin/domd.py` bug; this requires spec updates, a code fix, new tests, and `do.md`'s frontmatter has been refactored to direct YAML."
+workHeadline: 'feat(domd): Implement upsert for completed tasks in do.md, preventing
+  duplication; updated specs and tests'
+specChanges: The `dtask` spec is refined to use `domd.DoDoc.append_completed_tasks`
+  with `gbops.upsert_tasks` to merge completed tasks into `do.md`'s "Completed work"
+  section, updating existing tasks by ID and appending new ones, without ever removing
+  completed tasks.
+workChanges: '`TODO.md` now defines upserting tasks into `do.md`''s `# Completed work`
+  to prevent duplication, addressing a `bin/domd.py` bug; this requires spec updates,
+  a code fix, new tests, and `do.md`''s frontmatter has been refactored to direct
+  YAML.'
 ---
 
 **Work Planning**: The `TODO.md` file has been significantly updated, providing a detailed definition of what it means to "upsert" tasks into the `do.md` file's `# Completed work` section, emphasizing id-keyed replacement and appending to prevent duplication. This update identifies the root cause of a duplication bug in `bin/domd.py`, where tasks were concatenated instead of upserted, and outlines the required specification enhancements in `dtask-final-modules-spec.md` and `usecases/dtask/dtask-and-do-file-tasks.md`, along with a proposed code fix and new regression tests. Additionally, the frontmatter in `do.md` has been refactored for clarity, transitioning from quoted string values to direct YAML key-value pairs.
@@ -188,6 +160,7 @@ workChanges: "`TODO.md` now defines upserting tasks into `do.md`'s `# Completed 
 **Specification**: The provided git diff refines the specifications for how `dtask` manages completed tasks within the `do.md` file's "Completed work" section. The changes detail that `domd.DoDoc.append_completed_tasks` must use `gbops.upsert_tasks` to merge incoming tasks. This upsert mechanism ensures that if a task's ID already exists in the "Completed work" list, its details are updated in place, preventing duplicates, especially when `dtask settle` re-harvests already-completed tasks. New tasks with unique IDs are appended, and no existing completed task is ever removed.
 
 **Implementation**: The `domd.py` script was updated to prevent duplication of completed tasks when re-harvested into the `do.md` file's "Completed work" section. Specifically, the `append_completed_tasks` method now upserts tasks by ID, updating existing entries and adding new ones, a change reflected in its docstring and the `dtask` script's description of the `do.md` file. A new unit test in `test_domd.py` validates this upsert functionality, ensuring that re-harvested tasks are updated in place rather than duplicated.
+
 ## 2026-10-15 15:05
 
 ---
