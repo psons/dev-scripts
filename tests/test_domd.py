@@ -126,6 +126,26 @@ def test_append_completed_tasks_does_not_write_file_input_story_id_to_disk(tmp_p
     assert "id: file-input" not in saved_text
 
 
+def test_completed_work_file_input_story_id_stays_absent_after_a_second_save_cycle(tmp_path: Path):
+    path = _write_do_md(tmp_path)
+    doc = domd.load(path)
+    story = doc.current_work_stories()[0]
+    harvested = [gbops.tag_task_with_story(task, story) for task in (story.tasks or [])]
+    doc.append_completed_tasks(harvested)
+    domd.save(doc, path)
+
+    # Re-parsing the saved file regenerates a real (non-sentinel) id for the implicit
+    # "file-input" grouping story; saving again must still omit it.
+    reloaded = domd.load(path)
+    more_harvested = [gbops.tag_task_with_story(task, story) for task in (story.tasks or [])]
+    reloaded.append_completed_tasks(more_harvested)
+    domd.save(reloaded, path)
+
+    saved_text = path.read_text(encoding="utf-8")
+    completed_section = saved_text.split("# Completed work", 1)[1].lstrip("\n")
+    assert not completed_section.startswith("---")
+
+
 def test_stories_to_push_back_returns_all_current_work_stories(tmp_path: Path):
     path = _write_do_md(tmp_path)
     doc = domd.load(path)

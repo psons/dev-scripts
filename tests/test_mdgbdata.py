@@ -538,7 +538,8 @@ def test_stories_to_markdown_suppresses_first_story_header_for_file_input_story_
     markdown = stories_to_markdown_text(stories, story_map, task_map)
 
     assert not markdown.startswith("# file-input")
-    assert "---\nid: story-file\nfileFront: meta\n---" in markdown
+    assert "id: story-file" not in markdown
+    assert "---\nfileFront: meta\n---" in markdown
     assert "File-level intro" in markdown
     assert "d - bootstrap" in markdown
     assert "# d - Story: Work Story" in markdown
@@ -1026,7 +1027,8 @@ def test_cli_tomd_suppresses_first_story_header_for_file_input_name() -> None:
 
     assert result.returncode == 0, result.stderr
     assert not result.stdout.startswith("# file-input")
-    assert "---\nid: 11111111-1111-7111-8111-111111111111-aaaaaaaa\nfileFront: meta\n---" in result.stdout
+    assert "id: 11111111-1111-7111-8111-111111111111-aaaaaaaa" not in result.stdout
+    assert "---\nfileFront: meta\n---" in result.stdout
     assert "File intro" in result.stdout
     assert "d - bootstrap" in result.stdout
     assert "# d - Story: Next story" in result.stdout

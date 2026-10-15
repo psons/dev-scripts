@@ -541,13 +541,14 @@ The header for text stories when parsed from markdown
 
 If the first story in a list to be serialized has the special name "file-input", then do not write the story header in serialized output.  The intent of this feature is so that any front-matter still follows the standard file front-matter rules that other parsers may be using.
 
-If that same suppressed-header "file-input" story also has the literal id "file-input" (i.e. a synthetic
-grouping story with no real id of its own, used to hold a bare task list), omit the `id` property from its
-front-matter block entirely instead of writing `id: file-input`. A story produced by parsing real file-scope
-content always receives a generated or explicit id distinct from the literal string "file-input", so this rule
-never affects round-tripping of genuine file-scope stories (their `id` is still written). Bare tasks already
-carry their own `storyID`/`storyName` attributes, so they do not need to be encapsulated in a story with a
-meaningful id of its own.
+That same suppressed-header "file-input" story must also never have its `id` property written into
+its markdown front-matter block, regardless of what the id's value is (whether the literal sentinel
+`"file-input"` or a real generated/explicit id). This id is always deterministically re-derivable at
+parse time from (kind, story order, name) whenever it is not explicit in the source text, so omitting
+it from markdown output never loses information for this synthetic grouping story. Bare tasks already
+carry their own `storyID`/`storyName` attributes, so they do not need to be encapsulated in a story
+with a printed id of its own. This suppression is markdown-output-only: `stories_to_json_text` (JSON
+serialization) still includes the `id`, since JSON is not subject to this markdown-only rule.
 
 ## JSON Mapping Contract
 

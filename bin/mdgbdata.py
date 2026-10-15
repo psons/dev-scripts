@@ -947,7 +947,7 @@ def _render_markdown_story(
             story_entry = _story_status_entry(story.status, story_status_map)
             lines.append(f"{heading_prefix} {story_entry.val} - Story: {story.name}")
     story_frontmatter: dict[str, object] = {}
-    if not (suppress_header and story.id == "file-input"):
+    if not suppress_header:
         story_frontmatter["id"] = story.id
     if story.maxTasks is not None:
         story_frontmatter["maxTasks"] = story.maxTasks
